@@ -91,6 +91,16 @@ export const HistorialList = memo(function HistorialList({
                             }}>
                                 {h.descripcionBandera}
                             </div>
+                            {(h.calleLabel || h.interseccionLabel) && (
+                                <div style={{
+                                    fontFamily: "var(--mono)", fontSize: 10, color: "var(--text-dim)",
+                                    whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis",
+                                    marginBottom: 2,
+                                }}>
+                                    {h.calleLabel}
+                                    {h.interseccionLabel ? ` y ${h.interseccionLabel}` : ""}
+                                </div>
+                            )}
                             <div style={{
                                 fontFamily: "var(--mono)", fontSize: 10, color: "var(--text-muted)",
                                 display: "flex", alignItems: "center", gap: 5,

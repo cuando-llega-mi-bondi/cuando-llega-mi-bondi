@@ -152,12 +152,16 @@ export function HomeClient() {
         if (savedHistRef.current === entryId) return; // already saved this consultation
         savedHistRef.current = entryId;
         const first = arribos[0];
+        const calleLabel = calles.find(c => c.value === codCalle)?.label;
+        const interseccionLabel = interOptions.find(i => i.value === codInterseccion)?.label;
         pushHistorial({
             id: entryId,
             paradaId,
             codLinea,
             descripcionLinea: first.DescripcionLinea,
             descripcionBandera: first.DescripcionBandera,
+            calleLabel,
+            interseccionLabel,
             timestamp: Date.now(),
         });
         setHistorial(getHistorial());
@@ -345,6 +349,8 @@ export function HomeClient() {
                         displayArribos={displayArribos} selectedParada={selectedParada}
                         lastUpdate={lastUpdate} handleConsultar={handleConsultar}
                         fetchArribos={handleFetchArribos} handleFavFromArribos={handleFavFromArribos}
+                        calleLabel={calles.find(c => c.value === codCalle)?.label}
+                        interseccionLabel={interOptions.find(i => i.value === codInterseccion)?.label}
                     />
                 ) : (
                     <>

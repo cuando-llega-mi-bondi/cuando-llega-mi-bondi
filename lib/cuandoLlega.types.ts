@@ -42,6 +42,8 @@ export interface HistorialEntry {
   codLinea: string;
   descripcionLinea: string;
   descripcionBandera: string;
+  calleLabel?: string;         // Nombre de la calle principal
+  interseccionLabel?: string;  // Nombre de la calle intersección
   timestamp: number;           // Date.now()
 }
 

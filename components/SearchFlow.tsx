@@ -1,5 +1,6 @@
 import { Combobox } from "./Combobox";
 import { ArriboCard } from "./ArriboCard";
+import { ShareButton } from "./ShareButton";
 import { IconRefresh } from "./icons/IconRefresh";
 import { IconX } from "./icons/IconX";
 import { type Arribo, type Parada } from "@/lib/cuandoLlega.types";
@@ -46,7 +47,9 @@ interface SearchFlowProps {
     displayArribos: Arribo[];
     selectedParada?: Parada;
     lastUpdate: Date | null;
-    
+    calleLabel?: string;
+    interseccionLabel?: string;
+
     // Actions
     handleConsultar: () => void;
     fetchArribos: () => void;
@@ -64,6 +67,7 @@ export const SearchFlow = memo(function SearchFlow({
     loadingLineas, loadingCalles, loadingInter, loadingParadas, loadingArribos,
     error, setError,
     displayArribos, selectedParada, lastUpdate,
+    calleLabel, interseccionLabel,
     handleConsultar, fetchArribos, handleFavFromArribos
 }: SearchFlowProps) {
     return (
@@ -172,12 +176,17 @@ export const SearchFlow = memo(function SearchFlow({
                         <label style={{ fontFamily: "var(--mono)", fontSize: 11, color: "var(--text-dim)", letterSpacing: 2 }}>
                             PRÓXIMOS ARRIBOS
                         </label>
-                        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                             {lastUpdate ? (
                                 <span style={{ fontFamily: "var(--mono)", fontSize: 10, color: "var(--text-muted)" }}>
                                     {lastUpdate.toLocaleTimeString("es-AR", { hour: "2-digit", minute: "2-digit", second: "2-digit" })}
                                 </span>
                             ) : null}
+                            <ShareButton
+                                arribos={displayArribos}
+                                calleLabel={calleLabel}
+                                interseccionLabel={interseccionLabel}
+                            />
                             <button
                                 onClick={fetchArribos}
                                 disabled={loadingArribos}
