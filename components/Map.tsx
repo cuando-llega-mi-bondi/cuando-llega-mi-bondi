@@ -4,7 +4,8 @@ import React, { useEffect, useState, useRef, Fragment } from "react";
 import { MapContainer, TileLayer, Marker, useMap, Popup, Polyline } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
-import { getRecorrido, type PuntoRecorrido } from "@/lib/cuandoLlega";
+import { getRecorrido } from "@/lib/cuandoLlega";
+import { type PuntoRecorrido, type Arribo } from "@/lib/cuandoLlega.types";
 
 // Icons for Map UI Overlay
 const IconMaximize = () => <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>;

@@ -1,6 +1,8 @@
+import { Arribo, Favorito, Interseccion, Linea, Parada, PuntoRecorrido } from "./cuandoLlega.types";
+
 const BASE_URL = "/api/cuando";
 
-async function post(accion: string, params: Record<string, string> = {}) {
+export async function post(accion: string, params: Record<string, string> = {}) {
   const body = new URLSearchParams({ accion, ...params }).toString();
   const res = await fetch(BASE_URL, {
     method: "POST",
@@ -11,58 +13,27 @@ async function post(accion: string, params: Record<string, string> = {}) {
   return res.json();
 }
 
-// --- Types ---
-export interface Linea {
-  CodigoLineaParada: string;
-  Descripcion: string;
-  CodigoEntidad: string;
-  CodigoEmpresa: number;
-}
-
-export interface Interseccion {
-  Codigo: string;
-  Descripcion: string;
-}
-
-export interface Parada {
-  Codigo: string;
-  Identificador: string;
-  AbreviaturaBandera: string;
-  LatitudParada: string | null;
-  LongitudParada: string | null;
-}
-
-export interface Arribo {
-  DescripcionLinea: string;
-  DescripcionBandera: string;
-  DescripcionCartelBandera: string;
-  Arribo: string;
-  CodigoLineaParada: string;
-  DesvioHorario: string;
-  EsAdaptado: string;
-  IdentificadorChofer: string;
-  IdentificadorCoche: string;
-  Latitud: string;
-  LatitudParada: string;
-  Longitud: string;
-  LongitudParada: string;
-  UltimaFechaHoraGPS: string;
-  MensajeError: string;
-}
-
-export interface Favorito {
-  id: string;
-  nombre: string;
-  identificadorParada: string;
-  codigoLineaParada: string;
-  descripcionLinea: string;
-  descripcionBandera: string;
-}
+/**
+ * Generic fetcher for SWR. 
+ * Key format: [action, paramsObject]
+ */
+export const swrFetcher = async ([accion, params]: [string, Record<string, string>]) => {
+  return post(accion, params);
+};
 
 // --- API calls ---
 export async function getLineas(): Promise<Linea[]> {
   const data = await post("RecuperarLineaPorCuandoLlega");
   return data.lineas ?? [];
+}
+
+export async function getCalles(codLinea: string): Promise<{ value: string; label: string }[]> {
+  const data = await post("RecuperarCallesPrincipalPorLinea", { codLinea });
+  const raw: { Codigo: string; Descripcion: string }[] = data.calles ?? [];
+  return raw.map(c => ({
+    value: c.Codigo,
+    label: c.Descripcion, // We'll clean this in the component or here with a helper if we import it
+  }));
 }
 
 export async function getIntersecciones(
@@ -99,14 +70,7 @@ export async function getArribos(
   return data.arribos ?? [];
 }
 
-export interface PuntoRecorrido {
-  Descripcion: string;
-  AbreviaturaBanderaSMP: string;
-  AbreviaturaLineaSMP: string;
-  IsPuntoPaso: boolean;
-  Latitud: number;
-  Longitud: number;
-}
+
 
 export async function getRecorrido(codLinea: string): Promise<PuntoRecorrido[]> {
   const data = await post("RecuperarRecorridoParaMapaAbrevYAmpliPorEntidadYLinea", {

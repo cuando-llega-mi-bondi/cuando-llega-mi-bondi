@@ -1,10 +1,9 @@
-"use client";
-
 import { Combobox } from "./Combobox";
 import { ArriboCard } from "./ArriboCard";
 import { IconRefresh } from "./icons/IconRefresh";
 import { IconX } from "./icons/IconX";
-import { type Arribo, type Parada } from "@/lib/cuandoLlega";
+import { type Arribo, type Parada } from "@/lib/cuandoLlega.types";
+import { memo } from "react";
 import dynamic from "next/dynamic";
 
 const BusMap = dynamic(() => import('@/components/Map'), { 
@@ -50,11 +49,11 @@ interface SearchFlowProps {
     
     // Actions
     handleConsultar: () => void;
-    fetchArribos: (pid: string, pl: string) => Promise<void>;
+    fetchArribos: () => void;
     handleFavFromArribos: (arribo: Arribo) => void;
 }
 
-export function SearchFlow({
+export const SearchFlow = memo(function SearchFlow({
     codLinea, setCodLinea,
     codCalle, setCodCalle,
     codInterseccion, setCodInterseccion,
@@ -84,7 +83,7 @@ export function SearchFlow({
             </div>
 
             {/* Step 2: Calle */}
-            {codLinea && (
+            {codLinea ? (
                 <div style={{ animation: "slide-up 0.25s ease" }}>
                     <label style={{ fontFamily: "var(--mono)", fontSize: 11, color: "var(--text-dim)", letterSpacing: 2, display: "block", marginBottom: 6 }}>
                         02 / CALLE
@@ -98,10 +97,10 @@ export function SearchFlow({
                         disabled={loadingCalles}
                     />
                 </div>
-            )}
+            ) : null}
 
             {/* Step 3: Intersección */}
-            {codCalle && (
+            {codCalle ? (
                 <div style={{ animation: "slide-up 0.25s ease" }}>
                     <label style={{ fontFamily: "var(--mono)", fontSize: 11, color: "var(--text-dim)", letterSpacing: 2, display: "block", marginBottom: 6 }}>
                         03 / INTERSECCIÓN
@@ -115,10 +114,10 @@ export function SearchFlow({
                         disabled={loadingInter}
                     />
                 </div>
-            )}
+            ) : null}
 
             {/* Step 4: Destino */}
-            {codInterseccion && destinoOptions.length > 0 && (
+            {codInterseccion && destinoOptions.length > 0 ? (
                 <div style={{ animation: "slide-up 0.25s ease" }}>
                     <label style={{ fontFamily: "var(--mono)", fontSize: 11, color: "var(--text-dim)", letterSpacing: 2, display: "block", marginBottom: 6 }}>
                         04 / DESTINO
@@ -134,10 +133,10 @@ export function SearchFlow({
                         options={destinoOptions}
                     />
                 </div>
-            )}
+            ) : null}
 
             {/* Step 5: Ramal */}
-            {paradaId && (
+            {paradaId ? (
                 <div style={{ animation: "slide-up 0.25s ease" }}>
                     <label style={{ fontFamily: "var(--mono)", fontSize: 11, color: "var(--text-dim)", letterSpacing: 2, display: "block", marginBottom: 6 }}>
                         05 / RAMAL
@@ -149,7 +148,7 @@ export function SearchFlow({
                         options={ramalOptions}
                     />
                 </div>
-            )}
+            ) : null}
 
             {/* Step 6: Consultar Button */}
             {paradaId && (
@@ -171,20 +170,20 @@ export function SearchFlow({
             )}
 
             {/* Arrivals */}
-            {(loadingArribos || displayArribos.length > 0 || (isConsulting && !loadingArribos)) && (
+            {(loadingArribos || displayArribos.length > 0 || isConsulting) ? (
                 <div style={{ marginTop: 12 }}>
                     <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
                         <label style={{ fontFamily: "var(--mono)", fontSize: 11, color: "var(--text-dim)", letterSpacing: 2 }}>
                             PRÓXIMOS ARRIBOS
                         </label>
                         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                            {lastUpdate && (
+                            {lastUpdate ? (
                                 <span style={{ fontFamily: "var(--mono)", fontSize: 10, color: "var(--text-muted)" }}>
                                     {lastUpdate.toLocaleTimeString("es-AR", { hour: "2-digit", minute: "2-digit", second: "2-digit" })}
                                 </span>
-                            )}
+                            ) : null}
                             <button
-                                onClick={() => fetchArribos(paradaId, codLinea)}
+                                onClick={fetchArribos}
                                 disabled={loadingArribos}
                                 style={{
                                     background: "none", border: "1px solid var(--border)", borderRadius: 6,
@@ -232,13 +231,13 @@ export function SearchFlow({
                     )}
 
                     {/* Auto-refresh indicator */}
-                    {isConsulting && !loadingArribos && (
+                    {isConsulting && !loadingArribos ? (
                         <div style={{ marginTop: 8, fontFamily: "var(--mono)", fontSize: 10, color: "var(--text-muted)", textAlign: "center" }}>
                             Actualización automática cada 30s
                         </div>
-                    )}
+                    ) : null}
                 </div>
-            )}
+            ) : null}
 
             {error && (
                 <div style={{
@@ -254,4 +253,4 @@ export function SearchFlow({
             )}
         </div>
     );
-}
+});

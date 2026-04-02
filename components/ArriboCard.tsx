@@ -1,28 +1,15 @@
 "use client";
 
-import { isFavorito, type Arribo } from "@/lib/cuandoLlega";
+import { isFavorito } from "@/lib/cuandoLlega";
+import { type Arribo } from "@/lib/cuandoLlega.types";
+import { getArriboColor, formatDesvio } from "@/lib/utils";
 import { IconStar } from "./icons/IconStar";
 import { IconWheelchair } from "./icons/IconWheelchair";
 import { IconUser } from "./icons/IconUser";
 import { IconClock } from "./icons/IconClock";
 
-function arriboColor(arribo: string): string {
-    if (arribo.includes("1 min") || arribo.toLowerCase().includes("llegando")) return "#22c55e";
-    if (arribo.includes("2 min") || arribo.includes("3 min")) return "#f5a623";
-    return "#e8e8ec";
-}
-
-function formatDesvio(d: string): { label: string; color: string } | null {
-    if (!d || d === "+00:00" || d === "-00:00") return null;
-    const late = d.startsWith("+");
-    const mins = d.replace(/[+-]/, "").split(":")[1];
-    const num = parseInt(mins);
-    if (isNaN(num) || num === 0) return null;
-    return { label: `${late ? "+" : "-"}${num}min`, color: late ? "#ef4444" : "#22c55e" };
-}
-
 export function ArriboCard({ arribo, onFav, favId }: { arribo: Arribo; onFav: () => void; favId: string }) {
-    const color = arriboColor(arribo.Arribo);
+    const color = getArriboColor(arribo.Arribo);
     const desvio = formatDesvio(arribo.DesvioHorario);
     const fav = isFavorito(favId);
     const isAdaptado = arribo.EsAdaptado === "True";
@@ -95,7 +82,7 @@ export function ArriboCard({ arribo, onFav, favId }: { arribo: Arribo; onFav: ()
                 <div style={{ display: "flex", flexDirection: "column", gap: 4, alignItems: "flex-end", textAlign: "right" }}>
                     {desvio && (
                         <div style={{ background: desvio.color + "22", color: desvio.color, border: `1px solid ${desvio.color}44`, padding: "2px 6px", borderRadius: 4, fontFamily: "var(--mono)", fontSize: 10, fontWeight: 700 }}>
-                            {desvio.label} {desvio.label.startsWith("-") ? "DE ATRASO" : "DE ADELANTO"}
+                            {desvio.label} {desvio.isEarly ? "ADELANTADO" : "ATRASADO"}
                         </div>
                     )}
                     <div style={{ display: "flex", alignItems: "center", gap: 6, color: "var(--text-muted)", fontFamily: "var(--mono)", fontSize: 10 }}>

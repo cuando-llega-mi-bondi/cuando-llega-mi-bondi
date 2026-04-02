@@ -1,7 +1,6 @@
-"use client";
-
+import { memo } from "react";
 import { IconX } from "./icons/IconX";
-import { type Favorito } from "@/lib/cuandoLlega";
+import { type Favorito } from "@/lib/cuandoLlega.types";
 
 interface FavoritesListProps {
     favoritos: Favorito[];
@@ -9,7 +8,7 @@ interface FavoritesListProps {
     onRemove: (id: string) => void;
 }
 
-export function FavoritesList({ favoritos, onView, onRemove }: FavoritesListProps) {
+export const FavoritesList = memo(function FavoritesList({ favoritos, onView, onRemove }: FavoritesListProps) {
     if (favoritos.length === 0) {
         return (
             <div style={{
@@ -72,4 +71,4 @@ export function FavoritesList({ favoritos, onView, onRemove }: FavoritesListProp
             ))}
         </div>
     );
-}
+});
