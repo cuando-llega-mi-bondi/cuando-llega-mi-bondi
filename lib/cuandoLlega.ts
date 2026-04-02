@@ -103,6 +103,16 @@ export function removeFavorito(id: string): void {
   localStorage.setItem(FAV_KEY, JSON.stringify(favs));
 }
 
+export function updateFavorito(id: string, name: string): void {
+  const favs = getFavoritos().map((f) => {
+    if (f.id === id) {
+      return { ...f, nombre: name };
+    }
+    return f;
+  });
+  localStorage.setItem(FAV_KEY, JSON.stringify(favs));
+}
+
 export function isFavorito(id: string): boolean {
   return getFavoritos().some((f) => f.id === id);
 }

@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import {
     getLineas, getIntersecciones, getParadas, getArribos,
     getFavoritos, saveFavorito, removeFavorito, isFavorito,
-    getCalles,
+    getCalles, updateFavorito,
 } from "@/lib/cuandoLlega";
 import { type Linea, type Interseccion, type Parada, type Arribo, type Favorito } from "@/lib/cuandoLlega.types";
 import { cleanLabel } from "@/lib/utils";
@@ -13,6 +13,7 @@ import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { FavoritesList } from "@/components/FavoritesList";
 import { SearchFlow } from "@/components/SearchFlow";
+import { FavoriteNameModal } from "@/components/FavoriteNameModal";
 import useSWR from "swr";
 import { swrFetcher, post } from "@/lib/cuandoLlega";
 
@@ -28,6 +29,11 @@ export default function Home() {
 
     // data (Favoritos handled manually as they are in localStorage)
     const [favoritos, setFavoritos] = useState<Favorito[]>([]);
+
+    // naming modal state
+    const [pendingFav, setPendingFav] = useState<Favorito | null>(null);
+    const [isNamingOpen, setIsNamingOpen] = useState(false);
+    const [editingFav, setEditingFav] = useState<Favorito | null>(null);
 
     // auto-refresh management
     const [isConsulting, setIsConsulting] = useState(false);
@@ -117,8 +123,9 @@ export default function Home() {
         const id = `${paradaId}_${arribo.CodigoLineaParada}`;
         if (isFavorito(id)) {
             removeFavorito(id);
+            setFavoritos(getFavoritos());
         } else {
-            saveFavorito({
+            setPendingFav({
                 id,
                 nombre: `${arribo.DescripcionLinea} — ${arribo.DescripcionCartelBandera}`,
                 identificadorParada: paradaId,
@@ -126,9 +133,26 @@ export default function Home() {
                 descripcionLinea: arribo.DescripcionLinea,
                 descripcionBandera: arribo.DescripcionCartelBandera,
             });
+            setIsNamingOpen(true);
         }
-        setFavoritos(getFavoritos());
     }, [paradaId]);
+
+    const handleSaveNaming = useCallback((name: string) => {
+        if (editingFav) {
+            updateFavorito(editingFav.id, name);
+            setEditingFav(null);
+        } else if (pendingFav) {
+            saveFavorito({ ...pendingFav, nombre: name });
+            setPendingFav(null);
+        }
+        setIsNamingOpen(false);
+        setFavoritos(getFavoritos());
+    }, [pendingFav, editingFav]);
+
+    const handleEditFavName = useCallback((fav: Favorito) => {
+        setEditingFav(fav);
+        setIsNamingOpen(true);
+    }, []);
 
     const fetchFavArribos = useCallback(async (fav: Favorito) => {
         setTab("buscar");
@@ -136,6 +160,10 @@ export default function Home() {
         setCodLinea(fav.id.split("_")[1]);
         setIsConsulting(true);
     }, []);
+
+    const handleFetchArribos = useCallback(() => {
+        mutateArribos();
+    }, [mutateArribos]);
 
     const removeFav = useCallback((id: string) => {
         removeFavorito(id);
@@ -207,16 +235,29 @@ export default function Home() {
                         loadingArribos={loadingArribos} error={error} setError={setError}
                         displayArribos={displayArribos} selectedParada={selectedParada}
                         lastUpdate={lastUpdate} handleConsultar={handleConsultar}
-                        fetchArribos={() => mutateArribos()} handleFavFromArribos={handleFavFromArribos}
+                        fetchArribos={handleFetchArribos} handleFavFromArribos={handleFavFromArribos}
                     />
                 ) : (
                     <FavoritesList
                         favoritos={favoritos}
                         onView={fetchFavArribos}
                         onRemove={removeFav}
+                        onRename={handleEditFavName}
                     />
                 )}
             </main>
+
+            <FavoriteNameModal
+                isOpen={isNamingOpen}
+                onClose={() => {
+                    setIsNamingOpen(false);
+                    setPendingFav(null);
+                    setEditingFav(null);
+                }}
+                onSave={handleSaveNaming}
+                initialName={editingFav?.nombre ?? pendingFav?.nombre ?? ""}
+                title={editingFav ? "Renombrar parada" : "Guardar parada"}
+            />
 
             <Footer />
         </div>

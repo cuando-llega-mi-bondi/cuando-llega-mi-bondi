@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState, useRef, Fragment } from "react";
+import React, { useEffect, useState, useRef, Fragment, useMemo } from "react";
 import { MapContainer, TileLayer, Marker, useMap, Popup, Polyline } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
@@ -68,7 +68,7 @@ function MapController({ arribos, paradaCoords, triggerFit, isFullscreen }: { ar
     return null;
 }
 
-export default function BusMap({ arribos, paradaLat, paradaLon, lineaCod }: { arribos: any[], paradaLat: string, paradaLon: string, lineaCod?: string }) {
+const BusMap = React.memo(function BusMap({ arribos, paradaLat, paradaLon, lineaCod }: { arribos: any[], paradaLat: string, paradaLon: string, lineaCod?: string }) {
     const [isFullscreen, setIsFullscreen] = useState(false);
     const [fitTrigger, setFitTrigger] = useState(0);
     const [routePoints, setRoutePoints] = useState<PuntoRecorrido[]>([]);
@@ -86,33 +86,39 @@ export default function BusMap({ arribos, paradaLat, paradaLon, lineaCod }: { ar
     }, [lineaCod]);
 
     // Distinct ramales from current arriving buses
-    const activeRamales = new Set(arribos.map(a => a.DescripcionCartelBandera?.toUpperCase() || ""));
+    const activeRamales = useMemo(() => 
+        new Set(arribos.map(a => a.DescripcionCartelBandera?.toUpperCase() || "")),
+    [arribos]);
 
     // Group route points by Descripcion
-    const groupedPoints = routePoints.reduce((acc, p) => {
-        if (!acc[p.Descripcion]) acc[p.Descripcion] = [];
-        acc[p.Descripcion].push([p.Latitud, p.Longitud] as [number, number]);
-        return acc;
-    }, {} as Record<string, [number, number][]>);
+    const groupedPoints = useMemo(() => 
+        routePoints.reduce((acc, p) => {
+            if (!acc[p.Descripcion]) acc[p.Descripcion] = [];
+            acc[p.Descripcion].push([p.Latitud, p.Longitud] as [number, number]);
+            return acc;
+        }, {} as Record<string, [number, number][]>),
+    [routePoints]);
 
-    let pLat = parseFloat(paradaLat);
-    let pLon = parseFloat(paradaLon);
-    if ((isNaN(pLat) || isNaN(pLon) || pLat === 0) && arribos.length > 0) {
-        pLat = parseFloat(arribos[0].LatitudParada);
-        pLon = parseFloat(arribos[0].LongitudParada);
-    }
-    if (isNaN(pLat) || isNaN(pLon) || pLat === 0) {
-        return null;
-    }
-    const paradaCoords: [number, number] = [pLat, pLon];
+    const paradaCoords = useMemo((): [number, number] | null => {
+        let pLat = parseFloat(paradaLat);
+        let pLon = parseFloat(paradaLon);
+        if ((isNaN(pLat) || isNaN(pLon) || pLat === 0) && arribos.length > 0) {
+            pLat = parseFloat(arribos[0].LatitudParada);
+            pLon = parseFloat(arribos[0].LongitudParada);
+        }
+        if (isNaN(pLat) || isNaN(pLon) || pLat === 0) return null;
+        return [pLat, pLon];
+    }, [paradaLat, paradaLon, arribos]);
+
+    if (!paradaCoords) return null;
 
     // CSS divIcon for Stop (Pulse Effect)
-    const StopIcon = L.divIcon({
+    const StopIcon = useMemo(() => L.divIcon({
         className: 'custom-stop-icon',
         html: `<div class="marker-stop"></div>`,
         iconSize: [0, 0], // Sized via CSS
         iconAnchor: [0, 0] // Centered via negative margin in CSS
-    });
+    }), []);
 
     // Color logic
     const getEtaClass = (arriboStr: string) => {
@@ -165,8 +171,8 @@ export default function BusMap({ arribos, paradaLat, paradaLon, lineaCod }: { ar
                     const descUpper = desc.toUpperCase();
                     // Some basic matching between endpoint Descripcion and the arriving bus Ramal display name
                     const isActive = arribos.length === 0 || Array.from(activeRamales).some(ramal => 
-                        descUpper.includes(ramal) || 
-                        ramal.includes((descUpper.split(';')[1] || '').trim())
+                        descUpper.includes(ramal as string) || 
+                        (ramal as string).includes((descUpper.split(';')[1] || '').trim())
                     );
                     
                     // Calculate arrows for active routes
@@ -308,7 +314,9 @@ export default function BusMap({ arribos, paradaLat, paradaLon, lineaCod }: { ar
             )}
         </div>
     );
-}
+});
+
+export default BusMap;
 
 // Fallback for Safari safe-area bottom
 function envLocalSafeAreaBottom(fallback: number) {
