@@ -27,33 +27,41 @@
 ## ✨ Funcionalidades
 
 - **Tiempo real (GPS):** Consulta de arribos en tiempo real obteniendo datos del proxy de la Municipalidad de Gral. Pueyrredón.
+- **Rutas Manuales (GeoJSON):** Soporte para líneas que no están en la API oficial (ej. Mar Chiquita 221) mediante archivos GeoJSON.
 - **Favoritos:** Guardá tus paradas de uso diario con nombres personalizados (ej. "Casa", "Trabajo").
-- **Historial automático:** ¿Recién consultaste una parada? Te queda a un clic de distancia en tu historial reciente.
-- **Modo Offline & Caché (PWA):** Instalá la app en tu teléfono (iOS/Android). La información estática (calles, recorridos) se guarda en caché local por 24hs para que la app cargue *instantáneamente*.
-- **Compartir por WhatsApp:** Generá un enlace rápido o texto con los tiempos de arribo y la esquina para compartirlo.
-- **Mapa Interactivo:** Visualizá los colectivos acercándose a tu parada en tiempo real sobre un mapa.
+- **Historial inteligente:** Historial automático de las últimas paradas consultadas.
+- **Mapa Interactivo Avanzado:** 
+    - Visualización de colectivos acercándose en tiempo real.
+    - Marcado de paradas con **navegación rápida** (vía Google Maps).
+    - Trazado de recorridos completos sobre el mapa.
+- **Modo PWA & Caché:** Instalación nativa en móviles e información estática (calles, recorridos) persistida localmente por 24hs.
+- **WhatsApp Share:** Generación de mensajes rápidos con tiempos de arribo y ubicación exacta.
+- **Status de API:** Detección y alerta visual si el servidor de la Municipalidad está fuera de servicio.
 
 ## 🛠 Arquitectura & Stack Tecnológico
 
-El proyecto está diseñado pensando fuertemente en **performance del lado del cliente** usando las últimas tecnologías de React.
+La aplicación está diseñada pensando en la performance y la facilidad de extensión.
 
 | Tecnología        | Propósito                                                            |
 |-------------------|----------------------------------------------------------------------|
-| **Next.js 16 (App Router)** | Framework base, optimización de bundles, y Proxy API (Rutas ocultas de CORS). |
-| **React 19**      | UI, Hooks, y concurrencia.                                           |
-| **TypeScript**    | Tipado estático (podés ver los tipos en `lib/cuandoLlega.types.ts`). |
-| **SWR**           | Data fetching, mutaciones, revalidación automática (auto-refresh) y caché en memoria. |
-| **Leaflet**       | Motor de mapas liviano para mostrar GPS de colectivos y rutas.       |
+| **Next.js 16 (App Router)** | Framework base, optimización de bundles, y Proxy API. |
+| **React 19**      | UI responsiva y gestión de estado mediante Hooks.                   |
+| **SWR**           | Fetching de datos con revalidación automática y caché en memoria.   |
+| **Leaflet**       | Motor de mapas liviano para visualización de GPS y GeoJSON.          |
+| **LocalStorage**  | Persistencia de favoritos, historial y caché de calles (24hs TTL).    |
 
 ### Flujo de Datos
 
 ```mermaid
-graph LR
+graph TD
   UI[UI Components] --> SWR[SWR Hooks]
-  SWR -.-> LocalStorage[(Caché Local 24hs)]
+  SWR --> Storage[(LocalStorage / Cache 24h)]
   SWR --> Proxy[Route Handler /api/cuando]
   Proxy --> MGP[API Municipalidad]
+  UI --> Manual[lib/manualRoutes.ts]
+  Manual --> GeoJSON[public/*.geojson]
 ```
+
 
 ## 🚀 Empezar (Getting Started)
 

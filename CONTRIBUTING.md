@@ -31,6 +31,27 @@ Para que te orientes rápidamente, aquí te explicamos cómo organizamos el cód
   - `cuandoLlega.ts`: Wrapper para toda la lógica de fetch.
   - `localCache.ts`: Encargado de la caché persistente (24hs).
 - `/public`: Assets estáticos (iconos PWA, Service Worker `sw.js`).
+- `/public/*.geojson`: Archivos de rutas para líneas manuales.
+
+## 🚌 Cómo agregar una línea manual (GeoJSON)
+
+Si una línea no está disponible en la API oficial de la Municipalidad, podés integrarla manualmente:
+
+1. **Obtené el GeoJSON:** El archivo debe contener un `LineString` con las coordenadas del recorrido. Guardalo en `/public/nombre-linea.geojson`.
+2. **Configurá la ruta:** Editá `lib/manualRoutes.ts` y agregá un objeto al array `MANUAL_ROUTES`:
+   ```typescript
+   {
+     line: {
+       CodigoLineaParada: "ID_UNICO",
+       Descripcion: "NOMBRE DE LA LINEA",
+       CodigoEntidad: "MANUAL",
+       CodigoEmpresa: 0,
+       isManual: true,
+     },
+     geoJsonPath: "/nombre-linea.geojson",
+   }
+   ```
+3. **Validación:** Una vez agregado, la línea aparecerá automáticamente en el buscador principal y el mapa cargará el recorrido desde el archivo local sin consultar el proxy.
 
 ## Convenciones de Código
 
