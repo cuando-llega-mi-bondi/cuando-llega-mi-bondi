@@ -7,6 +7,7 @@ import { getLineas, getRecorridoRamales, getParadasParaMapa } from "@/lib/cuando
 import { getCache, setCache } from "@/lib/localCache";
 import type { Linea, RamalData, ParadaMapa, PuntoRecorrido } from "@/lib/cuandoLlega.types";
 import { MANUAL_LINES, MANUAL_ROUTES } from "@/lib/manualRoutes";
+import { supabase } from "@/lib/supabaseClient";
 
 // Leaflet can't run on the server — dynamic import with ssr:false is mandatory
 const RouteMap = dynamic(() => import("@/components/RouteMap"), {
@@ -56,6 +57,7 @@ export default function RecorridoClient() {
   const [paradas, setParadas] = useState<ParadaMapa[]>([]);
   const [mapLoading, setMapLoading] = useState(false);
   const [mapError, setMapError] = useState<string | null>(null);
+  const [liveBuses, setLiveBuses] = useState<{lat: number, lng: number}[]>([]);
 
   // ── Load lines (with 24h cache) ──────────────────────────────────────────────
   useEffect(() => {
@@ -177,7 +179,50 @@ export default function RecorridoClient() {
     setSelectedRamal(null);
     setParadas([]);
     setMapError(null);
+    setLiveBuses([]);
   }
+
+  // ── Supabase Live Locations Subscription ─────────────────────────────────────
+  useEffect(() => {
+    if (!selectedLine) return;
+    const lineaId = selectedLine.CodigoLineaParada;
+    
+    // Initial fetch of active locations
+    supabase
+      .from("bus_locations")
+      .select("lat, lng")
+      .eq("linea", lineaId)
+      // Only get recent updates (e.g. from the last hour), so we ignore old sessions
+      .gte("updated_at", new Date(Date.now() - 3600000).toISOString())
+      .then(({ data }) => setLiveBuses(data || []));
+
+    // Subscribe to realtime changes for this line
+    const channel = supabase
+      .channel(`bus-updates-${lineaId}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "bus_locations",
+          filter: `linea=eq.${lineaId}`
+        },
+        () => {
+          // Re-fetch all valid locations instead of trying to merge locally
+          supabase
+            .from("bus_locations")
+            .select("lat, lng")
+            .eq("linea", lineaId)
+            .gte("updated_at", new Date(Date.now() - 3600000).toISOString())
+            .then(({ data }) => setLiveBuses(data || []));
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [selectedLine]);
 
   // ── Derived map data ─────────────────────────────────────────────────────────
   const routeLine = useMemo<[number, number][]>(() => {
@@ -370,6 +415,8 @@ export default function RecorridoClient() {
             lineNumber={selectedLine?.CodigoLineaParada}
             routeName={selectedRamal?.label ?? selectedLine?.Descripcion}
             accentColor="var(--accent)"
+            liveBuses={liveBuses}
+            telegramUsername={process.env.NEXT_PUBLIC_TELEGRAM_BOT_USERNAME || "cuandollegamdp_bot"}
           />
         )}
       </div>

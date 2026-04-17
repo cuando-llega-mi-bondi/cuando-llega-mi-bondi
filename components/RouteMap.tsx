@@ -43,6 +43,11 @@ const IconNav = () => (
     <polygon points="3 11 22 2 13 21 11 13 3 11"/>
   </svg>
 );
+const IconTelegram = () => (
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/>
+  </svg>
+);
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -62,6 +67,10 @@ interface RouteMapProps {
   lineNumber?: string;
   routeName?: string;
   accentColor?: string;
+  /** Live bus locations from Telegram/Supabase */
+  liveBuses?: {lat: number, lng: number}[];
+  /** Telegram bot username for deep link CTA */
+  telegramUsername?: string;
 }
 
 // ─── Direction arrow icon ─────────────────────────────────────────────────────
@@ -107,6 +116,31 @@ function createStopIcon(index: number, isSelected: boolean, accentColor: string)
     iconSize: [size, size],
     iconAnchor: [size / 2, size / 2],
     popupAnchor: [0, -(size / 2 + 6)],
+  });
+}
+
+// ─── Live bus marker icon ─────────────────────────────────────────────────────
+
+function createLiveBusIcon() {
+  return L.divIcon({
+    className: "live-bus-icon",
+    html: `<div style="
+      width: 44px; height: 44px;
+      background: var(--accent);
+      border: 3px solid #000;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      color: #000;
+      box-shadow: 0 0 0 4px rgba(245,166,35,0.4), 0 4px 16px rgba(0,0,0,0.8);
+      animation: pulse-ring 2s infinite;
+    ">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="3" y="3" width="18" height="13" rx="2"/><path d="M3 9h18"/><path d="M8 19v-3m8 3v-3"/><path d="M7 19h10"/><circle cx="7.5" cy="14.5" r=".5" fill="currentColor"/><circle cx="16.5" cy="14.5" r=".5" fill="currentColor"/>
+      </svg>
+    </div>`,
+    iconSize: [44, 44],
+    iconAnchor: [22, 22],
+    popupAnchor: [0, -24],
   });
 }
 
@@ -161,6 +195,8 @@ export default function RouteMap({
   lineNumber = "",
   routeName = "Recorrido",
   accentColor = "#f5a623",
+  liveBuses = [],
+  telegramUsername = "",
 }: RouteMapProps) {
   const [selectedStop, setSelectedStop] = useState<number | null>(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
@@ -331,7 +367,45 @@ export default function RouteMap({
         })}
 
         <MapController bounds={bounds} triggerFit={fitTrigger} isFullscreen={isFullscreen} />
+
+        {/* Live buses */}
+        {liveBuses.map((bus, i) => (
+          <Marker
+            key={`bus-${i}`}
+            position={[bus.lat, bus.lng]}
+            icon={createLiveBusIcon()}
+            zIndexOffset={2000}
+          >
+            <Popup>
+              <div style={{ fontFamily: "var(--display)", fontWeight: 800, fontSize: 13, textAlign: "center" }}>
+                🚌 ¡El {lineNumber} está acá!
+              </div>
+            </Popup>
+          </Marker>
+        ))}
       </MapContainer>
+
+      {/* ── Telegram CTA ── */}
+      {telegramUsername && lineNumber && (
+        <a
+          href={`https://t.me/${telegramUsername}?start=${lineNumber}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          style={{
+            position: "absolute", bottom: 20, left: "50%", transform: "translateX(-50%)",
+            background: "#2AABEE", color: "#fff", zIndex: 1000,
+            padding: "12px 20px", borderRadius: 30, textDecoration: "none",
+            display: "flex", alignItems: "center", gap: 10,
+            boxShadow: "0 8px 32px rgba(42,171,238,0.5)",
+            fontFamily: "var(--display)", fontWeight: 800, fontSize: 14,
+            transition: "transform 0.15s ease",
+            whiteSpace: "nowrap"
+          }}
+        >
+          <IconTelegram />
+          Compartí tu ubicación en vivo
+        </a>
+      )}
 
       {/* ── Stop list drawer (bottom sheet) ── */}
       {showStopList && (
