@@ -121,22 +121,33 @@ function createStopIcon(index: number, isSelected: boolean, accentColor: string)
 
 // ─── Live bus marker icon ─────────────────────────────────────────────────────
 
-function createLiveBusIcon() {
+function createLiveBusIcon(count = 1) {
+  const badgeHTML = count > 1 
+    ? `<div style="
+        position: absolute; top: -6px; right: -6px;
+        background: #e74c3c; color: white;
+        border-radius: 12px; padding: 2px 6px;
+        font-family: var(--display); font-size: 11px; font-weight: 800;
+        border: 2px solid #000; box-shadow: 0 2px 4px rgba(0,0,0,0.5);
+      ">+${count}</div>` 
+    : '';
+
   return L.divIcon({
     className: "live-bus-icon",
-    html: `<div style="
-      width: 44px; height: 44px;
-      background: var(--accent);
-      border: 3px solid #000;
-      border-radius: 50%;
-      display: flex; align-items: center; justify-content: center;
-      color: #000;
-      box-shadow: 0 0 0 4px rgba(245,166,35,0.4), 0 4px 16px rgba(0,0,0,0.8);
-      animation: pulse-ring 2s infinite;
-    ">
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-        <rect x="3" y="3" width="18" height="13" rx="2"/><path d="M3 9h18"/><path d="M8 19v-3m8 3v-3"/><path d="M7 19h10"/><circle cx="7.5" cy="14.5" r=".5" fill="currentColor"/><circle cx="16.5" cy="14.5" r=".5" fill="currentColor"/>
-      </svg>
+    html: `<div style="position: relative;">
+      <div style="
+        width: 44px; height: 44px;
+        background: #ffffff;
+        border: 3px solid #000;
+        border-radius: 50%;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 24px;
+        line-height: 1;
+        padding-bottom: 2px;
+        box-shadow: 0 0 0 4px rgba(245,166,35,0.4), 0 4px 16px rgba(0,0,0,0.8);
+        animation: pulse-ring 2s infinite;
+      ">🚌</div>
+      ${badgeHTML}
     </div>`,
     iconSize: [44, 44],
     iconAnchor: [22, 22],
@@ -369,16 +380,17 @@ export default function RouteMap({
         <MapController bounds={bounds} triggerFit={fitTrigger} isFullscreen={isFullscreen} />
 
         {/* Live buses */}
-        {liveBuses.map((bus, i) => (
+        {liveBuses.map((bus: any, i) => (
           <Marker
             key={`bus-${i}`}
             position={[bus.lat, bus.lng]}
-            icon={createLiveBusIcon()}
+            icon={createLiveBusIcon(bus.count || 1)}
             zIndexOffset={2000}
           >
             <Popup>
               <div style={{ fontFamily: "var(--display)", fontWeight: 800, fontSize: 13, textAlign: "center" }}>
                 🚌 ¡El {lineNumber} está acá!
+                {bus.count > 1 && <div style={{color: "var(--text-dim)", fontSize: 11, marginTop: 4}}>({bus.count} pasajeros transmitiendo)</div>}
               </div>
             </Popup>
           </Marker>

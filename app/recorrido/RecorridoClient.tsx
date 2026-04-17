@@ -57,7 +57,32 @@ export default function RecorridoClient() {
   const [paradas, setParadas] = useState<ParadaMapa[]>([]);
   const [mapLoading, setMapLoading] = useState(false);
   const [mapError, setMapError] = useState<string | null>(null);
-  const [liveBuses, setLiveBuses] = useState<{lat: number, lng: number}[]>([]);
+  const [rawLiveBuses, setRawLiveBuses] = useState<{lat: number, lng: number}[]>([]);
+
+  // ── Cluster nearby buses ─────────────────────────────────────────────────────
+  const liveBuses = useMemo(() => {
+    // Agrupa (clusteriza) ubicaciones que estén a ~100 metros a la redonda
+    const THRESHOLD = 0.001; 
+    const clusters: { lat: number; lng: number; count: number }[] = [];
+    
+    for (const loc of rawLiveBuses) {
+      let found = false;
+      for (const c of clusters) {
+        const dLat = c.lat - loc.lat;
+        const dLng = c.lng - loc.lng;
+        // Si están a menos de un límite de distancia, los promediamos y lo contamos como el mismo micro
+        if (Math.sqrt(dLat * dLat + dLng * dLng) < THRESHOLD) {
+          c.lat = (c.lat * c.count + loc.lat) / (c.count + 1);
+          c.lng = (c.lng * c.count + loc.lng) / (c.count + 1);
+          c.count++;
+          found = true;
+          break;
+        }
+      }
+      if (!found) clusters.push({ ...loc, count: 1 });
+    }
+    return clusters;
+  }, [rawLiveBuses]);
 
   // ── Load lines (with 24h cache) ──────────────────────────────────────────────
   useEffect(() => {
@@ -179,7 +204,7 @@ export default function RecorridoClient() {
     setSelectedRamal(null);
     setParadas([]);
     setMapError(null);
-    setLiveBuses([]);
+    setRawLiveBuses([]);
   }
 
   // ── Supabase Live Locations Subscription ─────────────────────────────────────
@@ -192,9 +217,9 @@ export default function RecorridoClient() {
       .from("bus_locations")
       .select("lat, lng")
       .eq("linea", lineaId)
-      // Only get recent updates (e.g. from the last hour), so we ignore old sessions
-      .gte("updated_at", new Date(Date.now() - 3600000).toISOString())
-      .then(({ data }) => setLiveBuses(data || []));
+      // Only get very recent updates (e.g. from the last 3 minutes), so if they stop sharing, it disappears fast
+      .gte("updated_at", new Date(Date.now() - 180000).toISOString())
+      .then(({ data }) => setRawLiveBuses(data || []));
 
     // Subscribe to realtime changes for this line
     const channel = supabase
@@ -213,8 +238,8 @@ export default function RecorridoClient() {
             .from("bus_locations")
             .select("lat, lng")
             .eq("linea", lineaId)
-            .gte("updated_at", new Date(Date.now() - 3600000).toISOString())
-            .then(({ data }) => setLiveBuses(data || []));
+            .gte("updated_at", new Date(Date.now() - 180000).toISOString())
+            .then(({ data }) => setRawLiveBuses(data || []));
         }
       )
       .subscribe();
