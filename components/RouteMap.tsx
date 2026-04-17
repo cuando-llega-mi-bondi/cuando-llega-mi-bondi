@@ -124,34 +124,65 @@ function createStopIcon(index: number, isSelected: boolean, accentColor: string)
 function createLiveBusIcon(count = 1) {
   const badgeHTML = count > 1 
     ? `<div style="
-        position: absolute; top: -6px; right: -6px;
+        position: absolute; top: -36px; right: -26px;
         background: #e74c3c; color: white;
         border-radius: 12px; padding: 2px 6px;
         font-family: var(--display); font-size: 11px; font-weight: 800;
         border: 2px solid #000; box-shadow: 0 2px 4px rgba(0,0,0,0.5);
+        z-index: 10;
       ">+${count}</div>` 
     : '';
 
+  const html = `
+    <div style="position: relative;">
+        <!-- Aura pulse -->
+        <div style="
+            position: absolute; 
+            top: -20px; left: -20px; 
+            width: 40px; height: 40px; 
+            background: rgba(245,166,35,0.4); 
+            border-radius: 50%; 
+            animation: pulse-ring 2s infinite ease-out;
+            z-index: -1;
+        "></div>
+        <div class="bus-icon-container">
+            <svg width="56" height="36" viewBox="0 0 32 32" style="filter: drop-shadow(0 4px 6px rgba(0,0,0,0.5));">
+                <!-- Bus Body -->
+                <rect x="2" y="8" width="28" height="15" rx="3" fill="#f5a623" />
+                
+                <!-- Windows -->
+                <rect x="5" y="10" width="5" height="5" rx="1" fill="#111114" />
+                <rect x="12" y="10" width="6" height="5" rx="1" fill="#111114" />
+                <rect x="20" y="10" width="7" height="5" rx="1" fill="#111114" />
+                
+                <!-- Headlight / Taillight -->
+                <rect x="28" y="18" width="2" height="3" fill="#ffffff" opacity="0.9" />
+                <rect x="2" y="18" width="2" height="3" fill="#ef4444" opacity="0.8" />
+                
+                <!-- Stripe -->
+                <rect x="2" y="16" width="28" height="1" fill="#fff" opacity="0.3" />
+
+                <!-- Wheels base -->
+                <path d="M 6 23 a 3 3 0 0 1 6 0 z" fill="#111114" />
+                <path d="M 20 23 a 3 3 0 0 1 6 0 z" fill="#111114" />
+
+                <!-- Wheels -->
+                <circle cx="9" cy="24" r="3" fill="#000" />
+                <circle cx="23" cy="24" r="3" fill="#000" />
+                <circle cx="9" cy="24" r="1.5" fill="#555" />
+                <circle cx="23" cy="24" r="1.5" fill="#555" />
+            </svg>
+        </div>
+        ${badgeHTML}
+    </div>
+  `;
+
   return L.divIcon({
-    className: "live-bus-icon",
-    html: `<div style="position: relative;">
-      <div style="
-        width: 44px; height: 44px;
-        background: #ffffff;
-        border: 3px solid #000;
-        border-radius: 50%;
-        display: flex; align-items: center; justify-content: center;
-        font-size: 24px;
-        line-height: 1;
-        padding-bottom: 2px;
-        box-shadow: 0 0 0 4px rgba(245,166,35,0.4), 0 4px 16px rgba(0,0,0,0.8);
-        animation: pulse-ring 2s infinite;
-      ">🚌</div>
-      ${badgeHTML}
-    </div>`,
-    iconSize: [44, 44],
-    iconAnchor: [22, 22],
-    popupAnchor: [0, -24],
+    className: "custom-bus-icon",
+    html,
+    iconSize: [0, 0],
+    iconAnchor: [0, 0],
+    popupAnchor: [0, -36],
   });
 }
 
