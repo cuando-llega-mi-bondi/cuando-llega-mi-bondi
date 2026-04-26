@@ -68,7 +68,7 @@ function MapController({ arribos, paradaCoords, triggerFit, isFullscreen }: { ar
     return null;
 }
 
-const BusMap = React.memo(function BusMap({ arribos, paradaLat, paradaLon, lineaCod }: { arribos: any[], paradaLat: string, paradaLon: string, lineaCod?: string }) {
+const BusMap = React.memo(function BusMap({ arribos, paradaLat, paradaLon, lineaCod, liveBuses = [] }: { arribos: any[], paradaLat: string, paradaLon: string, lineaCod?: string, liveBuses?: { lat: number; lng: number; ramal: string | null }[] }) {
     const [isFullscreen, setIsFullscreen] = useState(false);
     const [fitTrigger, setFitTrigger] = useState(0);
     const [routePoints, setRoutePoints] = useState<PuntoRecorrido[]>([]);
@@ -223,6 +223,39 @@ const BusMap = React.memo(function BusMap({ arribos, paradaLat, paradaLon, linea
                         <div style={{ fontFamily: "var(--display)", fontWeight: 700, fontSize: 14 }}>Parada Seleccionada</div>
                     </Popup>
                 </Marker>
+
+                {/* Live-shared bus markers */}
+                {liveBuses.map((b, i) => {
+                    const LiveBusIcon = L.divIcon({
+                        className: "custom-live-bus-icon",
+                        html: `<div style="
+                            width: 14px; height: 14px; border-radius: 50%;
+                            background: #22c55e;
+                            border: 2.5px solid #fff;
+                            box-shadow: 0 0 0 3px rgba(34,197,94,0.35), 0 2px 8px rgba(0,0,0,0.5);
+                        "></div>`,
+                        iconSize: [14, 14],
+                        iconAnchor: [7, 7],
+                    });
+                    return (
+                        <Marker key={`live-${i}`} position={[b.lat, b.lng]} icon={LiveBusIcon} zIndexOffset={200 + i}>
+                            <Popup>
+                                <div style={{ display: "flex", flexDirection: "column", gap: 4, padding: "2px 0" }}>
+                                    <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                                        <span style={{ width: 8, height: 8, borderRadius: "50%", background: "#22c55e", flexShrink: 0 }} />
+                                        <span style={{ fontFamily: "var(--display)", fontWeight: 700, fontSize: 13, color: "#22c55e" }}>
+                                            En tiempo real
+                                        </span>
+                                    </div>
+                                    <div style={{ fontFamily: "var(--mono)", fontSize: 11, color: "#6b6b7a" }}>
+                                        Ubicación compartida por un pasajero
+                                        {b.ramal ? ` · ${b.ramal}` : ""}
+                                    </div>
+                                </div>
+                            </Popup>
+                        </Marker>
+                    );
+                })}
 
                 {/* Animated Bus Markers */}
                 {arribos.map((a, i) => {

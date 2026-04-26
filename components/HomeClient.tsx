@@ -13,6 +13,7 @@ import {
 import { type Linea, type Interseccion, type Parada, type Arribo, type Favorito, type HistorialEntry } from "@/lib/cuandoLlega.types";
 import { cleanLabel } from "@/lib/utils";
 import { getCache, setCache } from "@/lib/localCache";
+import { supabase } from "@/lib/supabaseClient";
 
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
@@ -59,6 +60,9 @@ export function HomeClient({ children }: { children?: ReactNode }) {
     // Sugerencias de otras lineas
     const [otrasLineas, setOtrasLineas] = useState<Linea[]>([]);
     const [loadingOtras, setLoadingOtras] = useState(false);
+
+    // Live sharing — buses sharing real-time location for the selected line
+    const [liveSharings, setLiveSharings] = useState<{ lat: number; lng: number; ramal: string | null }[]>([]);
 
     // --- Hydrate from URL on first render ---
     const hydrated = useRef(false);
@@ -260,6 +264,41 @@ export function HomeClient({ children }: { children?: ReactNode }) {
         setHistorial(getHistorial());
     }, []);
 
+    // Supabase live subscription for bus_locations when a line is selected
+    useEffect(() => {
+        if (!codLinea) {
+            setLiveSharings([]);
+            return;
+        }
+
+        function fetchLive() {
+            supabase
+                .from("bus_locations")
+                .select("lat, lng, ramal")
+                .eq("linea", codLinea)
+                .gte("updated_at", new Date(Date.now() - 180000).toISOString())
+                .then(({ data }) => {
+                    setLiveSharings((data || []).map((r: { lat: number; lng: number; ramal: string | null }) => ({
+                        lat: r.lat, lng: r.lng, ramal: r.ramal ?? null,
+                    })));
+                });
+        }
+
+        fetchLive();
+
+        const channel = supabase
+            .channel(`bus-home-${codLinea}`)
+            .on("postgres_changes", {
+                event: "*",
+                schema: "public",
+                table: "bus_locations",
+                filter: `linea=eq.${codLinea}`,
+            }, () => { fetchLive(); })
+            .subscribe();
+
+        return () => { supabase.removeChannel(channel); };
+    }, [codLinea]);
+
     // --- Handlers for manual selection changes ---
     const handleLineaChange = useCallback((val: string) => {
         setCodLinea(val);
@@ -453,6 +492,7 @@ export function HomeClient({ children }: { children?: ReactNode }) {
                         otrasLineas={otrasLineas}
                         loadingOtras={loadingOtras}
                         onSelectOtraLinea={handleSelectOtraLinea}
+                        liveSharings={liveSharings}
                     />
                 ) : (
                     <>

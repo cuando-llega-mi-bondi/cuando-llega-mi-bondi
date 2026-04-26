@@ -59,6 +59,9 @@ interface SearchFlowProps {
     otrasLineas?: Linea[];
     loadingOtras?: boolean;
     onSelectOtraLinea?: (linea: Linea) => void;
+
+    // Live sharing
+    liveSharings?: { lat: number; lng: number; ramal: string | null }[];
 }
 
 export const SearchFlow = memo(function SearchFlow({
@@ -74,7 +77,8 @@ export const SearchFlow = memo(function SearchFlow({
     displayArribos, selectedParada, lastUpdate,
     calleLabel, interseccionLabel,
     handleConsultar, fetchArribos, handleFavFromArribos,
-    otrasLineas = [], loadingOtras = false, onSelectOtraLinea
+    otrasLineas = [], loadingOtras = false, onSelectOtraLinea,
+    liveSharings = [],
 }: SearchFlowProps) {
     const uid = useId();
     const labelLinea = `sf-linea${uid}`;
@@ -305,11 +309,32 @@ export const SearchFlow = memo(function SearchFlow({
                         </div>
                     ) : (
                         <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                            {liveSharings.length > 0 && (
+                                <div style={{
+                                    display: "flex", alignItems: "center", gap: 8,
+                                    padding: "8px 12px",
+                                    background: "rgba(34,197,94,0.08)",
+                                    border: "1px solid rgba(34,197,94,0.25)",
+                                    borderRadius: 8,
+                                }}>
+                                    <span style={{
+                                        width: 8, height: 8, borderRadius: "50%", flexShrink: 0,
+                                        background: "#22c55e", boxShadow: "0 0 0 0 rgba(34,197,94,0.4)",
+                                        animation: "pulse 1.5s ease-in-out infinite",
+                                    }} />
+                                    <span style={{ fontFamily: "var(--mono)", fontSize: 12, color: "#22c55e" }}>
+                                        {liveSharings.length === 1
+                                            ? "1 persona compartiendo su ubicación en tiempo real"
+                                            : `${liveSharings.length} personas compartiendo ubicación en tiempo real`}
+                                    </span>
+                                </div>
+                            )}
                             <BusMap 
                                 arribos={displayArribos} 
                                 paradaLat={selectedParada?.LatitudParada || displayArribos[0]?.LatitudParada || ""} 
                                 paradaLon={selectedParada?.LongitudParada || displayArribos[0]?.LongitudParada || ""} 
                                 lineaCod={codLinea}
+                                liveBuses={liveSharings}
                             />
                             
                             {displayArribos.map((a, i) => (

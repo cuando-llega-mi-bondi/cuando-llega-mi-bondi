@@ -1,9 +1,11 @@
 "use client";
 
+import Link from "next/link";
 import React, { useEffect, useState, useRef, useMemo, Fragment } from "react";
 import { MapContainer, TileLayer, Marker, Polyline, useMap, Popup } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
+import { encodeLiveSharePayload } from "@/lib/liveSharePayload";
 
 // ─── Icons ────────────────────────────────────────────────────────────────────
 
@@ -53,6 +55,8 @@ const IconTelegram = () => (
 
 interface Stop {
   id: number;
+  /** Identificador MGP de la parada (para enlace a la home). */
+  identificadorParada?: string;
   lat: number;
   lng: number;
   label: string;
@@ -65,10 +69,22 @@ interface RouteMapProps {
   stops: Stop[];
   /** Line number badge, e.g. "522" */
   lineNumber?: string;
+  /** Código de línea MGP para armar `/?linea=&parada=` hacia la home. */
+  codigoLineaParada?: string;
   routeName?: string;
   accentColor?: string;
   /** Live bus locations from Telegram/Supabase */
-  liveBuses?: {lat: number, lng: number}[];
+  liveBuses?: {
+    lat: number;
+    lng: number;
+    count: number;
+    ramalCode?: string | null;
+    mixedRamales?: boolean;
+  }[];
+  /** Ramal (branch) for Telegram deep link — included in start= payload. */
+  ramalKey?: string;
+  /** Human label for the selected ramal (e.g. destination). */
+  ramalLabel?: string;
   /** Telegram bot username for deep link CTA */
   telegramUsername?: string;
 }
@@ -229,15 +245,26 @@ function googleDirUrl(lat: number, lng: number) {
   return `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}&travelmode=walking`;
 }
 
+function homeConsultSearch(line: string, paradaId: string) {
+  return `/?linea=${encodeURIComponent(line)}&parada=${encodeURIComponent(paradaId)}`;
+}
+
+function showArribosEnHomeCta(codigoLineaParada?: string, identificadorParada?: string) {
+  return Boolean(codigoLineaParada && identificadorParada && !identificadorParada.startsWith("m_"));
+}
+
 // ─── Main component ───────────────────────────────────────────────────────────
 
 export default function RouteMap({
   routeLine,
   stops,
   lineNumber = "",
+  codigoLineaParada = "",
   routeName = "Recorrido",
   accentColor = "#f5a623",
   liveBuses = [],
+  ramalKey = "",
+  ramalLabel = "",
   telegramUsername = "",
 }: RouteMapProps) {
   const [selectedStop, setSelectedStop] = useState<number | null>(null);
@@ -297,6 +324,18 @@ export default function RouteMap({
   const center: [number, number] = routeLine.length > 0
     ? routeLine[Math.floor(routeLine.length / 2)]
     : [-38.0, -57.5];
+
+  const telegramStartPayload = useMemo(() => {
+    if (!lineNumber) return "";
+    if (ramalKey) {
+      try {
+        return encodeLiveSharePayload(lineNumber, ramalKey);
+      } catch {
+        return lineNumber;
+      }
+    }
+    return lineNumber;
+  }, [lineNumber, ramalKey]);
 
   if (stops.length === 0 && routeLine.length === 0) {
     return (
@@ -401,8 +440,8 @@ export default function RouteMap({
               eventHandlers={{ click: () => setSelectedStop(isSel ? null : stop.id) }}
               zIndexOffset={isSel ? 1000 : 0}
             >
-              <Popup maxWidth={240}>
-                <StopPopup stop={stop} accentColor={accentColor} />
+              <Popup maxWidth={260}>
+                <StopPopup stop={stop} accentColor={accentColor} codigoLineaParada={codigoLineaParada} />
               </Popup>
             </Marker>
           );
@@ -411,29 +450,41 @@ export default function RouteMap({
         <MapController bounds={bounds} triggerFit={fitTrigger} isFullscreen={isFullscreen} />
 
         {/* Live buses */}
-        {liveBuses.map((bus: any, i) => (
-          <Marker
-            key={`bus-${i}`}
-            position={[bus.lat, bus.lng]}
-            icon={createLiveBusIcon(bus.count || 1)}
-            zIndexOffset={2000}
-          >
-            <Popup>
-              <div style={{ fontFamily: "var(--display)", fontWeight: 800, fontSize: 13, textAlign: "center" }}>
-                🚌 ¡El {lineNumber} está acá!
-                {bus.count > 1 && <div style={{color: "var(--text-dim)", fontSize: 11, marginTop: 4}}>({bus.count} pasajeros transmitiendo)</div>}
-              </div>
-            </Popup>
-          </Marker>
-        ))}
+        {liveBuses.map((bus, i) => {
+          const n = bus.count || 1;
+          const ramaInfo = bus.mixedRamales
+            ? "Varios ramales"
+            : bus.ramalCode
+              ? `Ramal: ${bus.ramalCode}`
+              : null;
+          return (
+            <Marker
+              key={`bus-${i}-${bus.lat}-${bus.lng}`}
+              position={[bus.lat, bus.lng]}
+              icon={createLiveBusIcon(n)}
+              zIndexOffset={2000}
+            >
+              <Popup>
+                <div style={{ fontFamily: "var(--display)", fontWeight: 800, fontSize: 13, textAlign: "center" }}>
+                  🚌 ¡El {lineNumber} está acá!
+                  {ramaInfo && (
+                    <div style={{ color: "var(--text-dim)", fontSize: 11, marginTop: 4, fontWeight: 600 }}>{ramaInfo}</div>
+                  )}
+                  {n > 1 && <div style={{ color: "var(--text-dim)", fontSize: 11, marginTop: 4 }}>({n} pasajeros transmitiendo)</div>}
+                </div>
+              </Popup>
+            </Marker>
+          );
+        })}
       </MapContainer>
 
       {/* ── Telegram CTA ── */}
-      {telegramUsername && lineNumber && (
+      {telegramUsername && lineNumber && telegramStartPayload && (
         <a
-          href={`https://t.me/${telegramUsername}?start=${lineNumber}`}
+          href={`https://t.me/${telegramUsername}?start=${encodeURIComponent(telegramStartPayload)}`}
           target="_blank"
           rel="noopener noreferrer"
+          title={ramalLabel ? `Transmisión asociada al ramal: ${ramalLabel}` : "Indicar que vas en este recorrido"}
           style={{
             position: "absolute", bottom: 20, left: "50%", transform: "translateX(-50%)",
             background: "#2AABEE", color: "#fff", zIndex: 1000,
@@ -561,7 +612,7 @@ export default function RouteMap({
           zIndex: 1000, background: "var(--surface)",
           borderTop: "1px solid var(--border)",
           padding: "14px 16px",
-          display: "flex", alignItems: "center", gap: 12,
+          display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap",
           animation: "slide-up 0.25s ease",
           boxShadow: "0 -8px 32px rgba(0,0,0,0.7)",
         }}>
@@ -581,6 +632,30 @@ export default function RouteMap({
               Parada {selected.id} de {stops.length}
             </div>
           </div>
+          {showArribosEnHomeCta(codigoLineaParada, selected.identificadorParada) &&
+          codigoLineaParada &&
+          selected.identificadorParada ? (
+            <Link
+              href={homeConsultSearch(codigoLineaParada, selected.identificadorParada)}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                background: "var(--surface2)",
+                color: accentColor,
+                border: `2px solid ${accentColor}`,
+                borderRadius: 10,
+                padding: "10px 12px",
+                fontFamily: "var(--display)",
+                fontWeight: 800,
+                fontSize: 12,
+                textDecoration: "none",
+                flexShrink: 0,
+              }}
+            >
+              Cuándo llega
+            </Link>
+          ) : null}
           <a
             href={googleMapsUrl(selected.lat, selected.lng)}
             target="_blank"
@@ -626,9 +701,20 @@ export default function RouteMap({
 
 // ─── Stop Popup ───────────────────────────────────────────────────────────────
 
-function StopPopup({ stop, accentColor }: { stop: Stop; accentColor: string }) {
+function StopPopup({
+  stop,
+  accentColor,
+  codigoLineaParada = "",
+}: {
+  stop: Stop;
+  accentColor: string;
+  codigoLineaParada?: string;
+}) {
+  const canCta = showArribosEnHomeCta(codigoLineaParada, stop.identificadorParada);
+  const manualStop = Boolean(stop.identificadorParada?.startsWith("m_"));
+
   return (
-    <div style={{ fontFamily: "var(--body)", minWidth: 180, padding: "2px 0" }}>
+    <div style={{ fontFamily: "var(--body)", minWidth: 200, padding: "2px 0" }}>
       <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
         <div style={{
           background: accentColor, color: "#000", borderRadius: "50%",
@@ -672,6 +758,42 @@ function StopPopup({ stop, accentColor }: { stop: Stop; accentColor: string }) {
           Ir
         </a>
       </div>
+      {canCta && codigoLineaParada && stop.identificadorParada ? (
+        <Link
+          href={homeConsultSearch(codigoLineaParada, stop.identificadorParada)}
+          style={{
+            marginTop: 10,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: 8,
+            background: "#111",
+            color: accentColor,
+            border: `2px solid ${accentColor}`,
+            borderRadius: 8,
+            padding: "10px 12px",
+            fontFamily: "var(--display)",
+            fontWeight: 800,
+            fontSize: 13,
+            textDecoration: "none",
+          }}
+        >
+          Ver cuándo llega
+        </Link>
+      ) : manualStop ? (
+        <div
+          style={{
+            marginTop: 10,
+            fontFamily: "var(--mono)",
+            fontSize: 10,
+            color: "#666",
+            textAlign: "center",
+            lineHeight: 1.4,
+          }}
+        >
+          Horarios no disponibles para este recorrido
+        </div>
+      ) : null}
     </div>
   );
 }

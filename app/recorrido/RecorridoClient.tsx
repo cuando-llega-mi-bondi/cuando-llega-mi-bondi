@@ -57,32 +57,57 @@ export default function RecorridoClient() {
   const [paradas, setParadas] = useState<ParadaMapa[]>([]);
   const [mapLoading, setMapLoading] = useState(false);
   const [mapError, setMapError] = useState<string | null>(null);
-  const [rawLiveBuses, setRawLiveBuses] = useState<{lat: number, lng: number}[]>([]);
+  const [rawLiveBuses, setRawLiveBuses] = useState<{ lat: number; lng: number; ramal: string | null }[]>([]);
+
+  // Same línea, selected ramal, or legacy rows without ramal
+  const liveRowsForMap = useMemo(() => {
+    if (!selectedRamal?.key) return rawLiveBuses;
+    const k = selectedRamal.key;
+    return rawLiveBuses.filter((r) => r.ramal == null || r.ramal === k);
+  }, [rawLiveBuses, selectedRamal?.key]);
 
   // ── Cluster nearby buses ─────────────────────────────────────────────────────
   const liveBuses = useMemo(() => {
     // Agrupa (clusteriza) ubicaciones que estén a ~100 metros a la redonda
-    const THRESHOLD = 0.001; 
-    const clusters: { lat: number; lng: number; count: number }[] = [];
-    
-    for (const loc of rawLiveBuses) {
+    const THRESHOLD = 0.001;
+    const clusters: {
+      lat: number;
+      lng: number;
+      count: number;
+      ramalCodes: (string | null)[];
+    }[] = [];
+
+    for (const loc of liveRowsForMap) {
       let found = false;
       for (const c of clusters) {
         const dLat = c.lat - loc.lat;
         const dLng = c.lng - loc.lng;
-        // Si están a menos de un límite de distancia, los promediamos y lo contamos como el mismo micro
         if (Math.sqrt(dLat * dLat + dLng * dLng) < THRESHOLD) {
           c.lat = (c.lat * c.count + loc.lat) / (c.count + 1);
           c.lng = (c.lng * c.count + loc.lng) / (c.count + 1);
           c.count++;
+          c.ramalCodes.push(loc.ramal);
           found = true;
           break;
         }
       }
-      if (!found) clusters.push({ ...loc, count: 1 });
+      if (!found) {
+        clusters.push({ lat: loc.lat, lng: loc.lng, count: 1, ramalCodes: [loc.ramal] });
+      }
     }
-    return clusters;
-  }, [rawLiveBuses]);
+    return clusters.map((c) => {
+      const set = new Set(
+        c.ramalCodes.map((r) => (r === null || r === "" ? "__legacy__" : r))
+      );
+      return {
+        lat: c.lat,
+        lng: c.lng,
+        count: c.count,
+        ramalCode: set.size === 1 ? c.ramalCodes[0] ?? null : null,
+        mixedRamales: set.size > 1,
+      };
+    });
+  }, [liveRowsForMap]);
 
   // ── Load lines (with 24h cache) ──────────────────────────────────────────────
   useEffect(() => {
@@ -211,17 +236,23 @@ export default function RecorridoClient() {
   useEffect(() => {
     if (!selectedLine) return;
     const lineaId = selectedLine.CodigoLineaParada;
-    
-    // Initial fetch of active locations
-    supabase
-      .from("bus_locations")
-      .select("lat, lng")
-      .eq("linea", lineaId)
-      // Only get very recent updates (e.g. from the last 3 minutes), so if they stop sharing, it disappears fast
-      .gte("updated_at", new Date(Date.now() - 180000).toISOString())
-      .then(({ data }) => setRawLiveBuses(data || []));
 
-    // Subscribe to realtime changes for this line
+    function fetchBuses() {
+      return supabase
+        .from("bus_locations")
+        .select("lat, lng, ramal")
+        .eq("linea", lineaId)
+        .gte("updated_at", new Date(Date.now() - 180000).toISOString())
+        .then(({ data }) => {
+          const rows = (data || []) as { lat: number; lng: number; ramal: string | null }[];
+          setRawLiveBuses(
+            rows.map((r) => ({ lat: r.lat, lng: r.lng, ramal: r.ramal ?? null }))
+          );
+        });
+    }
+
+    fetchBuses();
+
     const channel = supabase
       .channel(`bus-updates-${lineaId}`)
       .on(
@@ -230,16 +261,10 @@ export default function RecorridoClient() {
           event: "*",
           schema: "public",
           table: "bus_locations",
-          filter: `linea=eq.${lineaId}`
+          filter: `linea=eq.${lineaId}`,
         },
         () => {
-          // Re-fetch all valid locations instead of trying to merge locally
-          supabase
-            .from("bus_locations")
-            .select("lat, lng")
-            .eq("linea", lineaId)
-            .gte("updated_at", new Date(Date.now() - 180000).toISOString())
-            .then(({ data }) => setRawLiveBuses(data || []));
+          fetchBuses();
         }
       )
       .subscribe();
@@ -255,13 +280,15 @@ export default function RecorridoClient() {
     return selectedRamal.puntos.map((p) => [p.Latitud, p.Longitud]);
   }, [selectedRamal]);
 
-  const mapStops = useMemo(() =>
-    paradas.map((p, i) => ({
-      id: i + 1,
-      lat: p.lat,
-      lng: p.lng,
-      label: p.label,
-    })),
+  const mapStops = useMemo(
+    () =>
+      paradas.map((p, i) => ({
+        id: i + 1,
+        identificadorParada: p.id,
+        lat: p.lat,
+        lng: p.lng,
+        label: p.label,
+      })),
     [paradas]
   );
 
@@ -438,9 +465,12 @@ export default function RecorridoClient() {
             routeLine={routeLine}
             stops={mapStops}
             lineNumber={selectedLine?.CodigoLineaParada}
+            codigoLineaParada={selectedLine?.CodigoLineaParada}
             routeName={selectedRamal?.label ?? selectedLine?.Descripcion}
             accentColor="var(--accent)"
             liveBuses={liveBuses}
+            ramalKey={selectedRamal?.key}
+            ramalLabel={selectedRamal?.label}
             telegramUsername={process.env.NEXT_PUBLIC_TELEGRAM_BOT_USERNAME || "cuandollegamdp_bot"}
           />
         )}
