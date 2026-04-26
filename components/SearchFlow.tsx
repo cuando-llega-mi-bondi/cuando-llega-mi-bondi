@@ -3,10 +3,12 @@ import { ArriboCard } from "./ArriboCard";
 import { ShareButton } from "./ShareButton";
 import { IconRefresh } from "./icons/IconRefresh";
 import { IconX } from "./icons/IconX";
+import { IconTelegram } from "./icons/IconTelegram";
 import { type Arribo, type Parada, type Linea } from "@/lib/cuandoLlega.types";
 import { memo, useId } from "react";
 import dynamic from "next/dynamic";
 import { OtrasLineasSuggestion } from "./OtrasLineasSuggestion";
+import { encodeLiveSharePayload } from "@/lib/liveSharePayload";
 
 const BusMap = dynamic(() => import('@/components/Map'), { 
     ssr: false, 
@@ -62,6 +64,9 @@ interface SearchFlowProps {
 
     // Live sharing
     liveSharings?: { lat: number; lng: number; ramal: string | null }[];
+
+    // Telegram share
+    telegramUsername?: string;
 }
 
 export const SearchFlow = memo(function SearchFlow({
@@ -79,6 +84,7 @@ export const SearchFlow = memo(function SearchFlow({
     handleConsultar, fetchArribos, handleFavFromArribos,
     otrasLineas = [], loadingOtras = false, onSelectOtraLinea,
     liveSharings = [],
+    telegramUsername = "",
 }: SearchFlowProps) {
     const uid = useId();
     const labelLinea = `sf-linea${uid}`;
@@ -200,6 +206,45 @@ export const SearchFlow = memo(function SearchFlow({
                     {loadingArribos ? "CONSULTANDO..." : "CONSULTAR"}
                 </button>
             )}
+
+            {/* Telegram: share live location */}
+            {codLinea && telegramUsername && (() => {
+                const ramalKey = selectedRamal === "TODOS" ? "" : selectedRamal;
+                let payload = "";
+                try { payload = encodeLiveSharePayload(codLinea, ramalKey); } catch { payload = codLinea; }
+                const tgHref = `https://t.me/${telegramUsername}?start=${encodeURIComponent(payload)}`;
+                return (
+                    <a
+                        href={tgHref}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        style={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 10,
+                            padding: "12px 16px",
+                            background: "rgba(42,171,238,0.08)",
+                            border: "1px solid rgba(42,171,238,0.3)",
+                            borderRadius: 8,
+                            textDecoration: "none",
+                            color: "#2AABEE",
+                            fontFamily: "var(--display)",
+                            fontWeight: 700,
+                            fontSize: 14,
+                            transition: "background 0.15s",
+                        }}
+                        onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = "rgba(42,171,238,0.15)"; }}
+                        onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = "rgba(42,171,238,0.08)"; }}
+                    >
+                        <IconTelegram size={20} />
+                        <span style={{ flex: 1 }}>
+                            {selectedRamal && selectedRamal !== "TODOS"
+                                ? `¿Vas en el ramal ${selectedRamal}? Compartí tu ubicación en vivo`
+                                : "¿Vas en el colectivo? Compartí tu ubicación en vivo"}
+                        </span>
+                    </a>
+                );
+            })()}
 
             {/* Arrivals */}
             {(loadingArribos || displayArribos.length > 0 || isConsulting) ? (

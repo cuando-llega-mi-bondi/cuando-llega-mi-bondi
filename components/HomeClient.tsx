@@ -493,6 +493,7 @@ export function HomeClient({ children }: { children?: ReactNode }) {
                         loadingOtras={loadingOtras}
                         onSelectOtraLinea={handleSelectOtraLinea}
                         liveSharings={liveSharings}
+                        telegramUsername={process.env.NEXT_PUBLIC_TELEGRAM_BOT_USERNAME || "cuandollegamdp_bot"}
                     />
                 ) : (
                     <>
