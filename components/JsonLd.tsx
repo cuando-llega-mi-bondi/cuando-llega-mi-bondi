@@ -25,25 +25,6 @@ export function JsonLd() {
         ]
     };
 
-    const breadcrumbs = {
-        "@context": "https://schema.org",
-        "@type": "BreadcrumbList",
-        "itemListElement": [
-            {
-                "@type": "ListItem",
-                "position": 1,
-                "name": "Inicio",
-                "item": "https://cuandollega-tawny.vercel.app"
-            },
-            {
-                "@type": "ListItem",
-                "position": 2,
-                "name": "Recorridos",
-                "item": "https://cuandollega-tawny.vercel.app/recorrido"
-            }
-        ]
-    };
-
     const organization = {
         "@context": "https://schema.org",
         "@type": "Organization",
@@ -75,10 +56,6 @@ export function JsonLd() {
             <script
                 type="application/ld+json"
                 dangerouslySetInnerHTML={{ __html: JSON.stringify(webApp) }}
-            />
-            <script
-                type="application/ld+json"
-                dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbs) }}
             />
             <script
                 type="application/ld+json"

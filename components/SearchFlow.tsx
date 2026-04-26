@@ -4,7 +4,7 @@ import { ShareButton } from "./ShareButton";
 import { IconRefresh } from "./icons/IconRefresh";
 import { IconX } from "./icons/IconX";
 import { type Arribo, type Parada, type Linea } from "@/lib/cuandoLlega.types";
-import { memo } from "react";
+import { memo, useId } from "react";
 import dynamic from "next/dynamic";
 import { OtrasLineasSuggestion } from "./OtrasLineasSuggestion";
 
@@ -26,8 +26,7 @@ interface SearchFlowProps {
     selectedRamal: string;
     setSelectedRamal: (v: string) => void;
     isConsulting: boolean;
-    setIsConsulting: (v: boolean) => void;
-    
+
     // Arrays for options
     lineaOptions: { value: string; label: string }[];
     calles: { value: string; label: string }[];
@@ -68,7 +67,7 @@ export const SearchFlow = memo(function SearchFlow({
     codInterseccion, setCodInterseccion,
     paradaId, setParadaId,
     selectedRamal, setSelectedRamal,
-    isConsulting, setIsConsulting,
+    isConsulting,
     lineaOptions, calles, interOptions, destinoOptions, ramalOptions,
     loadingLineas, loadingCalles, loadingInter, loadingArribos,
     error, setError,
@@ -77,14 +76,22 @@ export const SearchFlow = memo(function SearchFlow({
     handleConsultar, fetchArribos, handleFavFromArribos,
     otrasLineas = [], loadingOtras = false, onSelectOtraLinea
 }: SearchFlowProps) {
+    const uid = useId();
+    const labelLinea = `sf-linea${uid}`;
+    const labelCalle = `sf-calle${uid}`;
+    const labelInter = `sf-inter${uid}`;
+    const labelDestino = `sf-destino${uid}`;
+    const labelRamal = `sf-ramal${uid}`;
+
     return (
         <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
             {/* Step 1: Línea */}
             <div>
-                <label style={{ fontFamily: "var(--mono)", fontSize: 11, color: "var(--text-dim)", letterSpacing: 2, display: "block", marginBottom: 6 }}>
+                <label id={labelLinea} style={{ fontFamily: "var(--mono)", fontSize: 11, color: "var(--text-dim)", letterSpacing: 2, display: "block", marginBottom: 6 }}>
                     01 / LÍNEA
                 </label>
                 <Combobox
+                    aria-labelledby={labelLinea}
                     placeholder="Seleccioná la línea..."
                     value={codLinea}
                     onChange={setCodLinea}
@@ -95,11 +102,12 @@ export const SearchFlow = memo(function SearchFlow({
 
             {/* Step 2: Calle */}
             {codLinea ? (
-                <div style={{ animation: "slide-up 0.25s ease" }}>
-                    <label style={{ fontFamily: "var(--mono)", fontSize: 11, color: "var(--text-dim)", letterSpacing: 2, display: "block", marginBottom: 6 }}>
+                <div className="motion-step">
+                    <label id={labelCalle} style={{ fontFamily: "var(--mono)", fontSize: 11, color: "var(--text-dim)", letterSpacing: 2, display: "block", marginBottom: 6 }}>
                         02 / CALLE
                     </label>
                     <Combobox
+                        aria-labelledby={labelCalle}
                         placeholder="Seleccioná la calle..."
                         value={codCalle}
                         onChange={setCodCalle}
@@ -112,11 +120,12 @@ export const SearchFlow = memo(function SearchFlow({
 
             {/* Step 3: Intersección */}
             {codCalle ? (
-                <div style={{ animation: "slide-up 0.25s ease" }}>
-                    <label style={{ fontFamily: "var(--mono)", fontSize: 11, color: "var(--text-dim)", letterSpacing: 2, display: "block", marginBottom: 6 }}>
+                <div className="motion-step">
+                    <label id={labelInter} style={{ fontFamily: "var(--mono)", fontSize: 11, color: "var(--text-dim)", letterSpacing: 2, display: "block", marginBottom: 6 }}>
                         03 / INTERSECCIÓN
                     </label>
                     <Combobox
+                        aria-labelledby={labelInter}
                         placeholder="Elegí la esquina..."
                         value={codInterseccion}
                         onChange={setCodInterseccion}
@@ -129,11 +138,12 @@ export const SearchFlow = memo(function SearchFlow({
 
             {/* Step 4: Destino */}
             {codInterseccion && destinoOptions.length > 0 ? (
-                <div style={{ animation: "slide-up 0.25s ease" }}>
-                    <label style={{ fontFamily: "var(--mono)", fontSize: 11, color: "var(--text-dim)", letterSpacing: 2, display: "block", marginBottom: 6 }}>
+                <div className="motion-step">
+                    <label id={labelDestino} style={{ fontFamily: "var(--mono)", fontSize: 11, color: "var(--text-dim)", letterSpacing: 2, display: "block", marginBottom: 6 }}>
                         04 / DESTINO
                     </label>
                     <Combobox
+                        aria-labelledby={labelDestino}
                         placeholder="Elegí el destino..."
                         value={paradaId}
                         onChange={setParadaId}
@@ -144,11 +154,12 @@ export const SearchFlow = memo(function SearchFlow({
 
             {/* Step 5: Ramal */}
             {paradaId ? (
-                <div style={{ animation: "slide-up 0.25s ease" }}>
-                    <label style={{ fontFamily: "var(--mono)", fontSize: 11, color: "var(--text-dim)", letterSpacing: 2, display: "block", marginBottom: 6 }}>
+                <div className="motion-step">
+                    <label id={labelRamal} style={{ fontFamily: "var(--mono)", fontSize: 11, color: "var(--text-dim)", letterSpacing: 2, display: "block", marginBottom: 6 }}>
                         05 / RAMAL
                     </label>
                     <Combobox
+                        aria-labelledby={labelRamal}
                         placeholder="Elegí el ramal..."
                         value={selectedRamal}
                         onChange={setSelectedRamal}
@@ -160,12 +171,22 @@ export const SearchFlow = memo(function SearchFlow({
             {/* Step 6: Consultar Button */}
             {paradaId && (
                 <button
+                    type="button"
                     onClick={handleConsultar}
                     disabled={loadingArribos}
                     style={{
-                        marginTop: 8, padding: "14px", background: "var(--accent)", color: "#000",
-                        border: "none", borderRadius: 8, fontFamily: "var(--display)",
-                        fontWeight: 800, fontSize: 16, letterSpacing: 1, cursor: "pointer",
+                        marginTop: 8,
+                        minHeight: 48,
+                        padding: "14px 16px",
+                        background: "var(--accent)",
+                        color: "#000",
+                        border: "none",
+                        borderRadius: 8,
+                        fontFamily: "var(--display)",
+                        fontWeight: 800,
+                        fontSize: 16,
+                        letterSpacing: 1,
+                        cursor: "pointer",
                         transition: "transform 0.1s, opacity 0.2s",
                         opacity: loadingArribos ? 0.7 : 1,
                     }}
@@ -195,11 +216,22 @@ export const SearchFlow = memo(function SearchFlow({
                                 interseccionLabel={interseccionLabel}
                             />
                             <button
+                                type="button"
                                 onClick={fetchArribos}
                                 disabled={loadingArribos}
+                                aria-label="Actualizar arribos"
                                 style={{
-                                    background: "none", border: "1px solid var(--border)", borderRadius: 6,
-                                    color: "var(--text-dim)", padding: "4px 8px", cursor: "pointer", display: "flex",
+                                    background: "none",
+                                    border: "1px solid var(--border)",
+                                    borderRadius: 8,
+                                    color: "var(--text-dim)",
+                                    minWidth: 44,
+                                    minHeight: 44,
+                                    padding: 0,
+                                    cursor: "pointer",
+                                    display: "flex",
+                                    alignItems: "center",
+                                    justifyContent: "center",
                                 }}
                             >
                                 <IconRefresh loading={loadingArribos} />
@@ -208,11 +240,23 @@ export const SearchFlow = memo(function SearchFlow({
                     </div>
 
                     {loadingArribos && displayArribos.length === 0 ? (
-                        <div style={{
-                            padding: "32px", textAlign: "center", fontFamily: "var(--mono)",
-                            fontSize: 13, color: "var(--text-dim)", letterSpacing: 2,
-                        }}>
-                            <div className="blink">CONSULTANDO...</div>
+                        <div className="arrivals-loading-panel">
+                            <div style={{
+                                display: "flex", alignItems: "center", justifyContent: "center", gap: 12,
+                                marginBottom: 18, fontFamily: "var(--mono)", fontSize: 13, color: "var(--text-dim)",
+                                letterSpacing: 1,
+                            }}>
+                                <span className="spin-slow" style={{
+                                    display: "inline-flex", width: 22, height: 22, borderRadius: "50%",
+                                    border: "2px solid var(--border)", borderTopColor: "var(--accent)",
+                                }} aria-hidden />
+                                <span>Consultando horarios…</span>
+                            </div>
+                            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                                <div className="arrivals-skeleton-row" />
+                                <div className="arrivals-skeleton-row" />
+                                <div className="arrivals-skeleton-row" style={{ opacity: 0.7 }} />
+                            </div>
                         </div>
                     ) : displayArribos.length === 0 ? (
                         <div style={{
@@ -220,7 +264,44 @@ export const SearchFlow = memo(function SearchFlow({
                             borderRadius: 10, fontFamily: "var(--mono)", fontSize: 13, color: "var(--text-dim)",
                             textAlign: "center",
                         }}>
-                            {isConsulting ? "Sin información en este momento" : "Hacé click en CONSULTAR"}
+                            {isConsulting ? (
+                                <>
+                                    <div style={{ marginBottom: 14, lineHeight: 1.5 }}>
+                                        Sin información en este momento. Podés reintentar o ver todos los ramales si filtraste uno.
+                                    </div>
+                                    <div style={{ display: "flex", flexDirection: "column", gap: 10, alignItems: "stretch" }}>
+                                        <button
+                                            type="button"
+                                            onClick={fetchArribos}
+                                            disabled={loadingArribos}
+                                            style={{
+                                                minHeight: 44, padding: "12px 14px", borderRadius: 8,
+                                                border: "1px solid var(--accent)", background: "rgba(245,166,35,0.12)",
+                                                color: "var(--accent)", fontFamily: "var(--display)", fontWeight: 800,
+                                                fontSize: 14, letterSpacing: 0.5, cursor: loadingArribos ? "wait" : "pointer",
+                                            }}
+                                        >
+                                            Reintentar
+                                        </button>
+                                        {selectedRamal !== "TODOS" ? (
+                                            <button
+                                                type="button"
+                                                onClick={() => setSelectedRamal("TODOS")}
+                                                style={{
+                                                    minHeight: 44, padding: "12px 14px", borderRadius: 8,
+                                                    border: "1px solid var(--border)", background: "transparent",
+                                                    color: "var(--text)", fontFamily: "var(--display)", fontWeight: 700,
+                                                    fontSize: 14, cursor: "pointer",
+                                                }}
+                                            >
+                                                Ver todos los ramales
+                                            </button>
+                                        ) : null}
+                                    </div>
+                                </>
+                            ) : (
+                                "Hacé clic en CONSULTAR"
+                            )}
                         </div>
                     ) : (
                         <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
@@ -287,8 +368,21 @@ export const SearchFlow = memo(function SearchFlow({
                         </div>
                     </div>
                     <button
+                        type="button"
                         onClick={() => setError("")}
-                        style={{ background: "none", border: "none", color: "rgba(239,68,68,0.6)", cursor: "pointer", flexShrink: 0, padding: 2 }}
+                        style={{
+                            background: "none",
+                            border: "none",
+                            color: "rgba(239,68,68,0.6)",
+                            cursor: "pointer",
+                            flexShrink: 0,
+                            minWidth: 44,
+                            minHeight: 44,
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            padding: 0,
+                        }}
                         aria-label="Cerrar error"
                     >
                         <IconX />

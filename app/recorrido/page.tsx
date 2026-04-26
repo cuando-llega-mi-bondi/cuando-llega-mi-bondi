@@ -2,6 +2,7 @@
 // Static route – no server data needed; the map is fully client-side.
 
 import type { Metadata } from "next";
+import { RecorridoJsonLd } from "@/components/RecorridoJsonLd";
 import RecorridoClient from "./RecorridoClient";
 
 export const metadata: Metadata = {
@@ -10,8 +11,27 @@ export const metadata: Metadata = {
     alternates: {
         canonical: "/recorrido",
     },
+    openGraph: {
+        type: "website",
+        locale: "es_AR",
+        url: "https://cuandollega-tawny.vercel.app/recorrido",
+        title: "Recorridos de Colectivos MDP | CuándoLlega MDP",
+        description:
+            "Mapa interactivo con recorridos y paradas de colectivos en Mar del Plata. Datos MGP.",
+        siteName: "¿Cuándo Llega? MDP",
+    },
+    twitter: {
+        card: "summary_large_image",
+        title: "Recorridos de Colectivos MDP",
+        description: "Mapa de recorridos y paradas en Mar del Plata.",
+    },
 };
 
 export default function RecorridoPage() {
-    return <RecorridoClient />;
+    return (
+        <>
+            <RecorridoJsonLd />
+            <RecorridoClient />
+        </>
+    );
 }

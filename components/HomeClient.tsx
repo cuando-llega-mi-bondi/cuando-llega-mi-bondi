@@ -1,5 +1,6 @@
 "use client";
 
+import type { ReactNode } from "react";
 import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import {
@@ -28,7 +29,7 @@ const EMPTY_INTER: Interseccion[] = [];
 const EMPTY_PARADAS: Parada[] = [];
 const EMPTY_ARRIBOS: Arribo[] = [];
 
-export function HomeClient() {
+export function HomeClient({ children }: { children?: ReactNode }) {
     const router = useRouter();
     const pathname = usePathname();
     const searchParams = useSearchParams();
@@ -420,7 +421,17 @@ export function HomeClient() {
         <div style={{ minHeight: "100dvh", display: "flex", flexDirection: "column" }}>
             <Header tab={tab} setTab={setTab} favCount={favoritos.length} />
 
-            <main style={{ flex: 1, padding: "20px", maxWidth: 520, margin: "0 auto", width: "100%" }}>
+            <main style={{
+                flex: 1,
+                paddingTop: 20,
+                paddingRight: "calc(20px + env(safe-area-inset-right, 0px))",
+                paddingBottom: "calc(20px + env(safe-area-inset-bottom, 0px))",
+                paddingLeft: "calc(20px + env(safe-area-inset-left, 0px))",
+                maxWidth: 520,
+                margin: "0 auto",
+                width: "100%",
+            }}>
+                {children}
                 {tab === "buscar" ? (
                     <SearchFlow
                         codLinea={codLinea} setCodLinea={handleLineaChange}
@@ -428,7 +439,7 @@ export function HomeClient() {
                         codInterseccion={codInterseccion} setCodInterseccion={handleInterseccionChange}
                         paradaId={paradaId} setParadaId={handleParadaChange}
                         selectedRamal={selectedRamal} setSelectedRamal={setSelectedRamal}
-                        isConsulting={isConsulting} setIsConsulting={setIsConsulting}
+                        isConsulting={isConsulting}
                         lineaOptions={lineaOptions} calles={calles} interOptions={interOptions}
                         destinoOptions={destinoOptions} ramalOptions={ramalOptions}
                         loadingLineas={loadingLineas} loadingCalles={loadingCalles}

@@ -19,10 +19,10 @@ export function Header({ tab, setTab, favCount }: HeaderProps) {
 
     return (
         <header style={{
-            paddingTop: "16px",
-            paddingRight: "20px",
+            paddingTop: "calc(16px + env(safe-area-inset-top, 0px))",
+            paddingRight: "calc(20px + env(safe-area-inset-right, 0px))",
             paddingBottom: "0px",
-            paddingLeft: "20px",
+            paddingLeft: "calc(20px + env(safe-area-inset-left, 0px))",
             borderBottomWidth: "1px",
             borderBottomStyle: "solid",
             borderBottomColor: "var(--border)",
@@ -43,12 +43,12 @@ export function Header({ tab, setTab, favCount }: HeaderProps) {
                             <IconBus />
                         </div>
                         <div>
-                            <h1 style={{
+                            <p style={{
                                 fontFamily: "var(--display)", fontWeight: 900, fontSize: 22, letterSpacing: 1, lineHeight: 1,
                                 margin: 0, padding: 0, textTransform: "uppercase",
                             }}>
                                 ¿CUÁNDO LLEGA?
-                            </h1>
+                            </p>
                             <div style={{ fontFamily: "var(--mono)", fontSize: 11, color: "var(--text-dim)", letterSpacing: 2 }}>
                                 MAR DEL PLATA · TIEMPO REAL
                             </div>
@@ -59,7 +59,7 @@ export function Header({ tab, setTab, favCount }: HeaderProps) {
                     <div style={{ display: "flex", gap: 0 }}>
                         {(["buscar", "favoritos"] as const).map(t => (
                             <button key={t} onClick={() => setTab(t)} style={{
-                                flex: 1, padding: "8px 0", background: "none", border: "none",
+                                flex: 1, minHeight: 44, padding: "10px 0", background: "none", border: "none",
                                 borderBottom: tab === t ? "2px solid var(--accent)" : "2px solid transparent",
                                 color: tab === t ? "var(--accent)" : "var(--text-dim)",
                                 fontFamily: "var(--display)", fontWeight: 700, fontSize: 15, letterSpacing: 1,
@@ -69,7 +69,7 @@ export function Header({ tab, setTab, favCount }: HeaderProps) {
                             </button>
                         ))}
                         <button onClick={() => router.push("/recorrido")} style={{
-                            flex: 1, padding: "8px 0", background: "none", border: "none",
+                            flex: 1, minHeight: 44, padding: "10px 0", background: "none", border: "none",
                             borderBottom: "2px solid transparent",
                             color: "var(--text-dim)",
                             fontFamily: "var(--display)", fontWeight: 700, fontSize: 15, letterSpacing: 1,

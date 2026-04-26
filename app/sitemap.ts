@@ -3,23 +3,24 @@ export const revalidate = 3600; // Cachear por 1 hora
 
 export default function sitemap(): MetadataRoute.Sitemap {
     const baseUrl = "https://cuandollega-tawny.vercel.app";
+    const now = new Date();
 
     return [
         {
             url: baseUrl,
-            lastModified: new Date("2026-04-03"),
+            lastModified: now,
             changeFrequency: "daily",
             priority: 1,
         },
         {
             url: `${baseUrl}/recorrido`,
-            lastModified: new Date("2026-04-03"),
+            lastModified: now,
             changeFrequency: "weekly",
             priority: 0.8,
         },
         {
             url: `${baseUrl}/llms.txt`,
-            lastModified: new Date("2026-04-08"),
+            lastModified: now,
             changeFrequency: "monthly",
             priority: 0.6,
         },
