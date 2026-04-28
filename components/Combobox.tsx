@@ -229,13 +229,13 @@ export function Combobox({
                 onKeyDown={onTriggerKeyDown}
                 disabled={disabled}
                 className={cn(
-                    "flex min-h-11 w-full items-center justify-between rounded-lg border bg-surface-2 px-3.5 py-2.5 font-display text-base font-semibold tracking-[0.5px] transition-colors",
+                    "flex min-h-11 w-full items-center justify-between rounded-full border bg-[rgba(255,255,255,0.05)] px-4 py-2.5 font-sans text-[15px] font-medium tracking-[-0.01em] transition-colors",
                     selected ? "text-text" : "text-text-dim",
                     disabled
-                        ? "cursor-not-allowed border-border opacity-50"
+                        ? "cursor-not-allowed border-white/10 opacity-50"
                         : open
-                          ? "cursor-pointer border-accent"
-                          : "cursor-pointer border-border hover:border-accent",
+                          ? "cursor-pointer border-accent shadow-[0_0_0_1px_rgba(0,153,255,0.15)]"
+                          : "cursor-pointer border-white/12 hover:border-white/20",
                 )}
             >
                 <span>{loading ? "Cargando..." : selected?.label ?? placeholder}</span>
@@ -247,10 +247,10 @@ export function Combobox({
                     id={listboxId}
                     role="listbox"
                     aria-label="Opciones"
-                    className="absolute left-0 right-0 top-[calc(100%+4px)] z-[100] overflow-hidden rounded-lg border border-border bg-surface-2 shadow-[0_8px_32px_rgba(0,0,0,0.5)]"
+                    className="absolute left-0 right-0 top-[calc(100%+6px)] z-[100] overflow-hidden rounded-2xl border border-white/12 bg-black/95 shadow-[rgba(0,153,255,0.15)_0px_0px_0px_1px,0_18px_36px_rgba(0,0,0,0.65)]"
                 >
                     {showFilter ? (
-                        <div className="border-b border-border px-2.5 py-2">
+                        <div className="border-b border-white/10 px-2.5 py-2">
                             <input
                                 ref={inputRef}
                                 value={query}
@@ -261,14 +261,14 @@ export function Combobox({
                                 onKeyDown={onFilterKeyDown}
                                 placeholder="Buscar..."
                                 aria-label="Filtrar opciones"
-                                className="min-h-10 w-full rounded-md border border-border bg-bg px-2.5 py-2 font-mono text-[13px] text-text outline-none transition-colors focus:border-accent"
+                                className="min-h-10 w-full rounded-xl border border-white/12 bg-[rgba(255,255,255,0.04)] px-3 py-2 font-sans text-sm text-text outline-none transition-colors placeholder:text-text-muted focus:border-accent"
                             />
                         </div>
                     ) : null}
 
                     <div className="max-h-[220px] overflow-y-auto">
                         {filtered.length === 0 ? (
-                            <div className="px-3.5 py-3 font-mono text-sm text-text-dim">
+                            <div className="px-4 py-3 font-sans text-sm text-text-dim">
                                 Sin resultados
                             </div>
                         ) : (
@@ -291,7 +291,7 @@ export function Combobox({
                                         onClick={() => handleSelect(o.value)}
                                         onMouseEnter={() => setActiveIndex(i)}
                                         className={cn(
-                                            "flex min-h-11 w-full cursor-pointer items-center px-3.5 py-3 text-left font-display text-[15px] font-semibold transition-colors",
+                                            "flex min-h-11 w-full cursor-pointer items-center px-4 py-3 text-left font-sans text-[14px] font-medium tracking-[-0.01em] transition-colors",
                                             isActive
                                                 ? "bg-white/10 text-text"
                                                 : isSelected

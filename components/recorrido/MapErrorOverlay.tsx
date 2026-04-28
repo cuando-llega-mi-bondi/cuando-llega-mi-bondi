@@ -24,14 +24,14 @@ export function MapErrorOverlay({ message, onRetry }: MapErrorOverlayProps) {
                     <path d="M12 17h.01" />
                 </svg>
             </div>
-            <div className="max-w-[280px] text-center font-sans text-sm text-text-dim">
+            <div className="max-w-[280px] text-center font-sans text-sm leading-relaxed text-text-dim">
                 {message}
             </div>
             <Button
                 onClick={onRetry}
                 variant="primary"
                 size="md"
-                className="rounded-[10px] px-6"
+                className="px-6"
             >
                 Reintentar
             </Button>

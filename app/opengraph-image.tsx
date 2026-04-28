@@ -15,9 +15,9 @@ export default function OpenGraphImage() {
                     flexDirection: "column",
                     alignItems: "center",
                     justifyContent: "center",
-                    background: "#0a0a0b",
+                    background: "#000000",
                     backgroundImage:
-                        "radial-gradient(ellipse 80% 55% at 50% 0%, rgba(245, 166, 35, 0.18), transparent 55%)",
+                        "radial-gradient(ellipse 80% 55% at 50% 0%, rgba(0, 153, 255, 0.2), transparent 55%)",
                 }}
             >
                 <div
@@ -30,10 +30,10 @@ export default function OpenGraphImage() {
                 >
                     <div
                         style={{
-                            background: "#f5a623",
+                            background: "#0099ff",
                             borderRadius: 14,
                             padding: "14px 20px",
-                            color: "#0a0a0b",
+                            color: "#ffffff",
                             fontSize: 36,
                             fontWeight: 800,
                             fontFamily: "ui-sans-serif, system-ui, sans-serif",
@@ -46,7 +46,7 @@ export default function OpenGraphImage() {
                             style={{
                                 fontSize: 52,
                                 fontWeight: 900,
-                                color: "#e8e8ec",
+                                color: "#ffffff",
                                 letterSpacing: -1,
                                 fontFamily: "ui-sans-serif, system-ui, sans-serif",
                                 lineHeight: 1.05,
@@ -57,7 +57,7 @@ export default function OpenGraphImage() {
                         <span
                             style={{
                                 fontSize: 26,
-                                color: "#f5a623",
+                                color: "#0099ff",
                                 fontFamily: "ui-sans-serif, system-ui, sans-serif",
                                 fontWeight: 600,
                             }}

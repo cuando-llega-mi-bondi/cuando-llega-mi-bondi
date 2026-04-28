@@ -18,19 +18,19 @@ export function ArriboCard({ arribo, onFav, favId }: { arribo: Arribo; onFav: ()
     const arriboColorClass =
         color === "#22c55e"
             ? "text-success"
-            : color === "#f5a623"
+            : color === "#0099ff"
               ? "text-accent"
               : "text-text";
 
     return (
-        <div className="arrival-row flex flex-col gap-3 rounded-xl border border-border bg-surface p-4 shadow-[0_4px_12px_rgba(0,0,0,0.1)]">
+        <div className="arrival-row flex flex-col gap-3 rounded-xl bg-surface p-4 shadow-[rgba(0,153,255,0.15)_0px_0px_0px_1px,0_10px_24px_rgba(0,0,0,0.45)]">
             <div className="flex items-center gap-3.5">
-                <div className="min-w-16 flex-shrink-0 rounded-lg bg-accent px-3 py-1.5 text-center font-display text-[22px] font-black tracking-[1px] text-black shadow-[0_2px_8px_rgba(245,166,35,0.4)]">
+                <div className="min-w-16 flex-shrink-0 rounded-full border border-accent/45 bg-accent/18 px-3 py-1.5 text-center font-display text-[22px] font-semibold tracking-[-0.03em] text-accent shadow-[0_2px_10px_rgba(0,153,255,0.35)]">
                     {arribo.DescripcionLinea}
                 </div>
 
                 <div className="min-w-0 flex-1">
-                    <div className="mb-0.5 font-display text-[13px] font-bold tracking-[0.5px] text-text-dim">
+                    <div className="mb-0.5 font-sans text-[12px] font-medium tracking-[0.02em] text-text-dim">
                         {arribo.DescripcionCartelBandera.toUpperCase()}
                     </div>
                     <div
@@ -46,7 +46,7 @@ export function ArriboCard({ arribo, onFav, favId }: { arribo: Arribo; onFav: ()
                 <button
                     onClick={onFav}
                     className={cn(
-                        "cursor-pointer bg-transparent p-2 transition-transform duration-150 hover:scale-110",
+                        "cursor-pointer rounded-full border border-white/10 bg-white/5 p-2 transition-transform duration-150 hover:scale-110 hover:border-white/20",
                         fav ? "text-accent" : "text-text-muted",
                     )}
                     title={fav ? "Quitar favorito" : "Guardar favorito"}
@@ -55,7 +55,7 @@ export function ArriboCard({ arribo, onFav, favId }: { arribo: Arribo; onFav: ()
                 </button>
             </div>
 
-            <div className="h-px bg-border/50" />
+            <div className="h-px bg-white/8" />
 
             <div className="grid grid-cols-2 gap-2">
                 <div className="flex flex-col gap-1">
@@ -64,7 +64,7 @@ export function ArriboCard({ arribo, onFav, favId }: { arribo: Arribo; onFav: ()
                             INTERNO {arribo.IdentificadorCoche}
                         </span>
                         {isAdaptado && (
-                            <div className="flex items-center gap-1 rounded border border-blue-400 px-1 py-[1px] text-[8px] text-blue-400">
+                            <div className="flex items-center gap-1 rounded border border-accent/55 px-1 py-[1px] text-[8px] text-accent">
                                 <IconWheelchair /> ADAPTADO
                             </div>
                         )}

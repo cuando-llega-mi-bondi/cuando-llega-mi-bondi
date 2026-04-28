@@ -8,7 +8,7 @@ export function Spinner({ className }: SpinnerProps) {
     return (
         <span
             className={cn(
-                "inline-flex h-5 w-5 animate-spin-slow rounded-full border-2 border-border border-t-accent",
+                "inline-flex h-5 w-5 animate-spin-slow rounded-full border-2 border-white/15 border-t-accent",
                 className,
             )}
             aria-hidden

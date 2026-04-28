@@ -30,7 +30,7 @@ export function TelegramShareCTA({
             href={tgHref}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center gap-2.5 rounded-lg border border-[#2AABEE4D] bg-[#2AABEE14] px-4 py-3 font-display text-sm font-bold text-[#2AABEE] transition hover:bg-[#2AABEE26]"
+            className="flex items-center gap-2.5 rounded-xl border border-accent/35 bg-accent/12 px-4 py-3 font-sans text-sm font-medium tracking-[-0.01em] text-accent transition hover:bg-accent/18"
         >
             <IconTelegram size={20} />
             <span className="flex-1">

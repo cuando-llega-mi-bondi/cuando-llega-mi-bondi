@@ -20,8 +20,8 @@ import {
 const RouteMap = dynamic(() => import("@/components/map/RouteMap"), {
   ssr: false,
   loading: () => (
-    <div className="flex h-full items-center justify-center gap-2.5 font-mono text-sm text-text-dim">
-      <span className="spin-slow inline-block h-4 w-4 rounded-full border-2 border-border border-t-accent" />
+    <div className="flex h-full items-center justify-center gap-2.5 font-sans text-sm tracking-[-0.01em] text-text-dim">
+      <span className="spin-slow inline-block h-4 w-4 rounded-full border-2 border-white/15 border-t-accent" />
       Cargando mapa…
     </div>
   ),
@@ -347,28 +347,28 @@ export default function RecorridoClient() {
   if (step === "selector") {
     return (
       <div className="flex min-h-dvh flex-col bg-bg">
-        <header className="z-50 flex shrink-0 items-center gap-3 border-b border-border bg-surface px-4 py-3.5">
+        <header className="z-50 flex shrink-0 items-center gap-3 border-b border-white/10 bg-black/95 px-4 py-3.5">
           <Link
             href="/"
-            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-border text-text-dim no-underline"
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-white/12 bg-white/5 text-text-dim no-underline transition hover:border-white/20 hover:text-text"
             title="Volver al inicio"
           >
             <IconBack />
           </Link>
           <div className="min-w-0 flex-1">
-            <div className="font-display text-xl font-black tracking-[0.5px] text-text">
+            <div className="font-display text-[24px] font-semibold tracking-[-0.04em] text-text">
               Explorar <span className="text-accent">Recorridos</span>
             </div>
-            <div className="mt-0.5 font-mono text-[11px] text-text-dim">
+            <div className="mt-0.5 font-mono text-[10px] text-text-dim">
               {linesLoading ? "Cargando líneas…" : `${lines.length} líneas disponibles`}
             </div>
           </div>
-          <div className="shrink-0 rounded-lg border border-accent/30 bg-accent/12 px-2.5 py-1 font-mono text-[11px] text-accent">
+          <div className="shrink-0 rounded-full border border-accent/35 bg-accent/12 px-3 py-1 font-sans text-[11px] font-medium tracking-[-0.01em] text-accent">
             MAPA
           </div>
         </header>
 
-        <div className="shrink-0 border-b border-border bg-surface px-4 pb-2 pt-3.5">
+        <div className="shrink-0 border-b border-white/10 bg-black/95 px-4 pb-2 pt-3.5">
           <div className="relative">
             <span className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-text-dim">
               <IconSearch />
@@ -379,7 +379,7 @@ export default function RecorridoClient() {
               placeholder="Buscar línea por número o destino…"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="box-border w-full rounded-[10px] border border-border bg-surface-2 py-[11px] pl-10 pr-3.5 font-sans text-sm text-text outline-none transition-colors focus:border-accent"
+              className="box-border w-full rounded-full border border-white/12 bg-white/5 py-[11px] pl-10 pr-3.5 font-sans text-sm text-text outline-none transition-colors placeholder:text-text-muted focus:border-accent"
             />
           </div>
         </div>
@@ -406,19 +406,19 @@ export default function RecorridoClient() {
   // ─────────────────────────────────────────────────────────────────────────────
   return (
     <div className="flex h-dvh flex-col bg-bg">
-      <header className="z-50 flex shrink-0 items-center gap-3 border-b border-border bg-surface px-4 py-3">
+      <header className="z-50 flex shrink-0 items-center gap-3 border-b border-white/10 bg-black/95 px-4 py-3">
         <button
           onClick={goBack}
-          className="flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center rounded-lg border border-border bg-transparent text-text-dim"
+          className="flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center rounded-full border border-white/12 bg-white/5 text-text-dim transition hover:border-white/20 hover:text-text"
           title="Volver a la lista"
         >
           <IconBack />
         </button>
 
         <div className="min-w-0 flex-1">
-          <div className="flex items-center gap-2 font-display text-lg font-black tracking-[0.5px] text-text">
+          <div className="flex items-center gap-2 font-display text-lg font-semibold tracking-[-0.03em] text-text">
             {selectedLine && (
-              <span className="rounded-md bg-accent px-2 py-0.5 text-xl font-black text-black">
+              <span className="rounded-full border border-accent/45 bg-accent/15 px-2.5 py-0.5 text-xl font-semibold text-accent">
                 {selectedLine.Descripcion}
               </span>
             )}
@@ -427,19 +427,19 @@ export default function RecorridoClient() {
             </span>
           </div>
           {!mapLoading && selectedLine && (
-            <div className="mt-0.5 font-mono text-[11px] text-text-dim">
+            <div className="mt-0.5 font-mono text-[10px] text-text-dim">
               {mapStops.length > 0 ? `${mapStops.length} paradas · ` : ""}{ramales.length > 1 ? `${ramales.length} ramales` : ""}
             </div>
           )}
         </div>
 
-        <div className="shrink-0 rounded-lg border border-accent/30 bg-accent/12 px-2.5 py-1 font-mono text-[11px] text-accent">
+        <div className="shrink-0 rounded-full border border-accent/35 bg-accent/12 px-3 py-1 font-sans text-[11px] font-medium tracking-[-0.01em] text-accent">
           MAPA
         </div>
       </header>
 
       {ramales.length > 1 && !mapLoading && (
-        <div className="shrink-0 overflow-x-auto border-b border-border bg-surface [scrollbar-width:none]">
+        <div className="shrink-0 overflow-x-auto border-b border-white/10 bg-black/95 [scrollbar-width:none]">
           <div className="flex w-max gap-2 px-3 py-2.5">
             {ramales.map((ramal) => {
               const isActive = ramal.key === selectedRamal?.key;
@@ -448,16 +448,16 @@ export default function RecorridoClient() {
                   key={ramal.key}
                   onClick={() => setSelectedRamal(ramal)}
                   className={cn(
-                    "flex cursor-pointer items-center gap-1.5 whitespace-nowrap rounded-[20px] border px-3.5 py-[7px] font-display text-[13px] font-bold transition",
+                    "flex cursor-pointer items-center gap-1.5 whitespace-nowrap rounded-full border px-3.5 py-[7px] font-sans text-[13px] font-medium tracking-[-0.01em] transition",
                     isActive
-                      ? "border-accent bg-accent/15 text-accent"
-                      : "border-border bg-surface-2 text-text-dim",
+                      ? "border-accent bg-accent/16 text-accent"
+                      : "border-white/12 bg-white/5 text-text-dim",
                   )}
                 >
                   <span
                     className={cn(
                       "h-2 w-2 flex-shrink-0 rounded-full transition-colors",
-                      isActive ? "bg-accent" : "bg-border",
+                      isActive ? "bg-accent" : "bg-white/20",
                     )}
                   />
                   {ramal.label}

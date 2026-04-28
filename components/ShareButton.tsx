@@ -82,9 +82,9 @@ export function ShareButton({ arribos, calleLabel, interseccionLabel }: ShareBut
             title="Compartir por WhatsApp"
             aria-label="Compartir próximos arribos"
             className={cn(
-                "flex min-h-11 cursor-pointer items-center justify-center gap-1.5 whitespace-nowrap rounded-lg border px-3 font-mono text-[11px] tracking-[1px] transition",
+                "flex min-h-11 cursor-pointer items-center justify-center gap-1.5 whitespace-nowrap rounded-full border px-3.5 font-sans text-[12px] font-medium tracking-[-0.01em] transition",
                 isIdle
-                    ? "border-border bg-transparent text-text-dim hover:text-text"
+                    ? "border-white/12 bg-white/5 text-text-dim hover:border-white/20 hover:text-text"
                     : "border-green-400/50 bg-green-400/10 text-green-400",
             )}
         >

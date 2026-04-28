@@ -1,7 +1,29 @@
 import type { Metadata, Viewport } from "next";
+import { Azeret_Mono, Inter, Outfit } from "next/font/google";
 import "./globals.css";
-import { Analytics } from "@vercel/analytics/react"
+import { Analytics } from "@vercel/analytics/react";
 import { JsonLd } from "@/components/JsonLd";
+
+const inter = Inter({
+    subsets: ["latin"],
+    weight: ["400", "500", "600", "700"],
+    display: "swap",
+    variable: "--font-inter",
+});
+
+const outfit = Outfit({
+    subsets: ["latin"],
+    weight: ["400", "500", "600", "700", "800", "900"],
+    display: "swap",
+    variable: "--font-outfit",
+});
+
+const azeretMono = Azeret_Mono({
+    subsets: ["latin"],
+    weight: ["400", "500", "600"],
+    display: "swap",
+    variable: "--font-azeret-mono",
+});
 
 export const metadata: Metadata = {
     metadataBase: new URL("https://cuandollega-tawny.vercel.app"),
@@ -45,7 +67,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-    themeColor: "#0a0a0b",
+    themeColor: "#000000",
     width: "device-width",
     initialScale: 1,
     viewportFit: "cover",
@@ -55,9 +77,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     return (
         <html lang="es">
             <head>
-                <link rel="preconnect" href="https://fonts.googleapis.com" />
-                <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-                <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Barlow+Condensed:wght@400;600;700;900&family=Barlow:wght@400;500&display=swap" rel="stylesheet" />
                 <script
                     dangerouslySetInnerHTML={{
                         __html: `
@@ -71,7 +90,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                     }}
                 />
             </head>
-            <body>
+            <body className={`${inter.variable} ${outfit.variable} ${azeretMono.variable}`}>
                 <JsonLd />
                 <Analytics />
                 {children}

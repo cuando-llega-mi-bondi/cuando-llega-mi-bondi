@@ -4,8 +4,8 @@
 export function getArriboColor(arribo: string): string {
     const lower = arribo.toLowerCase();
     if (lower.includes("1 min") || lower.includes("llegando")) return "#22c55e";
-    if (lower.includes("2 min") || lower.includes("3 min")) return "#f5a623";
-    return "#e8e8ec";
+    if (lower.includes("2 min") || lower.includes("3 min")) return "#0099ff";
+    return "#ffffff";
 }
 
 /**

@@ -27,16 +27,16 @@ export function FavoriteNameModal({ isOpen, onClose, onSave, initialName, title 
         <Modal open={isOpen} onClose={onClose} className="animate-slide-up">
             <button
                 onClick={onClose}
-                className="absolute right-4 top-4 cursor-pointer bg-transparent p-1 text-text-dim transition-colors hover:text-text"
+                className="absolute right-4 top-4 cursor-pointer rounded-full border border-white/10 bg-white/5 p-1 text-text-dim transition-colors hover:border-white/20 hover:text-text"
                 aria-label="Cerrar"
             >
                 <IconX size={20} />
             </button>
 
-            <h3 className="mb-2 font-display text-xl font-extrabold tracking-[-0.5px] text-text">
+            <h3 className="mb-2 font-display text-[22px] font-semibold tracking-[-0.04em] text-text">
                 {title}
             </h3>
-            <p className="mb-5 font-mono text-[13px] leading-relaxed text-text-muted">
+            <p className="mb-5 font-sans text-sm leading-relaxed text-text-muted">
                 Asignale un nombre descriptivo a esta parada para encontrarla más rápido.
             </p>
 
@@ -51,7 +51,7 @@ export function FavoriteNameModal({ isOpen, onClose, onSave, initialName, title 
                     }}
                     defaultValue={initialName}
                     placeholder="Ej: Mi Casa, Trabajo..."
-                    className="w-full rounded-xl border-2 border-border bg-white/5 px-4 py-3 font-display text-base font-semibold text-text outline-none transition-colors placeholder:text-text-muted focus:border-accent"
+                    className="w-full rounded-2xl border border-white/12 bg-white/6 px-4 py-3 font-sans text-base font-medium tracking-[-0.01em] text-text outline-none transition-colors placeholder:text-text-muted focus:border-accent"
                 />
             </div>
 
@@ -60,15 +60,15 @@ export function FavoriteNameModal({ isOpen, onClose, onSave, initialName, title 
                     onClick={onClose}
                     variant="secondary"
                     size="md"
-                    className="flex-1 rounded-xl border-border text-text-dim"
+                    className="flex-1 text-text-dim"
                 >
                     CANCELAR
                 </Button>
                 <Button
                     onClick={() => onSave(inputRef.current?.value ?? initialName)}
-                    variant="primary"
+                    variant="accent"
                     size="md"
-                    className="flex-1 rounded-xl font-black shadow-[0_4px_12px_rgba(245,166,35,0.3)]"
+                    className="flex-1"
                 >
                     GUARDAR
                 </Button>

@@ -1,12 +1,9 @@
 import { Combobox } from "./Combobox";
-import type { Arribo, Linea, Parada } from "@/lib/types";
 import { memo, useId } from "react";
 import { Button } from "@/components/ui";
 import {
-    ArrivalsPanel,
     ErrorBanner,
     StepField,
-    TelegramShareCTA,
 } from "@/components/search";
 
 interface SearchFlowProps {
@@ -34,33 +31,12 @@ interface SearchFlowProps {
     loadingLineas: boolean;
     loadingCalles: boolean;
     loadingInter: boolean;
-    loadingParadas: boolean;
     loadingArribos: boolean;
     error: string;
     setError: (v: string) => void;
-    
-    // Data for display
-    displayArribos: Arribo[];
-    selectedParada?: Parada;
-    lastUpdate: Date | null;
-    calleLabel?: string;
-    interseccionLabel?: string;
 
     // Actions
     handleConsultar: () => void;
-    fetchArribos: () => void;
-    handleFavFromArribos: (arribo: Arribo) => void;
-
-    // Otras Lineas Suggestion
-    otrasLineas?: Linea[];
-    loadingOtras?: boolean;
-    onSelectOtraLinea?: (linea: Linea) => void;
-
-    // Live sharing
-    liveSharings?: { lat: number; lng: number; ramal: string | null }[];
-
-    // Telegram share
-    telegramUsername?: string;
 }
 
 export const SearchFlow = memo(function SearchFlow({
@@ -73,12 +49,8 @@ export const SearchFlow = memo(function SearchFlow({
     lineaOptions, calles, interOptions, destinoOptions, ramalOptions,
     loadingLineas, loadingCalles, loadingInter, loadingArribos,
     error, setError,
-    displayArribos, selectedParada, lastUpdate,
-    calleLabel, interseccionLabel,
-    handleConsultar, fetchArribos, handleFavFromArribos,
-    otrasLineas = [], loadingOtras = false, onSelectOtraLinea,
-    liveSharings = [],
-    telegramUsername = "",
+    handleConsultar,
+
 }: SearchFlowProps) {
     const uid = useId();
     const labelLinea = `sf-linea${uid}`;
@@ -143,7 +115,7 @@ export const SearchFlow = memo(function SearchFlow({
                 <div className="motion-step">
                     <label
                         id={labelRamal}
-                        className="mb-1.5 block font-mono text-[11px] tracking-[2px] text-text-dim"
+                        className="mb-1.5 block font-mono text-[10px] tracking-[1.4px] text-text-dim"
                     >
                         05 / RAMAL
                     </label>
@@ -164,41 +136,13 @@ export const SearchFlow = memo(function SearchFlow({
                     disabled={loadingArribos}
                     variant="primary"
                     size="lg"
-                    className="mt-2 text-base tracking-[1px]"
+                    className="mt-2 text-base"
                 >
                     {loadingArribos ? "CONSULTANDO..." : "CONSULTAR"}
                 </Button>
             )}
 
-            <TelegramShareCTA
-                codLinea={codLinea}
-                selectedRamal={selectedRamal}
-                telegramUsername={telegramUsername}
-            />
-
-            {(loadingArribos || displayArribos.length > 0 || isConsulting) ? (
-                <ArrivalsPanel
-                    loadingArribos={loadingArribos}
-                    displayArribos={displayArribos}
-                    isConsulting={isConsulting}
-                    lastUpdate={lastUpdate}
-                    fetchArribos={fetchArribos}
-                    calleLabel={calleLabel}
-                    interseccionLabel={interseccionLabel}
-                    selectedRamal={selectedRamal}
-                    setSelectedRamal={setSelectedRamal}
-                    selectedParada={selectedParada}
-                    codLinea={codLinea}
-                    paradaId={paradaId}
-                    liveSharings={liveSharings}
-                    handleFavFromArribos={handleFavFromArribos}
-                    otrasLineas={otrasLineas}
-                    loadingOtras={loadingOtras}
-                    onSelectOtraLinea={onSelectOtraLinea}
-                />
-            ) : null}
-
-            <ErrorBanner message={error} onClose={() => setError("")} />
+            <ErrorBanner message={!isConsulting ? error : ""} onClose={() => setError("")} />
         </div>
     );
 });

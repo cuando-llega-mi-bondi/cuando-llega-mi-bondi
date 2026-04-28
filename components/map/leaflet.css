@@ -1,6 +1,6 @@
 .leaflet-container {
-    background: #111114 !important;
-    font-family: "Barlow", sans-serif;
+    background: #090909 !important;
+    font-family: "Inter", sans-serif;
 }
 
 .marker-stop {
@@ -60,11 +60,13 @@
 }
 
 .leaflet-popup-content-wrapper {
-    background: #1a1a1f !important;
-    color: #e8e8ec !important;
-    border: 1px solid #2a2a32 !important;
+    background: #090909 !important;
+    color: #ffffff !important;
+    border: 1px solid rgba(0, 153, 255, 0.22) !important;
     border-radius: 12px !important;
-    box-shadow: 0 8px 32px rgb(0 0 0 / 0.7) !important;
+    box-shadow:
+        0 12px 40px rgb(0 0 0 / 72%),
+        rgba(0, 153, 255, 0.15) 0 0 0 1px !important;
     padding: 0 !important;
 }
 
@@ -74,11 +76,11 @@
 }
 
 .leaflet-popup-tip {
-    background: #1a1a1f !important;
+    background: #090909 !important;
 }
 
 .leaflet-popup-close-button {
-    color: #6b6b7a !important;
+    color: #a6a6a6 !important;
     font-size: 18px !important;
     top: 6px !important;
     right: 8px !important;

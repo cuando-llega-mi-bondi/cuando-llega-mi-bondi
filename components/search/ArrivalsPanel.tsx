@@ -1,21 +1,11 @@
-import dynamic from "next/dynamic";
 import { IconRefresh } from "@/components/icons/IconRefresh";
 import { ArriboCard } from "@/components/ArriboCard";
 import { OtrasLineasSuggestion } from "@/components/OtrasLineasSuggestion";
 import { ShareButton } from "@/components/ShareButton";
-import type { Arribo, Linea, Parada } from "@/lib/types";
+import type { Arribo, Linea } from "@/lib/types";
 import { ArrivalsEmpty } from "./ArrivalsEmpty";
 import { ArrivalsLoading } from "./ArrivalsLoading";
 import { LiveSharingBanner } from "./LiveSharingBanner";
-
-const BusMap = dynamic(() => import("@/components/map/BusMap"), {
-    ssr: false,
-    loading: () => (
-        <div className="mb-4 flex h-[260px] w-full items-center justify-center rounded-xl border border-border bg-surface-2 font-mono text-[13px] text-text-dim">
-            Cargando mapa...
-        </div>
-    ),
-});
 
 interface ArrivalsPanelProps {
     loadingArribos: boolean;
@@ -27,8 +17,6 @@ interface ArrivalsPanelProps {
     interseccionLabel?: string;
     selectedRamal: string;
     setSelectedRamal: (value: string) => void;
-    selectedParada?: Parada;
-    codLinea: string;
     paradaId: string;
     liveSharings: { lat: number; lng: number; ramal: string | null }[];
     handleFavFromArribos: (arribo: Arribo) => void;
@@ -47,8 +35,6 @@ export function ArrivalsPanel({
     interseccionLabel,
     selectedRamal,
     setSelectedRamal,
-    selectedParada,
-    codLinea,
     paradaId,
     liveSharings,
     handleFavFromArribos,
@@ -62,7 +48,7 @@ export function ArrivalsPanel({
     return (
         <div className="mt-3">
             <div className="mb-2.5 flex items-center justify-between">
-                <label className="font-mono text-[11px] tracking-[2px] text-text-dim">
+                <label className="font-mono text-[10px] tracking-[1.4px] text-text-dim">
                     PRÓXIMOS ARRIBOS
                 </label>
                 <div className="flex items-center gap-2">
@@ -85,7 +71,7 @@ export function ArrivalsPanel({
                         onClick={fetchArribos}
                         disabled={loadingArribos}
                         aria-label="Actualizar arribos"
-                        className="flex min-h-11 min-w-11 cursor-pointer items-center justify-center rounded-lg border border-border bg-transparent p-0 text-text-dim transition-colors hover:text-text disabled:cursor-not-allowed disabled:opacity-60"
+                        className="flex min-h-11 min-w-11 cursor-pointer items-center justify-center rounded-full border border-white/10 bg-white/5 p-0 text-text-dim transition-colors hover:border-white/20 hover:text-text disabled:cursor-not-allowed disabled:opacity-60"
                     >
                         <IconRefresh loading={loadingArribos} />
                     </button>
@@ -105,21 +91,6 @@ export function ArrivalsPanel({
             ) : (
                 <div className="flex flex-col gap-2">
                     <LiveSharingBanner count={liveSharings.length} />
-                    <BusMap
-                        arribos={displayArribos}
-                        paradaLat={
-                            selectedParada?.LatitudParada ||
-                            displayArribos[0]?.LatitudParada ||
-                            ""
-                        }
-                        paradaLon={
-                            selectedParada?.LongitudParada ||
-                            displayArribos[0]?.LongitudParada ||
-                            ""
-                        }
-                        lineaCod={codLinea}
-                        liveBuses={liveSharings}
-                    />
                     {hasArribos ? (
                         displayArribos.map((a, i) => (
                             <ArriboCard

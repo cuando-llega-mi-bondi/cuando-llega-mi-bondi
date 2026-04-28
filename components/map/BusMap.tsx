@@ -88,12 +88,14 @@ const BusMap = React.memo(function BusMap({
     paradaLon,
     lineaCod,
     liveBuses = [],
+    fillParent = false,
 }: {
     arribos: Arribo[];
     paradaLat: string;
     paradaLon: string;
     lineaCod?: string;
     liveBuses?: { lat: number; lng: number; ramal: string | null }[];
+    fillParent?: boolean;
 }) {
     const [isFullscreen, setIsFullscreen] = useState(false);
     const [fitTrigger, setFitTrigger] = useState(0);
@@ -167,7 +169,15 @@ const BusMap = React.memo(function BusMap({
         return "";
     };
 
-    const containerStyle = isFullscreen
+    const containerStyle = fillParent
+        ? {
+              height: "100%",
+              width: "100%",
+              overflow: "hidden",
+              position: "relative" as const,
+              zIndex: 1,
+          }
+        : isFullscreen
         ? {
               position: "fixed" as const,
               inset: 0,
@@ -188,15 +198,23 @@ const BusMap = React.memo(function BusMap({
               zIndex: 1,
           };
 
+    const controlsTop = fillParent
+        ? envLocalSafeAreaTop(74)
+        : isFullscreen
+          ? envLocalSafeAreaTop(16)
+          : 12;
+
     return (
         <div style={containerStyle}>
-            <div style={{ position: "absolute", top: isFullscreen ? envLocalSafeAreaTop(16) : 12, right: 12, zIndex: 1000, display: "flex", gap: 10, flexDirection: "column" }}>
-                <button
-                    onClick={() => setIsFullscreen(!isFullscreen)}
-                    style={{ background: "var(--color-surface)", color: "var(--color-text)", border: "1px solid var(--color-border)", borderRadius: "10px", width: 48, height: 48, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", boxShadow: "0 6px 16px rgba(0,0,0,0.6)" }}
-                >
-                    {isFullscreen ? <IconMinimize/> : <IconMaximize/>}
-                </button>
+            <div style={{ position: "absolute", top: controlsTop, right: 12, zIndex: 1000, display: "flex", gap: 10, flexDirection: "column" }}>
+                {!fillParent ? (
+                    <button
+                        onClick={() => setIsFullscreen(!isFullscreen)}
+                        style={{ background: "var(--color-surface)", color: "var(--color-text)", border: "1px solid var(--color-border)", borderRadius: "10px", width: 48, height: 48, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", boxShadow: "0 6px 16px rgba(0,0,0,0.6)" }}
+                    >
+                        {isFullscreen ? <IconMinimize/> : <IconMaximize/>}
+                    </button>
+                ) : null}
                 <button
                     onClick={() => setFitTrigger((f) => f + 1)}
                     style={{ background: "var(--color-surface)", color: "var(--color-accent)", border: "1px solid var(--color-border)", borderRadius: "10px", width: 48, height: 48, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", boxShadow: "0 6px 16px rgba(0,0,0,0.6)" }}
@@ -211,7 +229,7 @@ const BusMap = React.memo(function BusMap({
                 </div>
             ) : null}
 
-            <MapContainer center={paradaCoords} zoom={16} scrollWheelZoom style={{ height: "100%", width: "100%", zIndex: 1, flex: 1, background: "#111114" }}>
+            <MapContainer center={paradaCoords} zoom={16} scrollWheelZoom style={{ height: "100%", width: "100%", zIndex: 1, flex: 1, background: "#090909" }}>
                 <TileLayer
                     url="https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}"
                     attribution="&copy; Google Maps"
@@ -244,7 +262,7 @@ const BusMap = React.memo(function BusMap({
 
                     return (
                         <Fragment key={i}>
-                            <Polyline positions={points} color={isActive ? "#f5a623" : "#777777"} weight={isActive ? 8 : 4} opacity={isActive ? 1 : 0.4} lineCap="round" lineJoin="round" />
+                            <Polyline positions={points} color={isActive ? "#0099ff" : "#777777"} weight={isActive ? 8 : 4} opacity={isActive ? 1 : 0.4} lineCap="round" lineJoin="round" />
                             {arrowMarkers.map((arr, idx) => (
                                 <Marker key={`arr-${idx}`} position={arr.pos} icon={createArrowIcon(arr.bearing)} interactive={false} />
                             ))}
@@ -308,15 +326,15 @@ const BusMap = React.memo(function BusMap({
                     const html = `
                         <div class="bus-icon-container">
                             <svg width="56" height="36" viewBox="0 0 32 32" style="filter: drop-shadow(0 4px 6px rgba(0,0,0,0.5));">
-                                <rect x="2" y="8" width="28" height="15" rx="3" fill="#f5a623" />
-                                <rect x="5" y="10" width="5" height="5" rx="1" fill="#111114" />
-                                <rect x="12" y="10" width="6" height="5" rx="1" fill="#111114" />
-                                <rect x="20" y="10" width="7" height="5" rx="1" fill="#111114" />
+                                <rect x="2" y="8" width="28" height="15" rx="3" fill="#0099ff" />
+                                <rect x="5" y="10" width="5" height="5" rx="1" fill="#090909" />
+                                <rect x="12" y="10" width="6" height="5" rx="1" fill="#090909" />
+                                <rect x="20" y="10" width="7" height="5" rx="1" fill="#090909" />
                                 <rect x="28" y="18" width="2" height="3" fill="#ffffff" opacity="0.9" />
                                 <rect x="2" y="18" width="2" height="3" fill="#ef4444" opacity="0.8" />
                                 <rect x="2" y="16" width="28" height="1" fill="#fff" opacity="0.3" />
-                                <path d="M 6 23 a 3 3 0 0 1 6 0 z" fill="#111114" />
-                                <path d="M 20 23 a 3 3 0 0 1 6 0 z" fill="#111114" />
+                                <path d="M 6 23 a 3 3 0 0 1 6 0 z" fill="#090909" />
+                                <path d="M 20 23 a 3 3 0 0 1 6 0 z" fill="#090909" />
                                 <circle cx="9" cy="24" r="3" fill="#000" />
                                 <circle cx="23" cy="24" r="3" fill="#000" />
                                 <circle cx="9" cy="24" r="1.5" fill="#555" />
@@ -336,13 +354,13 @@ const BusMap = React.memo(function BusMap({
                         <Marker key={i} position={[lat, lon]} icon={BusIcon} zIndexOffset={100 + i}>
                             <Popup>
                                 <div style={{ display: "flex", flexDirection: "column", gap: 3, padding: "2px 0" }}>
-                                    <div style={{ background: "var(--color-accent)", color: "#000", padding: "3px 8px", borderRadius: "6px", fontFamily: "var(--font-display)", fontWeight: 900, fontSize: 16, display: "inline-block", width: "fit-content" }}>
+                                    <div style={{ background: "var(--color-accent)", color: "#fff", padding: "3px 8px", borderRadius: "6px", fontFamily: "var(--font-display)", fontWeight: 900, fontSize: 16, display: "inline-block", width: "fit-content" }}>
                                         Línea {a.DescripcionLinea}
                                     </div>
                                     <div style={{ fontFamily: "var(--font-mono)", fontSize: 11.5, color: "#6b6b7a", marginTop: 2 }}>
                                         {a.DescripcionCartelBandera.toUpperCase()}
                                     </div>
-                                    <div style={{ fontFamily: "var(--font-mono)", fontSize: 16, fontWeight: 800, color: getEtaClass(a.Arribo) === "warn" ? "#f5a623" : "#22c55e", marginTop: 4 }}>
+                                    <div style={{ fontFamily: "var(--font-mono)", fontSize: 16, fontWeight: 800, color: getEtaClass(a.Arribo) === "warn" ? "#0099ff" : "#22c55e", marginTop: 4 }}>
                                         {a.Arribo}
                                     </div>
                                 </div>
@@ -354,7 +372,7 @@ const BusMap = React.memo(function BusMap({
 
             {isFullscreen && arribos.length > 0 ? (
                 <div style={{ position: "absolute", bottom: envLocalSafeAreaBottom(16), left: 16, right: 16, zIndex: 1000, background: "var(--color-surface)", border: "1px solid var(--color-border)", borderRadius: "12px", padding: "16px", boxShadow: "0 8px 32px rgba(0,0,0,0.8)", display: "flex", gap: 16, alignItems: "center", animation: "slide-up 0.3s ease" }}>
-                    <div style={{ background: "var(--color-accent)", color: "#000", padding: "8px 12px", borderRadius: "8px", fontFamily: "var(--font-display)", fontWeight: 900, fontSize: 24, letterSpacing: 1, flexShrink: 0, boxShadow: "0 4px 12px rgba(245,166,35,0.3)" }}>
+                    <div style={{ background: "var(--color-accent)", color: "#fff", padding: "8px 12px", borderRadius: "8px", fontFamily: "var(--font-display)", fontWeight: 900, fontSize: 24, letterSpacing: 1, flexShrink: 0, boxShadow: "0 4px 12px rgba(0,153,255,0.3)" }}>
                         {arribos[0].DescripcionLinea}
                     </div>
                     <div style={{ flex: 1, minWidth: 0 }}>

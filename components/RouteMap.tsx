@@ -109,11 +109,11 @@ function createArrowIcon(bearing: number) {
 
 function createStopIcon(index: number, isSelected: boolean, accentColor: string) {
   const size = isSelected ? 32 : 22;
-  const bg = isSelected ? accentColor : "#1a1a2e";
+  const bg = isSelected ? accentColor : "#090909";
   const border = isSelected ? "#fff" : accentColor;
-  const textColor = isSelected ? "#000" : "#fff";
+  const textColor = "#fff";
   const shadow = isSelected
-    ? `0 0 0 4px rgba(245,166,35,0.35), 0 4px 16px rgba(0,0,0,0.7)`
+    ? `0 0 0 4px rgba(0,153,255,0.35), 0 4px 16px rgba(0,0,0,0.7)`
     : `0 2px 8px rgba(0,0,0,0.5)`;
 
   return L.divIcon({
@@ -124,7 +124,7 @@ function createStopIcon(index: number, isSelected: boolean, accentColor: string)
       border:2.5px solid ${border};
       border-radius:50%;
       display:flex;align-items:center;justify-content:center;
-      font-family:'Barlow Condensed',sans-serif;
+      font-family:'var(--font-display)',sans-serif;
       font-weight:900;font-size:${isSelected ? 13 : 10}px;
       color:${textColor};
       box-shadow:${shadow};
@@ -157,7 +157,7 @@ function createLiveBusIcon(count = 1) {
             position: absolute; 
             top: -20px; left: -20px; 
             width: 40px; height: 40px; 
-            background: rgba(245,166,35,0.4); 
+            background: rgba(0,153,255,0.4); 
             border-radius: 50%; 
             animation: pulse-ring 2s infinite ease-out;
             z-index: -1;
@@ -165,12 +165,12 @@ function createLiveBusIcon(count = 1) {
         <div class="bus-icon-container">
             <svg width="56" height="36" viewBox="0 0 32 32" style="filter: drop-shadow(0 4px 6px rgba(0,0,0,0.5));">
                 <!-- Bus Body -->
-                <rect x="2" y="8" width="28" height="15" rx="3" fill="#f5a623" />
+                <rect x="2" y="8" width="28" height="15" rx="3" fill="#0099ff" />
                 
                 <!-- Windows -->
-                <rect x="5" y="10" width="5" height="5" rx="1" fill="#111114" />
-                <rect x="12" y="10" width="6" height="5" rx="1" fill="#111114" />
-                <rect x="20" y="10" width="7" height="5" rx="1" fill="#111114" />
+                <rect x="5" y="10" width="5" height="5" rx="1" fill="#090909" />
+                <rect x="12" y="10" width="6" height="5" rx="1" fill="#090909" />
+                <rect x="20" y="10" width="7" height="5" rx="1" fill="#090909" />
                 
                 <!-- Headlight / Taillight -->
                 <rect x="28" y="18" width="2" height="3" fill="#ffffff" opacity="0.9" />
@@ -180,8 +180,8 @@ function createLiveBusIcon(count = 1) {
                 <rect x="2" y="16" width="28" height="1" fill="#fff" opacity="0.3" />
 
                 <!-- Wheels base -->
-                <path d="M 6 23 a 3 3 0 0 1 6 0 z" fill="#111114" />
-                <path d="M 20 23 a 3 3 0 0 1 6 0 z" fill="#111114" />
+                <path d="M 6 23 a 3 3 0 0 1 6 0 z" fill="#090909" />
+                <path d="M 20 23 a 3 3 0 0 1 6 0 z" fill="#090909" />
 
                 <!-- Wheels -->
                 <circle cx="9" cy="24" r="3" fill="#000" />
@@ -262,7 +262,7 @@ export default function RouteMap({
   lineNumber = "",
   codigoLineaParada = "",
   routeName = "Recorrido",
-  accentColor = "#f5a623",
+  accentColor = "#0099ff",
   liveBuses = [],
   ramalKey = "",
   ramalLabel = "",
@@ -351,7 +351,7 @@ export default function RouteMap({
           display: "flex", alignItems: "center", gap: 10,
         }}>
           {lineNumber && (
-            <span style={{ background: accentColor, color: "#000", borderRadius: 6, padding: "2px 10px", fontWeight: 900, fontSize: 18 }}>{lineNumber}</span>
+            <span style={{ background: accentColor, color: "#fff", borderRadius: 6, padding: "2px 10px", fontWeight: 900, fontSize: 18 }}>{lineNumber}</span>
           )}
           <span style={{ color: "var(--text)", fontSize: 13 }}>{routeName}</span>
         </div>
@@ -378,7 +378,7 @@ export default function RouteMap({
         </button>
         <button
           onClick={() => { setShowStopList(!showStopList); setSelectedStop(null); }}
-          style={{ background: showStopList ? accentColor : "var(--surface)", color: showStopList ? "#000" : "var(--text)", border: "1px solid var(--border)", borderRadius: "10px", width: 48, height: 48, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", boxShadow: "0 6px 16px rgba(0,0,0,0.6)" }}
+          style={{ background: showStopList ? accentColor : "var(--surface)", color: showStopList ? "#fff" : "var(--text)", border: "1px solid var(--border)", borderRadius: "10px", width: 48, height: 48, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", boxShadow: "0 6px 16px rgba(0,0,0,0.6)" }}
           title="Ver paradas"
         >
           <IconList />
@@ -390,7 +390,7 @@ export default function RouteMap({
         center={center}
         zoom={12}
         scrollWheelZoom={true}
-        style={{ height: "100%", width: "100%", zIndex: 1, flex: 1, background: "#111114" }}
+        style={{ height: "100%", width: "100%", zIndex: 1, flex: 1, background: "#090909" }}
       >
         <TileLayer
           url="https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}"
@@ -511,7 +511,7 @@ export default function RouteMap({
           <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "4px 16px 10px" }}>
             {lineNumber && (
               <div style={{
-                background: accentColor, color: "#000", borderRadius: 6,
+                background: accentColor, color: "#fff", borderRadius: 6,
                 padding: "3px 10px", fontFamily: "var(--display)", fontWeight: 900,
                 fontSize: 18, letterSpacing: 1, flexShrink: 0,
               }}>{lineNumber}</div>
@@ -559,8 +559,8 @@ export default function RouteMap({
                   }}
                   style={{
                     display: "flex", alignItems: "center", gap: 10, width: "100%",
-                    background: isSel ? `rgba(245,166,35,0.12)` : "transparent",
-                    border: isSel ? `1px solid rgba(245,166,35,0.4)` : "1px solid transparent",
+                    background: isSel ? `rgba(0,153,255,0.12)` : "transparent",
+                    border: isSel ? `1px solid rgba(0,153,255,0.4)` : "1px solid transparent",
                     borderRadius: 8, padding: "8px 10px", cursor: "pointer",
                     marginBottom: 3, transition: "all 0.15s ease", textAlign: "left",
                   }}
@@ -571,7 +571,7 @@ export default function RouteMap({
                     border: `2px solid ${isSel ? accentColor : "var(--border)"}`,
                     display: "flex", alignItems: "center", justifyContent: "center",
                     fontFamily: "var(--display)", fontWeight: 900, fontSize: 11,
-                    color: isSel ? "#000" : "var(--text-dim)", transition: "all 0.15s ease",
+                    color: isSel ? "#fff" : "var(--text-dim)", transition: "all 0.15s ease",
                   }}>
                     {stop.id}
                   </div>
@@ -609,8 +609,8 @@ export default function RouteMap({
           <div style={{
             width: 38, height: 38, borderRadius: "50%", flexShrink: 0,
             background: accentColor, display: "flex", alignItems: "center", justifyContent: "center",
-            fontFamily: "var(--display)", fontWeight: 900, fontSize: 16, color: "#000",
-            boxShadow: `0 4px 12px rgba(245,166,35,0.35)`,
+            fontFamily: "var(--display)", fontWeight: 900, fontSize: 16, color: "#fff",
+            boxShadow: `0 4px 12px rgba(0,153,255,0.35)`,
           }}>
             {selected.id}
           </div>
@@ -652,11 +652,11 @@ export default function RouteMap({
             rel="noopener noreferrer"
             style={{
               display: "flex", alignItems: "center", gap: 6,
-              background: accentColor, color: "#000",
+              background: accentColor, color: "#fff",
               borderRadius: 10, padding: "10px 14px",
               fontFamily: "var(--display)", fontWeight: 800, fontSize: 13,
               cursor: "pointer", textDecoration: "none", flexShrink: 0,
-              boxShadow: "0 4px 12px rgba(245,166,35,0.35)",
+              boxShadow: "0 4px 12px rgba(0,153,255,0.35)",
             }}
           >
             <GoogleMapsIcon />
@@ -707,13 +707,13 @@ function StopPopup({
     <div style={{ fontFamily: "var(--body)", minWidth: 200, padding: "2px 0" }}>
       <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
         <div style={{
-          background: accentColor, color: "#000", borderRadius: "50%",
+          background: accentColor, color: "#fff", borderRadius: "50%",
           width: 28, height: 28, display: "flex", alignItems: "center", justifyContent: "center",
           fontFamily: "var(--display)", fontWeight: 900, fontSize: 13, flexShrink: 0,
         }}>
           {stop.id}
         </div>
-        <div style={{ fontFamily: "var(--display)", fontWeight: 700, fontSize: 14, color: "#111", lineHeight: 1.2 }}>
+        <div style={{ fontFamily: "var(--display)", fontWeight: 700, fontSize: 14, color: "var(--text)", lineHeight: 1.2 }}>
           {stop.label}
         </div>
       </div>
@@ -724,7 +724,7 @@ function StopPopup({
           rel="noopener noreferrer"
           style={{
             flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 5,
-            background: accentColor, color: "#000", borderRadius: 8,
+            background: accentColor, color: "#fff", borderRadius: 8,
             padding: "8px 0", fontFamily: "var(--display)", fontWeight: 800, fontSize: 12,
             textDecoration: "none",
           }}
@@ -737,7 +737,7 @@ function StopPopup({
           rel="noopener noreferrer"
           style={{
             flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 5,
-            background: "#f0f0f0", color: "#111", borderRadius: 8,
+            background: "var(--surface2)", color: "var(--text)", border: "1px solid var(--border)", borderRadius: 8,
             padding: "8px 0", fontFamily: "var(--display)", fontWeight: 700, fontSize: 12,
             textDecoration: "none",
           }}
@@ -757,7 +757,7 @@ function StopPopup({
             alignItems: "center",
             justifyContent: "center",
             gap: 8,
-            background: "#111",
+            background: "var(--surface)",
             color: accentColor,
             border: `2px solid ${accentColor}`,
             borderRadius: 8,
@@ -776,7 +776,7 @@ function StopPopup({
             marginTop: 10,
             fontFamily: "var(--mono)",
             fontSize: 10,
-            color: "#666",
+            color: "var(--text-muted)",
             textAlign: "center",
             lineHeight: 1.4,
           }}

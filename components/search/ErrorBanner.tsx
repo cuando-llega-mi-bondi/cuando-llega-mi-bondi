@@ -9,7 +9,7 @@ export function ErrorBanner({ message, onClose }: ErrorBannerProps) {
     if (!message) return null;
 
     return (
-        <div className="flex animate-slide-up items-start gap-3 rounded-[10px] border border-danger/35 bg-danger/10 px-4 py-3.5">
+        <div className="flex animate-slide-up items-start gap-3 rounded-xl border border-danger/35 bg-danger/12 px-4 py-3.5">
             <span className="mt-0.5 shrink-0 text-danger">
                 <svg
                     width="20"
@@ -27,10 +27,10 @@ export function ErrorBanner({ message, onClose }: ErrorBannerProps) {
                 </svg>
             </span>
             <div className="flex-1">
-                <div className="mb-1 font-display text-[13px] font-bold text-danger">
+                <div className="mb-1 font-sans text-sm font-semibold tracking-[-0.01em] text-danger">
                     El servidor no responde
                 </div>
-                <div className="font-mono text-xs leading-relaxed text-danger/90">
+                <div className="font-sans text-xs leading-relaxed text-danger/90">
                     {message}
                 </div>
             </div>

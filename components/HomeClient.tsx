@@ -24,6 +24,7 @@ import { Footer } from "@/components/Footer";
 import { FavoritesList } from "@/components/FavoritesList";
 import { HistorialList } from "@/components/HistorialList";
 import { SearchFlow } from "@/components/SearchFlow";
+import { ArrivalsOverlay } from "@/components/ArrivalsOverlay";
 import { FavoriteNameModal } from "@/components/FavoriteNameModal";
 import { PageShell } from "@/components/layout";
 
@@ -45,6 +46,7 @@ export function HomeClient({ children }: { children?: ReactNode }) {
     const [pendingFav, setPendingFav] = useState<Favorito | null>(null);
     const [isNamingOpen, setIsNamingOpen] = useState(false);
     const [editingFav, setEditingFav] = useState<Favorito | null>(null);
+    const [sheetOpen, setSheetOpen] = useState(false);
 
     useUrlSync({
         codLinea,
@@ -59,7 +61,7 @@ export function HomeClient({ children }: { children?: ReactNode }) {
     });
     const { callesRaw, loadingCalles } = useCalles(codLinea);
     const { intersecciones, loadingInter } = useIntersecciones(codLinea, codCalle);
-    const { paradas, loadingParadas } = useParadas(
+    const { paradas } = useParadas(
         codLinea,
         codCalle,
         codInterseccion,
@@ -181,6 +183,13 @@ export function HomeClient({ children }: { children?: ReactNode }) {
         pushHistorialEntry,
     ]);
 
+    useEffect(() => {
+        document.body.classList.toggle("arrivals-overlay-open", sheetOpen);
+        return () => {
+            document.body.classList.remove("arrivals-overlay-open");
+        };
+    }, [sheetOpen]);
+
     const handleLineaChange = useCallback((val: string) => {
         setCodLinea(val);
         setCodCalle("");
@@ -214,7 +223,15 @@ export function HomeClient({ children }: { children?: ReactNode }) {
     const handleConsultar = useCallback(() => {
         if (!paradaId) return;
         setIsConsulting(true);
+        setSheetOpen(true);
     }, [paradaId]);
+
+    const handleCloseSheet = useCallback(() => {
+        setSheetOpen(false);
+        // Stop auto-refresh when the sheet is dismissed
+        setIsConsulting(false);
+    }, []);
+
 
     const handleFavFromArribos = useCallback((arribo: Arribo) => {
         const id = `${paradaId}_${arribo.CodigoLineaParada}`;
@@ -255,6 +272,7 @@ export function HomeClient({ children }: { children?: ReactNode }) {
         setCodLinea(fav.id.split("_")[1]);
         setSelectedRamal("TODOS");
         setIsConsulting(true);
+        setSheetOpen(true);
     }, []);
 
     const handleFetchArribos = useCallback(() => {
@@ -346,6 +364,7 @@ export function HomeClient({ children }: { children?: ReactNode }) {
         setSelectedRamal("TODOS");
         savedHistRef.current = ""; // allow re-saving if consulted again
         setIsConsulting(true);
+        setSheetOpen(true);
     }, []);
 
     const removeHistEntry = useCallback((id: string) => {
@@ -374,18 +393,11 @@ export function HomeClient({ children }: { children?: ReactNode }) {
                         lineaOptions={lineaOptions} calles={calles} interOptions={interOptions}
                         destinoOptions={destinoOptions} ramalOptions={ramalOptions}
                         loadingLineas={loadingLineas} loadingCalles={loadingCalles}
-                        loadingInter={loadingInter} loadingParadas={loadingParadas}
-                        loadingArribos={loadingArribos} error={error} setError={setError}
-                        displayArribos={displayArribos} selectedParada={selectedParada}
-                        lastUpdate={lastUpdate} handleConsultar={handleConsultar}
-                        fetchArribos={handleFetchArribos} handleFavFromArribos={handleFavFromArribos}
-                        calleLabel={calleLabel}
-                        interseccionLabel={interseccionLabel}
-                        otrasLineas={otrasLineas}
-                        loadingOtras={loadingOtras}
-                        onSelectOtraLinea={handleSelectOtraLinea}
-                        liveSharings={liveSharings}
-                        telegramUsername={process.env.NEXT_PUBLIC_TELEGRAM_BOT_USERNAME || "cuandollegamdp_bot"}
+                        loadingInter={loadingInter}
+                        loadingArribos={loadingArribos}
+                        error={error}
+                        setError={setError}
+                        handleConsultar={handleConsultar}
                     />
                 ) : (
                     <>
@@ -404,6 +416,33 @@ export function HomeClient({ children }: { children?: ReactNode }) {
                     </>
                 )}
             </PageShell>
+
+            {sheetOpen ? (
+                <ArrivalsOverlay
+                    isOpen={sheetOpen}
+                    onClose={handleCloseSheet}
+                    codLinea={codLinea}
+                    paradaId={paradaId}
+                    selectedRamal={selectedRamal}
+                    setSelectedRamal={setSelectedRamal}
+                    isConsulting={isConsulting}
+                    loadingArribos={loadingArribos}
+                    displayArribos={displayArribos}
+                    selectedParada={selectedParada}
+                    lastUpdate={lastUpdate}
+                    fetchArribos={handleFetchArribos}
+                    calleLabel={calleLabel}
+                    interseccionLabel={interseccionLabel}
+                    handleFavFromArribos={handleFavFromArribos}
+                    otrasLineas={otrasLineas}
+                    loadingOtras={loadingOtras}
+                    onSelectOtraLinea={handleSelectOtraLinea}
+                    liveSharings={liveSharings}
+                    telegramUsername={process.env.NEXT_PUBLIC_TELEGRAM_BOT_USERNAME || "cuandollegamdp_bot"}
+                    error={error}
+                    setError={setError}
+                />
+            ) : null}
 
             <FavoriteNameModal
                 isOpen={isNamingOpen}
