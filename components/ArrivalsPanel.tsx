@@ -4,7 +4,7 @@ import { ArriboCard } from "./ArriboCard";
 import { ShareButton } from "./ShareButton";
 import { IconRefresh } from "./icons/IconRefresh";
 import { OtrasLineasSuggestion } from "./OtrasLineasSuggestion";
-import { type Arribo, type Parada, type Linea } from "@/lib/cuandoLlega.types";
+import { type Arribo, type Parada, type Linea } from "@/lib/types";
 const BusMap = dynamic(() => import('@/components/Map'), {
     ssr: false,
     loading: () => <div style={{ height: "260px", width: "100%", borderRadius: "12px", background: "var(--surface2)", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: "16px", color: "var(--text-dim)", fontFamily: "var(--mono)", fontSize: 13, border: "1px solid var(--border)" }}>Cargando mapa...</div>
