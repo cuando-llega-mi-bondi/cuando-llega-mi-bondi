@@ -220,7 +220,14 @@ export function Combobox({
               : {};
 
     return (
-        <div ref={ref} className="relative w-full">
+        <div
+            ref={ref}
+            className={cn(
+                "relative w-full",
+                // Keeps the active dropdown above neighboring fields on mobile.
+                open ? "z-220" : "z-0",
+            )}
+        >
             <button
                 ref={triggerRef}
                 id={baseId}
@@ -256,7 +263,7 @@ export function Combobox({
                     id={listboxId}
                     role="listbox"
                     aria-label="Opciones"
-                    className="absolute left-0 right-0 top-[calc(100%+6px)] z-[100] overflow-hidden rounded-2xl border border-white/12 bg-black/95 shadow-[rgba(0,153,255,0.15)_0px_0px_0px_1px,0_18px_36px_rgba(0,0,0,0.65)]"
+                    className="absolute left-0 right-0 top-[calc(100%+6px)] z-230 overflow-hidden rounded-2xl border border-white/12 bg-black/95 shadow-[rgba(0,153,255,0.15)_0px_0px_0px_1px,0_18px_36px_rgba(0,0,0,0.65)]"
                 >
                     {showFilter ? (
                         <div className="border-b border-white/10 px-2.5 py-2">
