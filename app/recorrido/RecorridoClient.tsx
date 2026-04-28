@@ -15,6 +15,8 @@ import {
   MapErrorOverlay,
   MapLoadingOverlay,
 } from "@/components/recorrido";
+import { useFavoritos } from "@/lib/hooks";
+import { BottomNav } from "@/components/BottomNav";
 
 // Leaflet can't run on the server — dynamic import with ssr:false is mandatory
 const RouteMap = dynamic(() => import("@/components/map/RouteMap"), {
@@ -60,6 +62,7 @@ function normalizeRamal(value: string | null | undefined) {
 type Step = "selector" | "map";
 
 export default function RecorridoClient() {
+  const { favoritos } = useFavoritos();
   // ── Line selector state ──────────────────────────────────────────────────────
   const [step, setStep] = useState<Step>("selector");
   const [lines, setLines] = useState<Linea[]>([]);
@@ -397,6 +400,7 @@ export default function RecorridoClient() {
             ))
           )}
         </div>
+        <BottomNav tab="buscar" setTab={() => {}} favCount={favoritos.length} />
       </div>
     );
   }
@@ -489,6 +493,7 @@ export default function RecorridoClient() {
           />
         )}
       </div>
+      <BottomNav tab="buscar" setTab={() => {}} favCount={favoritos.length} />
     </div>
   );
 }
