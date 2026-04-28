@@ -42,6 +42,8 @@ export async function getParadasParaMapa(codLinea: string): Promise<ParadaMapa[]
         Codigo: string;
         Identificador: string;
         Descripcion: string;
+        AbreviaturaBandera?: string | null;
+        AbreviaturaAmpliadaBandera?: string | null;
         LatitudParada: string | null;
         LongitudParada: string | null;
     };
@@ -56,8 +58,17 @@ export async function getParadasParaMapa(codLinea: string): Promise<ParadaMapa[]
         const lng = parseFloat(first.LongitudParada ?? "");
         if (Number.isNaN(lat) || Number.isNaN(lng)) continue;
 
+        const ramales = Array.from(
+            new Set(
+                entries
+                    .map((entry) =>
+                        (entry.AbreviaturaBandera ?? entry.AbreviaturaAmpliadaBandera ?? "").trim(),
+                    )
+                    .filter((ramal): ramal is string => Boolean(ramal)),
+            ),
+        );
         const label = /\s/.test(first.Descripcion) ? first.Descripcion : id;
-        result.push({ id, codigo: first.Codigo, label, lat, lng });
+        result.push({ id, codigo: first.Codigo, label, lat, lng, ramales });
     }
 
     return result;

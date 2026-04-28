@@ -51,6 +51,10 @@ type GeoJsonCollection = {
   features: GeoFeature[];
 };
 
+function normalizeRamal(value: string | null | undefined) {
+  return (value ?? "").trim().toLowerCase().replace(/\s+/g, " ");
+}
+
 // ─── Main component ───────────────────────────────────────────────────────────
 
 type Step = "selector" | "map";
@@ -221,6 +225,7 @@ export default function RecorridoClient() {
             label: `Parada ${i + 1}`,
             lat,
             lng,
+            ramales: [manualRamal.label],
           };
         });
 
@@ -306,16 +311,34 @@ export default function RecorridoClient() {
     return selectedRamal.puntos.map((p) => [p.Latitud, p.Longitud]);
   }, [selectedRamal]);
 
+  const filteredParadas = useMemo(() => {
+    if (!selectedRamal) return paradas;
+
+    const selectedLabel = normalizeRamal(selectedRamal.label);
+    const selectedKey = normalizeRamal(selectedRamal.key);
+
+    const filtered = paradas.filter((parada) => {
+      if (!parada.ramales.length) return true;
+      return parada.ramales.some((ramal) => {
+        const normalized = normalizeRamal(ramal);
+        return normalized === selectedLabel || normalized === selectedKey;
+      });
+    });
+
+    // Fallback safety: if upstream labels drift unexpectedly, avoid emptying the map.
+    return filtered.length > 0 ? filtered : paradas;
+  }, [paradas, selectedRamal]);
+
   const mapStops = useMemo(
     () =>
-      paradas.map((p, i) => ({
+      filteredParadas.map((p, i) => ({
         id: i + 1,
         identificadorParada: p.id,
         lat: p.lat,
         lng: p.lng,
         label: p.label,
       })),
-    [paradas]
+    [filteredParadas]
   );
 
   // ─────────────────────────────────────────────────────────────────────────────
@@ -405,7 +428,7 @@ export default function RecorridoClient() {
           </div>
           {!mapLoading && selectedLine && (
             <div className="mt-0.5 font-mono text-[11px] text-text-dim">
-              {paradas.length > 0 ? `${paradas.length} paradas · ` : ""}{ramales.length > 1 ? `${ramales.length} ramales` : ""}
+              {mapStops.length > 0 ? `${mapStops.length} paradas · ` : ""}{ramales.length > 1 ? `${ramales.length} ramales` : ""}
             </div>
           )}
         </div>

@@ -78,4 +78,5 @@ export interface ParadaMapa {
     label: string;
     lat: number;
     lng: number;
+    ramales: string[];
 }
