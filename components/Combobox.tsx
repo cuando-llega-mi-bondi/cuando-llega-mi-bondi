@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef, useId, useCallback, useMemo } from "react";
 import { IconChevron } from "./icons/IconChevron";
+import { cn } from "@/lib/utils";
 
 export function Combobox({
     placeholder,
@@ -210,7 +211,7 @@ export function Combobox({
               : {};
 
     return (
-        <div ref={ref} style={{ position: "relative", width: "100%" }}>
+        <div ref={ref} className="relative w-full">
             <button
                 ref={triggerRef}
                 id={baseId}
@@ -220,69 +221,36 @@ export function Combobox({
                 aria-controls={listboxId}
                 aria-haspopup="listbox"
                 aria-autocomplete="list"
-                {...(activeDescendantId ? { "aria-activedescendant": activeDescendantId } : {})}
+                {...(activeDescendantId
+                    ? { "aria-activedescendant": activeDescendantId }
+                    : {})}
                 {...comboboxLabelProps}
                 onClick={handleTriggerClick}
                 onKeyDown={onTriggerKeyDown}
                 disabled={disabled}
-                style={{
-                    width: "100%",
-                    minHeight: 44,
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "space-between",
-                    padding: "10px 14px",
-                    background: "var(--surface2)",
-                    border: "1px solid var(--border)",
-                    borderRadius: 8,
-                    color: selected ? "var(--text)" : "var(--text-dim)",
-                    fontFamily: "var(--display)",
-                    fontSize: 16,
-                    fontWeight: 600,
-                    letterSpacing: 0.5,
-                    cursor: disabled ? "not-allowed" : "pointer",
-                    opacity: disabled ? 0.5 : 1,
-                    transition: "border-color 0.15s",
-                }}
-                onMouseEnter={(e) => {
-                    if (!disabled)
-                        (e.currentTarget as HTMLElement).style.borderColor =
-                            "var(--accent)";
-                }}
-                onMouseLeave={(e) => {
-                    (e.currentTarget as HTMLElement).style.borderColor =
-                        "var(--border)";
-                }}
+                className={cn(
+                    "flex min-h-11 w-full items-center justify-between rounded-lg border bg-surface-2 px-3.5 py-2.5 font-display text-base font-semibold tracking-[0.5px] transition-colors",
+                    selected ? "text-text" : "text-text-dim",
+                    disabled
+                        ? "cursor-not-allowed border-border opacity-50"
+                        : open
+                          ? "cursor-pointer border-accent"
+                          : "cursor-pointer border-border hover:border-accent",
+                )}
             >
                 <span>{loading ? "Cargando..." : selected?.label ?? placeholder}</span>
                 <IconChevron open={open} />
             </button>
 
-            {open && (
+            {open ? (
                 <div
                     id={listboxId}
                     role="listbox"
                     aria-label="Opciones"
-                    style={{
-                        position: "absolute",
-                        top: "calc(100% + 4px)",
-                        left: 0,
-                        right: 0,
-                        zIndex: 100,
-                        background: "var(--surface2)",
-                        border: "1px solid var(--border)",
-                        borderRadius: 8,
-                        boxShadow: "0 8px 32px rgba(0,0,0,0.5)",
-                        overflow: "hidden",
-                    }}
+                    className="absolute left-0 right-0 top-[calc(100%+4px)] z-[100] overflow-hidden rounded-lg border border-border bg-surface-2 shadow-[0_8px_32px_rgba(0,0,0,0.5)]"
                 >
-                    {showFilter && (
-                        <div
-                            style={{
-                                padding: "8px 10px",
-                                borderBottom: "1px solid var(--border)",
-                            }}
-                        >
+                    {showFilter ? (
+                        <div className="border-b border-border px-2.5 py-2">
                             <input
                                 ref={inputRef}
                                 value={query}
@@ -293,31 +261,14 @@ export function Combobox({
                                 onKeyDown={onFilterKeyDown}
                                 placeholder="Buscar..."
                                 aria-label="Filtrar opciones"
-                                style={{
-                                    width: "100%",
-                                    minHeight: 40,
-                                    background: "var(--bg)",
-                                    border: "1px solid var(--border)",
-                                    borderRadius: 6,
-                                    color: "var(--text)",
-                                    padding: "8px 10px",
-                                    fontFamily: "var(--mono)",
-                                    fontSize: 13,
-                                    outline: "none",
-                                }}
+                                className="min-h-10 w-full rounded-md border border-border bg-bg px-2.5 py-2 font-mono text-[13px] text-text outline-none transition-colors focus:border-accent"
                             />
                         </div>
-                    )}
-                    <div style={{ maxHeight: 220, overflowY: "auto" }}>
+                    ) : null}
+
+                    <div className="max-h-[220px] overflow-y-auto">
                         {filtered.length === 0 ? (
-                            <div
-                                style={{
-                                    padding: "12px 14px",
-                                    color: "var(--text-dim)",
-                                    fontSize: 14,
-                                    fontFamily: "var(--mono)",
-                                }}
-                            >
+                            <div className="px-3.5 py-3 font-mono text-sm text-text-dim">
                                 Sin resultados
                             </div>
                         ) : (
@@ -325,6 +276,7 @@ export function Combobox({
                                 const isActive = i === safeActiveIndex;
                                 const isSelected = o.value === value;
                                 const optId = `${listboxId}-opt-${o.value}`;
+
                                 return (
                                     <div
                                         key={o.value}
@@ -337,30 +289,15 @@ export function Combobox({
                                         tabIndex={-1}
                                         onMouseDown={(e) => e.preventDefault()}
                                         onClick={() => handleSelect(o.value)}
-                                        style={{
-                                            width: "100%",
-                                            textAlign: "left",
-                                            padding: "12px 14px",
-                                            minHeight: 44,
-                                            display: "flex",
-                                            alignItems: "center",
-                                            boxSizing: "border-box",
-                                            background: isActive
-                                                ? "rgba(255,255,255,0.08)"
-                                                : isSelected
-                                                  ? "rgba(245,166,35,0.12)"
-                                                  : "transparent",
-                                            color: isSelected
-                                                ? "var(--accent)"
-                                                : "var(--text)",
-                                            fontFamily: "var(--display)",
-                                            fontSize: 15,
-                                            fontWeight: 600,
-                                            border: "none",
-                                            cursor: "pointer",
-                                            transition: "background 0.1s",
-                                        }}
                                         onMouseEnter={() => setActiveIndex(i)}
+                                        className={cn(
+                                            "flex min-h-11 w-full cursor-pointer items-center px-3.5 py-3 text-left font-display text-[15px] font-semibold transition-colors",
+                                            isActive
+                                                ? "bg-white/10 text-text"
+                                                : isSelected
+                                                  ? "bg-accent/15 text-accent"
+                                                  : "bg-transparent text-text",
+                                        )}
                                     >
                                         {o.label}
                                     </div>
@@ -369,7 +306,7 @@ export function Combobox({
                         )}
                     </div>
                 </div>
-            )}
+            ) : null}
         </div>
     );
 }

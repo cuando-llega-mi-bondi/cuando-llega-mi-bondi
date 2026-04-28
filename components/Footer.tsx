@@ -2,15 +2,7 @@
 
 export function Footer() {
     return (
-        <footer style={{
-            paddingTop: 12,
-            paddingRight: "calc(20px + env(safe-area-inset-right, 0px))",
-            paddingBottom: "calc(12px + env(safe-area-inset-bottom, 0px))",
-            paddingLeft: "calc(20px + env(safe-area-inset-left, 0px))",
-            borderTop: "1px solid var(--border)",
-            fontFamily: "var(--mono)", fontSize: 10, color: "var(--text-muted)",
-            textAlign: "center", letterSpacing: 1,
-        }}>
+        <footer className="border-t border-border px-[calc(20px+env(safe-area-inset-left,0px))] pt-3 pb-[calc(12px+env(safe-area-inset-bottom,0px))] pr-[calc(20px+env(safe-area-inset-right,0px))] text-center font-mono text-[10px] tracking-[1px] text-text-muted">
             DATOS: MUNICIPALIDAD DE GENERAL PUEYRREDÓN · MGP
         </footer>
     );

@@ -1,0 +1,45 @@
+import { Combobox } from "@/components/Combobox";
+
+interface StepFieldProps {
+    labelId: string;
+    stepText: string;
+    value: string;
+    onChange: (value: string) => void;
+    options: { value: string; label: string }[];
+    placeholder: string;
+    loading?: boolean;
+    disabled?: boolean;
+    className?: string;
+}
+
+export function StepField({
+    labelId,
+    stepText,
+    value,
+    onChange,
+    options,
+    placeholder,
+    loading,
+    disabled,
+    className,
+}: StepFieldProps) {
+    return (
+        <div className={className}>
+            <label
+                id={labelId}
+                className="mb-1.5 block font-mono text-[11px] tracking-[2px] text-text-dim"
+            >
+                {stepText}
+            </label>
+            <Combobox
+                aria-labelledby={labelId}
+                placeholder={placeholder}
+                value={value}
+                onChange={onChange}
+                options={options}
+                loading={loading}
+                disabled={disabled}
+            />
+        </div>
+    );
+}

@@ -1,4 +1,4 @@
-import { Linea } from "./cuandoLlega.types";
+import type { Linea } from "./types";
 
 export interface ManualRouteConfig {
   line: Linea;

@@ -1,86 +1,77 @@
 @import "tailwindcss";
 
-
-:root {
-    --bg: #0a0a0b;
-    --surface: #111114;
-    --surface2: #1a1a1f;
-    --border: #2a2a32;
-    --accent: #f5a623;
-    --accent2: #e8522a;
-    --text: #e8e8ec;
-    --text-dim: #6b6b7a;
-    --text-muted: #3a3a46;
-    --green: #22c55e;
-    --red: #ef4444;
-    --mono: 'Share Tech Mono', monospace;
-    --display: 'Barlow Condensed', sans-serif;
-    --body: 'Barlow', sans-serif;
+@theme inline {
+    --color-bg: #0a0a0b;
+    --color-surface: #111114;
+    --color-surface-2: #1a1a1f;
+    --color-border: #2a2a32;
+    --color-accent: #f5a623;
+    --color-accent-2: #e8522a;
+    --color-text: #e8e8ec;
+    --color-text-dim: #6b6b7a;
+    --color-text-muted: #3a3a46;
+    --color-success: #22c55e;
+    --color-danger: #ef4444;
+    --font-display: "Barlow Condensed", sans-serif;
+    --font-mono: "Share Tech Mono", monospace;
+    --font-sans: "Barlow", sans-serif;
+    --animate-slide-up: slide-up 0.25s ease forwards;
+    --animate-arrival-row: slide-up 0.35s ease forwards;
+    --animate-blink: blink 1s step-end infinite;
+    --animate-spin-slow: spin-slow 1.5s linear infinite;
+    --animate-skeleton-shimmer: skeleton-shimmer 1.4s ease-in-out infinite;
+    --animate-pulse-soft: pulse 1.5s ease-in-out infinite;
 }
 
-* {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
-}
-
-html {
-    background: var(--bg);
-    color: var(--text);
-    font-family: var(--body);
-    -webkit-font-smoothing: antialiased;
-}
-
-body {
-    min-height: 100dvh;
-    background: var(--bg);
-    background-image: radial-gradient(ellipse 80% 50% at 50% -20%, rgba(245, 166, 35, 0.07) 0%, transparent 60%);
-}
-
-/* Keyboard focus — visible ring without changing mouse click outline */
-:focus-visible {
-    outline: 2px solid var(--accent);
-    outline-offset: 2px;
-}
-
-button:focus:not(:focus-visible),
-[role="combobox"]:focus:not(:focus-visible) {
-    outline: none;
-}
-
-@media (prefers-reduced-motion: reduce) {
-
-    .arrival-row,
-    .motion-step {
-        animation: none !important;
-        opacity: 1;
+@layer base {
+    :root {
+        --bg: var(--color-bg);
+        --surface: var(--color-surface);
+        --surface2: var(--color-surface-2);
+        --border: var(--color-border);
+        --accent: var(--color-accent);
+        --accent2: var(--color-accent-2);
+        --text: var(--color-text);
+        --text-dim: var(--color-text-dim);
+        --text-muted: var(--color-text-muted);
+        --green: var(--color-success);
+        --red: var(--color-danger);
+        --display: var(--font-display);
+        --mono: var(--font-mono);
+        --body: var(--font-sans);
     }
 
-    .blink {
-        animation: none;
-        opacity: 0.75;
+    * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
     }
 
-    .spin-slow {
-        animation: none;
+    html {
+        background: var(--color-bg);
+        color: var(--color-text);
+        font-family: var(--font-sans);
+        -webkit-font-smoothing: antialiased;
     }
 
-    .marker-stop::after {
-        animation: none;
-        opacity: 0;
+    body {
+        min-height: 100dvh;
+        background: var(--color-bg);
+        background-image: radial-gradient(
+            ellipse 80% 50% at 50% -20%,
+            rgb(245 166 35 / 0.07) 0%,
+            transparent 60%
+        );
     }
 
-    .bus-icon-container {
-        transition: none;
+    :focus-visible {
+        outline: 2px solid var(--color-accent);
+        outline-offset: 2px;
     }
 
-    .bus-icon-container:hover {
-        transform: none;
-    }
-
-    .arrivals-skeleton-row {
-        animation: none;
-        background: var(--surface2);
+    button:focus:not(:focus-visible),
+    [role="combobox"]:focus:not(:focus-visible) {
+        outline: none;
     }
 }
 
@@ -89,11 +80,11 @@ button:focus:not(:focus-visible),
 }
 
 ::-webkit-scrollbar-track {
-    background: var(--bg);
+    background: var(--color-bg);
 }
 
 ::-webkit-scrollbar-thumb {
-    background: var(--border);
+    background: var(--color-border);
     border-radius: 2px;
 }
 
@@ -122,7 +113,6 @@ button:focus:not(:focus-visible),
 }
 
 @keyframes blink {
-
     0%,
     100% {
         opacity: 1;
@@ -144,16 +134,28 @@ button:focus:not(:focus-visible),
 }
 
 @keyframes pulse {
-    0%, 100% {
+    0%,
+    100% {
         opacity: 1;
     }
+
     50% {
         opacity: 0.5;
     }
 }
 
+@keyframes skeleton-shimmer {
+    0% {
+        background-position: 100% 0;
+    }
+
+    100% {
+        background-position: -100% 0;
+    }
+}
+
 .arrival-row {
-    animation: slide-up 0.35s ease forwards;
+    animation: var(--animate-arrival-row);
     animation-fill-mode: both;
 }
 
@@ -170,15 +172,15 @@ button:focus:not(:focus-visible),
 }
 
 .motion-step {
-    animation: slide-up 0.25s ease forwards;
+    animation: var(--animate-slide-up);
 }
 
 .arrivals-loading-panel {
     padding: 24px 16px 28px;
     text-align: center;
     border-radius: 10px;
-    border: 1px solid var(--border);
-    background: var(--surface);
+    border: 1px solid var(--color-border);
+    background: var(--color-surface);
 }
 
 .arrivals-skeleton-row {
@@ -186,128 +188,38 @@ button:focus:not(:focus-visible),
     border-radius: 10px;
     background: linear-gradient(
         90deg,
-        var(--surface2) 0%,
-        rgba(255, 255, 255, 0.06) 50%,
-        var(--surface2) 100%
+        var(--color-surface-2) 0%,
+        rgb(255 255 255 / 0.06) 50%,
+        var(--color-surface-2) 100%
     );
     background-size: 220% 100%;
-    animation: skeleton-shimmer 1.4s ease-in-out infinite;
-}
-
-@keyframes skeleton-shimmer {
-    0% {
-        background-position: 100% 0;
-    }
-
-    100% {
-        background-position: -100% 0;
-    }
+    animation: var(--animate-skeleton-shimmer);
 }
 
 .blink {
-    animation: blink 1s step-end infinite;
+    animation: var(--animate-blink);
 }
 
 .spin-slow {
-    animation: spin-slow 1.5s linear infinite;
+    animation: var(--animate-spin-slow);
 }
 
-/* --- Leaflet Custom Markers --- */
-.leaflet-container {
-    background: #111114 !important; /* dark fallback */
-    font-family: var(--body);
-}
+@media (prefers-reduced-motion: reduce) {
+    .arrival-row,
+    .motion-step,
+    .blink,
+    .spin-slow,
+    .arrivals-skeleton-row {
+        animation: none !important;
+    }
 
-.marker-stop {
-    width: 20px;
-    height: 20px;
-    background-color: #3b82f6;
-    border-radius: 50%;
-    border: 3px solid #fff;
-    box-shadow: 0 0 10px rgba(0,0,0,0.5);
-    position: relative;
-    margin-left: -10px;
-    margin-top: -10px;
-}
-.marker-stop::after {
-    content: '';
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    top: -3px;
-    left: -3px;
-    border: 3px solid #3b82f6;
-    border-radius: 50%;
-    z-index: -1;
-    animation: pulse-ring 2s infinite ease-out;
-}
-@keyframes pulse-ring {
-    0% { transform: scale(1); opacity: 0.8; }
-    100% { transform: scale(3); opacity: 0; }
-}
+    .arrival-row,
+    .motion-step,
+    .blink {
+        opacity: 1 !important;
+    }
 
-.bus-icon-container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    margin-top: -30px;
-    margin-left: -32px; /* centered horizontally roughly */
-    transition: transform 0.2s;
-}
-.bus-icon-container:hover {
-    transform: scale(1.15) rotate(-2deg);
-    z-index: 1000 !important;
-}
-
-/* ── RouteMap: stop icon container ── */
-.stop-icon-clear {
-    background: none !important;
-    border: none !important;
-}
-
-/* ── Leaflet popup – dark mode ── */
-.leaflet-popup-content-wrapper {
-    background: #1a1a1f !important;
-    color: #e8e8ec !important;
-    border: 1px solid #2a2a32 !important;
-    border-radius: 12px !important;
-    box-shadow: 0 8px 32px rgba(0,0,0,0.7) !important;
-    padding: 0 !important;
-}
-.leaflet-popup-content {
-    margin: 12px 14px !important;
-    line-height: 1.4 !important;
-}
-.leaflet-popup-tip {
-    background: #1a1a1f !important;
-}
-.leaflet-popup-close-button {
-    color: #6b6b7a !important;
-    font-size: 18px !important;
-    top: 6px !important;
-    right: 8px !important;
-}
-
-/* ── Home: server-rendered SEO intro ── */
-.home-seo-intro {
-    margin-bottom: 16px;
-    padding-bottom: 4px;
-    border-bottom: 1px solid var(--border);
-}
-
-.home-seo-intro__title {
-    font-family: var(--display);
-    font-weight: 700;
-    font-size: 1.125rem;
-    line-height: 1.25;
-    letter-spacing: 0.02em;
-    color: var(--text);
-    margin: 0 0 8px;
-}
-
-.home-seo-intro__text {
-    font-size: 0.875rem;
-    line-height: 1.45;
-    color: var(--text-dim);
-    margin: 0;
+    .arrivals-skeleton-row {
+        background: var(--color-surface-2);
+    }
 }

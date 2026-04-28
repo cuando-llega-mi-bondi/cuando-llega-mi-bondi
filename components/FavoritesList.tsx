@@ -1,6 +1,7 @@
 import { memo } from "react";
 import { IconX } from "./icons/IconX";
-import { type Favorito } from "@/lib/cuandoLlega.types";
+import type { Favorito } from "@/lib/types";
+import { Button, Card } from "@/components/ui";
 
 interface FavoritesListProps {
     favoritos: Favorito[];
@@ -18,19 +19,15 @@ const IconEdit = () => (
 
 export const FavoritesList = memo(function FavoritesList({ favoritos, onView, onRemove, onRename }: FavoritesListProps) {
     if (favoritos.length === 0) {
-        // ... (existing empty state)
         return (
-            <div style={{
-                marginTop: 40, textAlign: "center", fontFamily: "var(--mono)",
-                color: "var(--text-dim)", fontSize: 13, letterSpacing: 1,
-            }}>
-                <div style={{ display: "flex", justifyContent: "center", marginBottom: 16, color: "var(--text-muted)" }}>
+            <div className="mt-10 text-center font-mono text-[13px] tracking-[1px] text-text-dim">
+                <div className="mb-4 flex justify-center text-text-muted">
                     <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
                         <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
                     </svg>
                 </div>
                 <div>Guardá paradas como favoritas</div>
-                <div style={{ fontSize: 11, marginTop: 6, color: "var(--text-muted)" }}>
+                <div className="mt-1.5 text-[11px] text-text-muted">
                     Presioná el ícono de estrella en cualquier arribo para guardar
                 </div>
             </div>
@@ -38,60 +35,49 @@ export const FavoritesList = memo(function FavoritesList({ favoritos, onView, on
     }
 
     return (
-        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+        <div className="flex flex-col gap-2.5">
             {favoritos.map(fav => (
-                <div key={fav.id} style={{
-                    background: "var(--surface)", border: "1px solid var(--border)",
-                    borderRadius: 10, padding: "14px 16px", display: "flex", alignItems: "center", gap: 12,
-                }}>
-                    <div style={{
-                        background: "var(--accent)", color: "#000", borderRadius: 6,
-                        padding: "4px 10px", fontFamily: "var(--display)", fontWeight: 900, fontSize: 18,
-                        minWidth: 56, textAlign: "center", flexShrink: 0,
-                    }}>
+                <Card key={fav.id} className="flex items-center gap-3 rounded-[10px] px-4 py-3.5">
+                    <div className="min-w-14 flex-shrink-0 rounded-md bg-accent px-2.5 py-1 text-center font-display text-lg font-black text-black">
                         {fav.descripcionLinea}
                     </div>
-                    <div style={{ flex: 1 }}>
-                        <div style={{ fontFamily: "var(--display)", fontWeight: 700, fontSize: 15, marginBottom: 2 }}>
+                    <div className="flex-1">
+                        <div className="mb-0.5 font-display text-[15px] font-bold text-text">
                             {fav.nombre}
                         </div>
-                        <div style={{ fontFamily: "var(--mono)", fontSize: 11, color: "var(--text-dim)" }}>
+                        <div className="font-mono text-[11px] text-text-dim">
                             {fav.identificadorParada}
                         </div>
                     </div>
-                    <div style={{ display: "flex", gap: 6 }}>
-                        <button
+                    <div className="flex gap-1.5">
+                        <Button
                             onClick={() => onRename(fav)}
-                            style={{
-                                background: "none", border: "1px solid var(--border)", borderRadius: 6,
-                                color: "var(--text-dim)", padding: "6px 8px", cursor: "pointer",
-                            }}
+                            variant="secondary"
+                            size="icon"
+                            className="h-9 w-9 rounded-md border-border p-0 text-text-dim"
                             title="Editar nombre"
                         >
                             <IconEdit />
-                        </button>
-                        <button
+                        </Button>
+                        <Button
                             onClick={() => onView(fav)}
-                            style={{
-                                background: "var(--accent)", border: "none", borderRadius: 6, color: "#000",
-                                padding: "6px 12px", fontFamily: "var(--display)", fontWeight: 700,
-                                fontSize: 13, cursor: "pointer",
-                            }}
+                            variant="primary"
+                            size="sm"
+                            className="rounded-md px-3 text-[13px]"
                         >
                             VER
-                        </button>
-                        <button
+                        </Button>
+                        <Button
                             onClick={() => onRemove(fav.id)}
-                            style={{
-                                background: "none", border: "1px solid var(--border)", borderRadius: 6,
-                                color: "var(--text-dim)", padding: "6px 8px", cursor: "pointer",
-                            }}
+                            variant="secondary"
+                            size="icon"
+                            className="h-9 w-9 rounded-md border-border p-0 text-text-dim"
                             title="Eliminar"
                         >
                             <IconX />
-                        </button>
+                        </Button>
                     </div>
-                </div>
+                </Card>
             ))}
         </div>
     );

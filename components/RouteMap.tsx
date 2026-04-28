@@ -5,6 +5,7 @@ import React, { useEffect, useState, useRef, useMemo, Fragment } from "react";
 import { MapContainer, TileLayer, Marker, Polyline, useMap, Popup } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
+import "@/components/map/leaflet.css";
 import { encodeLiveSharePayload } from "@/lib/liveSharePayload";
 
 // ─── Icons ────────────────────────────────────────────────────────────────────
@@ -272,17 +273,6 @@ export default function RouteMap({
   const [showStopList, setShowStopList] = useState(false);
   const [search, setSearch] = useState("");
   const [fitTrigger, setFitTrigger] = useState(0);
-
-  // Re-fit map when the route changes (line/ramal switch)
-  const routeKey = routeLine[0]?.toString() ?? "";
-  const prevRouteKey = useRef(routeKey);
-  useEffect(() => {
-    if (prevRouteKey.current !== routeKey) {
-      prevRouteKey.current = routeKey;
-      setFitTrigger((f) => f + 1);
-      setSelectedStop(null);
-    }
-  }, [routeKey]);
 
   const bounds = useMemo<L.LatLngBoundsExpression | null>(() => {
     if (routeLine.length === 0) return null;

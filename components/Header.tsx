@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { IconBus } from "./icons/IconBus";
+import { cn } from "@/lib/utils";
 
 interface HeaderProps {
     tab: "buscar" | "favoritos";
@@ -12,74 +12,47 @@ interface HeaderProps {
 
 export function Header({ tab, setTab, favCount }: HeaderProps) {
     const router = useRouter();
-    // Skip SSR entirely for the header content to avoid hydration mismatches
-    // caused by browser extensions or varying server/client environments.
-    const [mounted, setMounted] = useState(false);
-    useEffect(() => { setMounted(true); }, []);
 
     return (
-        <header style={{
-            paddingTop: "calc(16px + env(safe-area-inset-top, 0px))",
-            paddingRight: "calc(20px + env(safe-area-inset-right, 0px))",
-            paddingBottom: "0px",
-            paddingLeft: "calc(20px + env(safe-area-inset-left, 0px))",
-            borderBottomWidth: "1px",
-            borderBottomStyle: "solid",
-            borderBottomColor: "var(--border)",
-            background: "var(--surface)",
-            minHeight: "90px",
-            display: "block",
-            width: "100%",
-            boxSizing: "border-box",
-        }}>
-            {mounted ? (
-                <div style={{ maxWidth: 520, margin: "0 auto" }}>
-                    {/* Logo row */}
-                    <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
-                        <div style={{
-                            background: "var(--accent)", borderRadius: 8, padding: "5px 8px",
-                            color: "#000", display: "flex",
-                        }}>
-                            <IconBus />
-                        </div>
-                        <div>
-                            <p style={{
-                                fontFamily: "var(--display)", fontWeight: 900, fontSize: 22, letterSpacing: 1, lineHeight: 1,
-                                margin: 0, padding: 0, textTransform: "uppercase",
-                            }}>
-                                ¿CUÁNDO LLEGA?
-                            </p>
-                            <div style={{ fontFamily: "var(--mono)", fontSize: 11, color: "var(--text-dim)", letterSpacing: 2 }}>
-                                MAR DEL PLATA · TIEMPO REAL
-                            </div>
-                        </div>
+        <header className="block min-h-[90px] w-full border-b border-border bg-surface px-[calc(20px+env(safe-area-inset-left,0px))] pt-[calc(16px+env(safe-area-inset-top,0px))] pr-[calc(20px+env(safe-area-inset-right,0px))]">
+            <div className="mx-auto max-w-[520px]">
+                <div className="mb-3 flex items-center gap-2.5">
+                    <div className="flex rounded-lg bg-accent px-2 py-1.5 text-black">
+                        <IconBus />
                     </div>
-
-                    {/* Tabs */}
-                    <div style={{ display: "flex", gap: 0 }}>
-                        {(["buscar", "favoritos"] as const).map(t => (
-                            <button key={t} onClick={() => setTab(t)} style={{
-                                flex: 1, minHeight: 44, padding: "10px 0", background: "none", border: "none",
-                                borderBottom: tab === t ? "2px solid var(--accent)" : "2px solid transparent",
-                                color: tab === t ? "var(--accent)" : "var(--text-dim)",
-                                fontFamily: "var(--display)", fontWeight: 700, fontSize: 15, letterSpacing: 1,
-                                cursor: "pointer", transition: "all 0.15s", textTransform: "uppercase",
-                            }}>
-                                {t === "buscar" ? "Buscar" : `Favoritos (${favCount})`}
-                            </button>
-                        ))}
-                        <button onClick={() => router.push("/recorrido")} style={{
-                            flex: 1, minHeight: 44, padding: "10px 0", background: "none", border: "none",
-                            borderBottom: "2px solid transparent",
-                            color: "var(--text-dim)",
-                            fontFamily: "var(--display)", fontWeight: 700, fontSize: 15, letterSpacing: 1,
-                            cursor: "pointer", transition: "color 0.15s", textTransform: "uppercase",
-                        }}>
-                            Mapa
-                        </button>
+                    <div className="min-w-0">
+                        <p className="m-0 p-0 font-display text-[22px] font-black uppercase leading-none tracking-[1px]">
+                            ¿CUÁNDO LLEGA?
+                        </p>
+                        <div className="font-mono text-[11px] tracking-[2px] text-text-dim">
+                            MAR DEL PLATA · TIEMPO REAL
+                        </div>
                     </div>
                 </div>
-            ) : null}
+
+                <div className="flex">
+                    {(["buscar", "favoritos"] as const).map(t => (
+                        <button
+                            key={t}
+                            onClick={() => setTab(t)}
+                            className={cn(
+                                "min-h-11 flex-1 border-b-2 bg-transparent py-2.5 font-display text-[15px] font-bold uppercase tracking-[1px] transition-colors",
+                                tab === t
+                                    ? "border-accent text-accent"
+                                    : "border-transparent text-text-dim hover:text-text",
+                            )}
+                        >
+                            {t === "buscar" ? "Buscar" : `Favoritos (${favCount})`}
+                        </button>
+                    ))}
+                    <button
+                        onClick={() => router.push("/recorrido")}
+                        className="min-h-11 flex-1 border-b-2 border-transparent bg-transparent py-2.5 font-display text-[15px] font-bold uppercase tracking-[1px] text-text-dim transition-colors hover:text-text"
+                    >
+                        Mapa
+                    </button>
+                </div>
+            </div>
         </header>
     );
 }

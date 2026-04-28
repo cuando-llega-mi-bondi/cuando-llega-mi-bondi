@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 
-const MGP_URL =
-  "https://appsl.mardelplata.gob.ar/app_cuando_llega/webWS.php";
+const MGP_URL = "https://appsl.mardelplata.gob.ar/app_cuando_llega/webWS.php";
 
 export async function POST(req: NextRequest) {
   try {

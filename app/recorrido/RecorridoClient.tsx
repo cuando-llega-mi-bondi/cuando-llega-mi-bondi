@@ -3,18 +3,25 @@
 import { useState, useEffect, useMemo, useRef } from "react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
-import { getLineas, getRecorridoRamales, getParadasParaMapa } from "@/lib/cuandoLlega";
-import { getCache, setCache } from "@/lib/localCache";
-import type { Linea, RamalData, ParadaMapa, PuntoRecorrido } from "@/lib/cuandoLlega.types";
+import { getLineas, getParadasParaMapa, getRecorridoRamales } from "@/lib/api";
+import { getCache, setCache } from "@/lib/storage/localCache";
+import type { Linea, ParadaMapa, PuntoRecorrido, RamalData } from "@/lib/types";
 import { MANUAL_LINES, MANUAL_ROUTES } from "@/lib/manualRoutes";
 import { supabase } from "@/lib/supabaseClient";
+import { cn } from "@/lib/utils";
+import {
+  LineItem,
+  LineSkeletons,
+  MapErrorOverlay,
+  MapLoadingOverlay,
+} from "@/components/recorrido";
 
 // Leaflet can't run on the server — dynamic import with ssr:false is mandatory
-const RouteMap = dynamic(() => import("@/components/RouteMap"), {
+const RouteMap = dynamic(() => import("@/components/map/RouteMap"), {
   ssr: false,
   loading: () => (
-    <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "100%", color: "var(--text-dim)", fontFamily: "var(--mono)", fontSize: 14, gap: 10 }}>
-      <span style={{ width: 16, height: 16, border: "2px solid var(--border)", borderTopColor: "var(--accent)", borderRadius: "50%", display: "inline-block", animation: "spin-slow 0.8s linear infinite" }} />
+    <div className="flex h-full items-center justify-center gap-2.5 font-mono text-sm text-text-dim">
+      <span className="spin-slow inline-block h-4 w-4 rounded-full border-2 border-border border-t-accent" />
       Cargando mapa…
     </div>
   ),
@@ -32,11 +39,17 @@ const IconSearch = () => (
     <circle cx="11" cy="11" r="8" /><path d="m21 21-4.35-4.35" />
   </svg>
 );
-const IconBus = () => (
-  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <rect x="3" y="3" width="18" height="13" rx="2"/><path d="M3 9h18"/><path d="M8 19v-3m8 3v-3"/><path d="M7 19h10"/><circle cx="7.5" cy="14.5" r=".5" fill="currentColor"/><circle cx="16.5" cy="14.5" r=".5" fill="currentColor"/>
-  </svg>
-);
+
+type CachedLineas = Linea[] | { lineas?: Linea[] };
+type GeoFeature = {
+  geometry: {
+    type: string;
+    coordinates: [number, number][] | [number, number];
+  };
+};
+type GeoJsonCollection = {
+  features: GeoFeature[];
+};
 
 // ─── Main component ───────────────────────────────────────────────────────────
 
@@ -111,12 +124,12 @@ export default function RecorridoClient() {
 
   // ── Load lines (with 24h cache) ──────────────────────────────────────────────
   useEffect(() => {
-    const rawCache = getCache<any>("RecuperarLineaPorCuandoLlega");
+    const rawCache = getCache<CachedLineas>("RecuperarLineaPorCuandoLlega");
     if (rawCache) {
       const data = Array.isArray(rawCache) ? rawCache : (rawCache.lineas ?? []);
       // Ensure manual lines are present and not duplicated
       const manualCodes = new Set(MANUAL_LINES.map(m => m.CodigoLineaParada));
-      const filteredCache = data.filter((l: any) => !manualCodes.has(l.CodigoLineaParada));
+      const filteredCache = data.filter((l) => !manualCodes.has(l.CodigoLineaParada));
       const merged = [...filteredCache, ...MANUAL_LINES];
       
       setLines(merged);
@@ -171,15 +184,21 @@ export default function RecorridoClient() {
 
         const res = await fetch(config.geoJsonPath);
         if (!res.ok) throw new Error("No se pudo cargar el archivo de recorrido");
-        const geojson = await res.json();
+        const geojson = (await res.json()) as GeoJsonCollection;
 
         // Parse GeoJSON to our format
-        const lineFeature = geojson.features.find((f: any) => f.geometry.type === "LineString");
-        const stopFeatures = geojson.features.filter((f: any) => f.geometry.type === "Point");
+        const lineFeature = geojson.features.find(
+          (f) => f.geometry.type === "LineString",
+        );
+        const stopFeatures = geojson.features.filter(
+          (f) => f.geometry.type === "Point",
+        );
 
         if (!lineFeature) throw new Error("Trazado no encontrado en el archivo");
+        const lineCoordinates = lineFeature.geometry
+          .coordinates as [number, number][];
 
-        const points: PuntoRecorrido[] = lineFeature.geometry.coordinates.map((coord: [number, number]) => ({
+        const points: PuntoRecorrido[] = lineCoordinates.map((coord) => ({
           Latitud: coord[1],
           Longitud: coord[0],
           Descripcion: line.Descripcion,
@@ -194,13 +213,16 @@ export default function RecorridoClient() {
           puntos: points
         };
 
-        const manualStops: ParadaMapa[] = stopFeatures.map((f: any, i: number) => ({
-          id: `m_${i}`,
-          codigo: `m_${i}`,
-          label: `Parada ${i + 1}`,
-          lat: f.geometry.coordinates[1],
-          lng: f.geometry.coordinates[0]
-        }));
+        const manualStops: ParadaMapa[] = stopFeatures.map((f, i) => {
+          const [lng, lat] = f.geometry.coordinates as [number, number];
+          return {
+            id: `m_${i}`,
+            codigo: `m_${i}`,
+            label: `Parada ${i + 1}`,
+            lat,
+            lng,
+          };
+        });
 
         setRamales([manualRamal]);
         setSelectedRamal(manualRamal);
@@ -214,8 +236,12 @@ export default function RecorridoClient() {
         setSelectedRamal(ramalData[0] ?? null);
         setParadas(paradaData);
       }
-    } catch (err: any) {
-      setMapError(err.message || "No se pudo cargar el recorrido. Verificá tu conexión e intentá de nuevo.");
+    } catch (err: unknown) {
+      setMapError(
+        err instanceof Error
+          ? err.message
+          : "No se pudo cargar el recorrido. Verificá tu conexión e intentá de nuevo.",
+      );
     } finally {
       setMapLoading(false);
     }
@@ -297,42 +323,31 @@ export default function RecorridoClient() {
   // ─────────────────────────────────────────────────────────────────────────────
   if (step === "selector") {
     return (
-      <div style={{ minHeight: "100dvh", display: "flex", flexDirection: "column", background: "var(--bg)" }}>
-
-        {/* Header */}
-        <header style={{
-          background: "var(--surface)", borderBottom: "1px solid var(--border)",
-          padding: "14px 16px", display: "flex", alignItems: "center", gap: 12,
-          zIndex: 50, flexShrink: 0,
-        }}>
+      <div className="flex min-h-dvh flex-col bg-bg">
+        <header className="z-50 flex shrink-0 items-center gap-3 border-b border-border bg-surface px-4 py-3.5">
           <Link
             href="/"
-            style={{ display: "flex", alignItems: "center", justifyContent: "center", width: 36, height: 36, border: "1px solid var(--border)", borderRadius: 8, color: "var(--text-dim)", textDecoration: "none", flexShrink: 0 }}
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-border text-text-dim no-underline"
             title="Volver al inicio"
           >
             <IconBack />
           </Link>
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ fontFamily: "var(--display)", fontWeight: 900, fontSize: 20, color: "var(--text)", letterSpacing: 0.5, lineHeight: 1.1 }}>
-              Explorar <span style={{ color: "var(--accent)" }}>Recorridos</span>
+          <div className="min-w-0 flex-1">
+            <div className="font-display text-xl font-black tracking-[0.5px] text-text">
+              Explorar <span className="text-accent">Recorridos</span>
             </div>
-            <div style={{ fontFamily: "var(--mono)", fontSize: 11, color: "var(--text-dim)", marginTop: 2 }}>
+            <div className="mt-0.5 font-mono text-[11px] text-text-dim">
               {linesLoading ? "Cargando líneas…" : `${lines.length} líneas disponibles`}
             </div>
           </div>
-          <div style={{
-            background: "rgba(245,166,35,0.12)", border: "1px solid rgba(245,166,35,0.3)",
-            borderRadius: 8, padding: "4px 10px",
-            fontFamily: "var(--mono)", fontSize: 11, color: "var(--accent)", flexShrink: 0,
-          }}>
+          <div className="shrink-0 rounded-lg border border-accent/30 bg-accent/12 px-2.5 py-1 font-mono text-[11px] text-accent">
             MAPA
           </div>
         </header>
 
-        {/* Search bar */}
-        <div style={{ padding: "14px 16px 8px", flexShrink: 0, background: "var(--surface)", borderBottom: "1px solid var(--border)" }}>
-          <div style={{ position: "relative" }}>
-            <span style={{ position: "absolute", left: 14, top: "50%", transform: "translateY(-50%)", color: "var(--text-dim)", pointerEvents: "none" }}>
+        <div className="shrink-0 border-b border-border bg-surface px-4 pb-2 pt-3.5">
+          <div className="relative">
+            <span className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-text-dim">
               <IconSearch />
             </span>
             <input
@@ -341,22 +356,16 @@ export default function RecorridoClient() {
               placeholder="Buscar línea por número o destino…"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              style={{
-                width: "100%", background: "var(--surface2)", border: "1px solid var(--border)",
-                borderRadius: 10, color: "var(--text)", fontFamily: "var(--body)", fontSize: 14,
-                padding: "11px 14px 11px 40px", outline: "none", boxSizing: "border-box",
-                transition: "border-color 0.15s ease",
-              }}
+              className="box-border w-full rounded-[10px] border border-border bg-surface-2 py-[11px] pl-10 pr-3.5 font-sans text-sm text-text outline-none transition-colors focus:border-accent"
             />
           </div>
         </div>
 
-        {/* Line list */}
-        <div style={{ flex: 1, overflowY: "auto", padding: "8px 12px 24px" }}>
+        <div className="flex-1 overflow-y-auto px-3 pb-6 pt-2">
           {linesLoading ? (
             <LineSkeletons />
           ) : filteredLines.length === 0 ? (
-            <div style={{ textAlign: "center", padding: "40px 0", color: "var(--text-dim)", fontFamily: "var(--mono)", fontSize: 13 }}>
+            <div className="py-10 text-center font-mono text-[13px] text-text-dim">
               No se encontraron líneas para «{search}»
             </div>
           ) : (
@@ -373,79 +382,61 @@ export default function RecorridoClient() {
   // MAP SCREEN
   // ─────────────────────────────────────────────────────────────────────────────
   return (
-    <div style={{ height: "100dvh", display: "flex", flexDirection: "column", background: "var(--bg)" }}>
-
-      {/* Header */}
-      <header style={{
-        background: "var(--surface)", borderBottom: "1px solid var(--border)",
-        padding: "12px 16px", display: "flex", alignItems: "center", gap: 12,
-        zIndex: 50, flexShrink: 0,
-      }}>
+    <div className="flex h-dvh flex-col bg-bg">
+      <header className="z-50 flex shrink-0 items-center gap-3 border-b border-border bg-surface px-4 py-3">
         <button
           onClick={goBack}
-          style={{ display: "flex", alignItems: "center", justifyContent: "center", width: 36, height: 36, border: "1px solid var(--border)", borderRadius: 8, color: "var(--text-dim)", background: "transparent", cursor: "pointer", flexShrink: 0 }}
+          className="flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center rounded-lg border border-border bg-transparent text-text-dim"
           title="Volver a la lista"
         >
           <IconBack />
         </button>
 
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontFamily: "var(--display)", fontWeight: 900, fontSize: 18, color: "var(--text)", letterSpacing: 0.5, lineHeight: 1.1, display: "flex", alignItems: "center", gap: 8 }}>
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center gap-2 font-display text-lg font-black tracking-[0.5px] text-text">
             {selectedLine && (
-              <span style={{ background: "var(--accent)", color: "#000", borderRadius: 6, padding: "1px 8px", fontWeight: 900, fontSize: 20 }}>
+              <span className="rounded-md bg-accent px-2 py-0.5 text-xl font-black text-black">
                 {selectedLine.CodigoLineaParada}
               </span>
             )}
-            <span style={{ color: "var(--text)", fontSize: 15 }}>
+            <span className="text-[15px] text-text">
               {mapLoading ? "Cargando…" : (selectedRamal?.label ?? selectedLine?.Descripcion ?? "")}
             </span>
           </div>
           {!mapLoading && selectedLine && (
-            <div style={{ fontFamily: "var(--mono)", fontSize: 11, color: "var(--text-dim)", marginTop: 2 }}>
+            <div className="mt-0.5 font-mono text-[11px] text-text-dim">
               {paradas.length > 0 ? `${paradas.length} paradas · ` : ""}{ramales.length > 1 ? `${ramales.length} ramales` : ""}
             </div>
           )}
         </div>
 
-        <div style={{
-          background: "rgba(245,166,35,0.12)", border: "1px solid rgba(245,166,35,0.3)",
-          borderRadius: 8, padding: "4px 10px",
-          fontFamily: "var(--mono)", fontSize: 11, color: "var(--accent)", flexShrink: 0,
-        }}>
+        <div className="shrink-0 rounded-lg border border-accent/30 bg-accent/12 px-2.5 py-1 font-mono text-[11px] text-accent">
           MAPA
         </div>
       </header>
 
-      {/* Ramal tab bar — only shown when > 1 ramal */}
       {ramales.length > 1 && !mapLoading && (
-        <div style={{
-          background: "var(--surface)", borderBottom: "1px solid var(--border)",
-          overflowX: "auto", flexShrink: 0,
-          scrollbarWidth: "none",
-        }}>
-          <div style={{ display: "flex", gap: 8, padding: "10px 12px", width: "max-content" }}>
+        <div className="shrink-0 overflow-x-auto border-b border-border bg-surface [scrollbar-width:none]">
+          <div className="flex w-max gap-2 px-3 py-2.5">
             {ramales.map((ramal) => {
               const isActive = ramal.key === selectedRamal?.key;
               return (
                 <button
                   key={ramal.key}
                   onClick={() => setSelectedRamal(ramal)}
-                  style={{
-                    display: "flex", alignItems: "center", gap: 6,
-                    padding: "7px 14px", borderRadius: 20,
-                    border: isActive ? "1px solid var(--accent)" : "1px solid var(--border)",
-                    background: isActive ? "rgba(245,166,35,0.15)" : "var(--surface2)",
-                    color: isActive ? "var(--accent)" : "var(--text-dim)",
-                    fontFamily: "var(--display)", fontWeight: 700, fontSize: 13,
-                    cursor: "pointer", whiteSpace: "nowrap",
-                    transition: "all 0.15s ease",
-                  }}
+                  className={cn(
+                    "flex cursor-pointer items-center gap-1.5 whitespace-nowrap rounded-[20px] border px-3.5 py-[7px] font-display text-[13px] font-bold transition",
+                    isActive
+                      ? "border-accent bg-accent/15 text-accent"
+                      : "border-border bg-surface-2 text-text-dim",
+                  )}
                 >
-                  <span style={{
-                    width: 8, height: 8, borderRadius: "50%",
-                    background: isActive ? "var(--accent)" : "var(--border)",
-                    flexShrink: 0, transition: "background 0.15s ease",
-                  }} />
+                  <span
+                    className={cn(
+                      "h-2 w-2 flex-shrink-0 rounded-full transition-colors",
+                      isActive ? "bg-accent" : "bg-border",
+                    )}
+                  />
                   {ramal.label}
                 </button>
               );
@@ -454,14 +445,14 @@ export default function RecorridoClient() {
         </div>
       )}
 
-      {/* Map area */}
-      <div style={{ flex: 1, minHeight: 0, position: "relative" }}>
+      <div className="relative min-h-0 flex-1">
         {mapLoading ? (
           <MapLoadingOverlay />
         ) : mapError ? (
           <MapErrorOverlay message={mapError} onRetry={() => selectedLine && selectLine(selectedLine)} />
         ) : (
           <RouteMap
+            key={`${selectedLine?.CodigoLineaParada ?? ""}-${selectedRamal?.key ?? ""}`}
             routeLine={routeLine}
             stops={mapStops}
             lineNumber={selectedLine?.CodigoLineaParada}
@@ -475,137 +466,6 @@ export default function RecorridoClient() {
           />
         )}
       </div>
-    </div>
-  );
-}
-
-// ─── Sub-components ───────────────────────────────────────────────────────────
-
-function LineItem({ line, onSelect }: { line: Linea; onSelect: (l: Linea) => void }) {
-  // Clean up description: "COLÓN - AERODROMO" → split into two parts for nicer display
-  const desc = line.Descripcion.trim();
-
-  return (
-    <button
-      onClick={() => onSelect(line)}
-      style={{
-        display: "flex", alignItems: "center", gap: 12, width: "100%",
-        background: "var(--surface)", border: "1px solid var(--border)",
-        borderRadius: 12, padding: "12px 14px", cursor: "pointer",
-        marginBottom: 6, transition: "border-color 0.15s ease, background 0.15s ease",
-        textAlign: "left",
-      }}
-      onMouseEnter={(e) => {
-        (e.currentTarget as HTMLButtonElement).style.borderColor = "rgba(245,166,35,0.5)";
-        (e.currentTarget as HTMLButtonElement).style.background = "rgba(245,166,35,0.05)";
-      }}
-      onMouseLeave={(e) => {
-        (e.currentTarget as HTMLButtonElement).style.borderColor = "var(--border)";
-        (e.currentTarget as HTMLButtonElement).style.background = "var(--surface)";
-      }}
-    >
-      {/* Line number badge */}
-      <div style={{
-        minWidth: 52, height: 40, background: "var(--surface2)",
-        border: "1px solid var(--border)", borderRadius: 8,
-        display: "flex", alignItems: "center", justifyContent: "center",
-        fontFamily: "var(--display)", fontWeight: 900, fontSize: 17,
-        color: "var(--accent)", letterSpacing: 0.5, flexShrink: 0,
-      }}>
-        {line.CodigoLineaParada}
-      </div>
-
-      {/* Description */}
-      <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{
-          fontFamily: "var(--body)", fontWeight: 600, fontSize: 14,
-          color: "var(--text)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis",
-        }}>
-          {desc}
-        </div>
-        <div style={{ fontFamily: "var(--mono)", fontSize: 11, color: "var(--text-dim)", marginTop: 2 }}>
-          Ver recorrido en mapa
-        </div>
-      </div>
-
-      {/* Arrow */}
-      <svg style={{ color: "var(--border)", flexShrink: 0 }} width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-        <polyline points="9 18 15 12 9 6" />
-      </svg>
-    </button>
-  );
-}
-
-function LineSkeletons() {
-  return (
-    <>
-      {Array.from({ length: 8 }).map((_, i) => (
-        <div
-          key={i}
-          style={{
-            display: "flex", alignItems: "center", gap: 12,
-            background: "var(--surface)", border: "1px solid var(--border)",
-            borderRadius: 12, padding: "12px 14px", marginBottom: 6,
-            opacity: 1 - i * 0.1,
-          }}
-        >
-          <div style={{ width: 52, height: 40, borderRadius: 8, background: "var(--surface2)", animation: "pulse 1.5s ease-in-out infinite" }} />
-          <div style={{ flex: 1 }}>
-            <div style={{ height: 14, width: "60%", borderRadius: 4, background: "var(--surface2)", marginBottom: 6, animation: "pulse 1.5s ease-in-out infinite" }} />
-            <div style={{ height: 11, width: "35%", borderRadius: 4, background: "var(--surface2)", animation: "pulse 1.5s ease-in-out infinite" }} />
-          </div>
-        </div>
-      ))}
-    </>
-  );
-}
-
-function MapLoadingOverlay() {
-  return (
-    <div style={{
-      position: "absolute", inset: 0,
-      display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
-      gap: 16, background: "var(--bg)",
-    }}>
-      <span style={{
-        width: 40, height: 40, border: "3px solid var(--border)",
-        borderTopColor: "var(--accent)", borderRadius: "50%",
-        display: "inline-block", animation: "spin-slow 0.8s linear infinite",
-      }} />
-      <div style={{ fontFamily: "var(--mono)", fontSize: 13, color: "var(--text-dim)" }}>
-        Cargando recorrido…
-      </div>
-    </div>
-  );
-}
-
-function MapErrorOverlay({ message, onRetry }: { message: string; onRetry: () => void }) {
-  return (
-    <div style={{
-      position: "absolute", inset: 0,
-      display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
-      gap: 16, background: "var(--bg)", padding: "24px",
-    }}>
-      <div style={{ color: "var(--text-dim)" }}>
-        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-          <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z" />
-          <path d="M12 9v4" />
-          <path d="M12 17h.01" />
-        </svg>
-      </div>
-      <div style={{ fontFamily: "var(--body)", fontSize: 14, color: "var(--text-dim)", textAlign: "center", maxWidth: 280 }}>
-        {message}
-      </div>
-      <button
-        onClick={onRetry}
-        style={{
-          background: "var(--accent)", color: "#000", border: "none", borderRadius: 10,
-          padding: "10px 24px", fontFamily: "var(--display)", fontWeight: 800, fontSize: 14,
-          cursor: "pointer",
-        }}
-      >
-        Reintentar
-      </button>
     </div>
   );
 }

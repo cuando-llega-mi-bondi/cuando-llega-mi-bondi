@@ -1,12 +1,13 @@
 "use client";
 
-import { isFavorito } from "@/lib/cuandoLlega";
-import { type Arribo } from "@/lib/cuandoLlega.types";
+import { isFavorito } from "@/lib/storage/favoritos";
+import type { Arribo } from "@/lib/types";
 import { getArriboColor, formatDesvio } from "@/lib/utils";
 import { IconStar } from "./icons/IconStar";
 import { IconWheelchair } from "./icons/IconWheelchair";
 import { IconUser } from "./icons/IconUser";
 import { IconClock } from "./icons/IconClock";
+import { cn } from "@/lib/utils";
 
 export function ArriboCard({ arribo, onFav, favId }: { arribo: Arribo; onFav: () => void; favId: string }) {
     const color = getArriboColor(arribo.Arribo);
@@ -14,78 +15,81 @@ export function ArriboCard({ arribo, onFav, favId }: { arribo: Arribo; onFav: ()
     const fav = isFavorito(favId);
     const isAdaptado = arribo.EsAdaptado === "True";
 
+    const arriboColorClass =
+        color === "#22c55e"
+            ? "text-success"
+            : color === "#f5a623"
+              ? "text-accent"
+              : "text-text";
+
     return (
-        <div className="arrival-row" style={{
-            background: "var(--surface)", border: "1px solid var(--border)",
-            borderRadius: 12, padding: "16px", display: "flex", flexDirection: "column", gap: 12,
-            boxShadow: "0 4px 12px rgba(0,0,0,0.1)", transition: "transform 0.1s",
-        }}>
-            {/* Main info row */}
-            <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
-                {/* Line badge */}
-                <div style={{
-                    background: "var(--accent)", color: "#000", borderRadius: 8,
-                    padding: "6px 12px", fontFamily: "var(--display)", fontWeight: 900,
-                    fontSize: 22, letterSpacing: 1, minWidth: 64, textAlign: "center", flexShrink: 0,
-                    boxShadow: "0 2px 8px rgba(245,166,35,0.4)",
-                }}>
+        <div className="arrival-row flex flex-col gap-3 rounded-xl border border-border bg-surface p-4 shadow-[0_4px_12px_rgba(0,0,0,0.1)]">
+            <div className="flex items-center gap-3.5">
+                <div className="min-w-16 flex-shrink-0 rounded-lg bg-accent px-3 py-1.5 text-center font-display text-[22px] font-black tracking-[1px] text-black shadow-[0_2px_8px_rgba(245,166,35,0.4)]">
                     {arribo.DescripcionLinea}
                 </div>
 
-                {/* Arribo info */}
-                <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontFamily: "var(--display)", fontSize: 13, fontWeight: 700, color: "var(--text-dim)", letterSpacing: 0.5, marginBottom: 2 }}>
+                <div className="min-w-0 flex-1">
+                    <div className="mb-0.5 font-display text-[13px] font-bold tracking-[0.5px] text-text-dim">
                         {arribo.DescripcionCartelBandera.toUpperCase()}
                     </div>
-                    <div style={{ fontFamily: "var(--mono)", fontSize: 22, fontWeight: 800, color, letterSpacing: -0.5, lineHeight: 1.1 }}>
+                    <div
+                        className={cn(
+                            "font-mono text-[22px] font-extrabold leading-[1.1] tracking-[-0.5px]",
+                            arriboColorClass,
+                        )}
+                    >
                         {arribo.Arribo}
                     </div>
                 </div>
 
-                {/* Fav btn */}
                 <button
                     onClick={onFav}
-                    style={{
-                        background: "none", border: "none", cursor: "pointer",
-                        color: fav ? "var(--accent)" : "var(--text-muted)",
-                        padding: 8, transition: "transform 0.15s, color 0.15s",
-                    }}
+                    className={cn(
+                        "cursor-pointer bg-transparent p-2 transition-transform duration-150 hover:scale-110",
+                        fav ? "text-accent" : "text-text-muted",
+                    )}
                     title={fav ? "Quitar favorito" : "Guardar favorito"}
-                    onMouseEnter={e => { (e.currentTarget as HTMLElement).style.transform = "scale(1.2)"; }}
-                    onMouseLeave={e => { (e.currentTarget as HTMLElement).style.transform = "scale(1)"; }}
                 >
                     <IconStar filled={fav} />
                 </button>
             </div>
 
-            {/* Divider */}
-            <div style={{ height: 1, background: "var(--border)", opacity: 0.5 }}></div>
+            <div className="h-px bg-border/50" />
 
-            {/* Secondary info details */}
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
-                <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: 6, color: "var(--text-dim)", fontFamily: "var(--mono)", fontSize: 11 }}>
-                        <span style={{ color: "var(--accent)", fontWeight: 700 }}>INTERNO {arribo.IdentificadorCoche}</span>
+            <div className="grid grid-cols-2 gap-2">
+                <div className="flex flex-col gap-1">
+                    <div className="flex items-center gap-1.5 font-mono text-[11px] text-text-dim">
+                        <span className="font-bold text-accent">
+                            INTERNO {arribo.IdentificadorCoche}
+                        </span>
                         {isAdaptado && (
-                            <div style={{ display: "flex", alignItems: "center", gap: 3, color: "#60a5fa", border: "1px solid #60a5fa", padding: "1px 4px", borderRadius: 4, fontSize: 8 }}>
+                            <div className="flex items-center gap-1 rounded border border-blue-400 px-1 py-[1px] text-[8px] text-blue-400">
                                 <IconWheelchair /> ADAPTADO
                             </div>
                         )}
                     </div>
                     {arribo.IdentificadorChofer && (
-                        <div style={{ display: "flex", alignItems: "center", gap: 6, color: "var(--text-muted)", fontFamily: "var(--mono)", fontSize: 11 }}>
+                        <div className="flex items-center gap-1.5 font-mono text-[11px] text-text-muted">
                             <IconUser /> {arribo.IdentificadorChofer}
                         </div>
                     )}
                 </div>
 
-                <div style={{ display: "flex", flexDirection: "column", gap: 4, alignItems: "flex-end", textAlign: "right" }}>
+                <div className="flex flex-col items-end gap-1 text-right">
                     {desvio && (
-                        <div style={{ background: desvio.color + "22", color: desvio.color, border: `1px solid ${desvio.color}44`, padding: "2px 6px", borderRadius: 4, fontFamily: "var(--mono)", fontSize: 10, fontWeight: 700 }}>
+                        <div
+                            className={cn(
+                                "rounded px-1.5 py-0.5 font-mono text-[10px] font-bold",
+                                desvio.isEarly
+                                    ? "border border-success/35 bg-success/15 text-success"
+                                    : "border border-danger/35 bg-danger/15 text-danger",
+                            )}
+                        >
                             {desvio.label} {desvio.isEarly ? "ADELANTADO" : "ATRASADO"}
                         </div>
                     )}
-                    <div style={{ display: "flex", alignItems: "center", gap: 6, color: "var(--text-muted)", fontFamily: "var(--mono)", fontSize: 10 }}>
+                    <div className="flex items-center gap-1.5 font-mono text-[10px] text-text-muted">
                         <IconClock /> GPS: {arribo.UltimaFechaHoraGPS.split(" ")[1]}
                     </div>
                 </div>

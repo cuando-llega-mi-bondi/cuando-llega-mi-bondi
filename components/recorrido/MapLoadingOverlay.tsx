@@ -1,0 +1,12 @@
+import { Spinner } from "@/components/ui";
+
+export function MapLoadingOverlay() {
+    return (
+        <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 bg-bg">
+            <Spinner className="h-10 w-10 border-[3px]" />
+            <div className="font-mono text-[13px] text-text-dim">
+                Cargando recorrido…
+            </div>
+        </div>
+    );
+}
