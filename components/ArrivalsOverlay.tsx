@@ -112,40 +112,39 @@ export function ArrivalsOverlay({
                 <Sheet.Container>
                     <Sheet.Header />
                     <Sheet.Content>
-                        <div className="h-full overflow-y-auto">
-                            <div className="flex flex-col gap-3 px-5 pb-8">
-                                <TelegramShareCTA
-                                    codLinea={codLinea}
+                        <div className="flex flex-col gap-3 px-5 pb-8">
+                            <TelegramShareCTA
+                                codLinea={codLinea}
+                                selectedRamal={selectedRamal}
+                                telegramUsername={telegramUsername}
+                            />
+                            {(loadingArribos || displayArribos.length > 0 || isConsulting) ? (
+                                <ArrivalsPanel
+                                    loadingArribos={loadingArribos}
+                                    displayArribos={displayArribos}
+                                    isConsulting={isConsulting}
+                                    lastUpdate={lastUpdate}
+                                    fetchArribos={fetchArribos}
+                                    calleLabel={calleLabel}
+                                    interseccionLabel={interseccionLabel}
                                     selectedRamal={selectedRamal}
-                                    telegramUsername={telegramUsername}
+                                    setSelectedRamal={setSelectedRamal}
+                                    paradaId={paradaId}
+                                    liveSharings={liveSharings}
+                                    handleFavFromArribos={handleFavFromArribos}
+                                    otrasLineas={otrasLineas}
+                                    loadingOtras={loadingOtras}
+                                    onSelectOtraLinea={onSelectOtraLinea}
                                 />
-                                {(loadingArribos || displayArribos.length > 0 || isConsulting) ? (
-                                    <ArrivalsPanel
-                                        loadingArribos={loadingArribos}
-                                        displayArribos={displayArribos}
-                                        isConsulting={isConsulting}
-                                        lastUpdate={lastUpdate}
-                                        fetchArribos={fetchArribos}
-                                        calleLabel={calleLabel}
-                                        interseccionLabel={interseccionLabel}
-                                        selectedRamal={selectedRamal}
-                                        setSelectedRamal={setSelectedRamal}
-                                        paradaId={paradaId}
-                                        liveSharings={liveSharings}
-                                        handleFavFromArribos={handleFavFromArribos}
-                                        otrasLineas={otrasLineas}
-                                        loadingOtras={loadingOtras}
-                                        onSelectOtraLinea={onSelectOtraLinea}
-                                    />
-                                ) : null}
-                                <ErrorBanner
-                                    message={isConsulting ? error : ""}
-                                    onClose={() => setError("")}
-                                />
-                            </div>
+                            ) : null}
+                            <ErrorBanner
+                                message={isConsulting ? error : ""}
+                                onClose={() => setError("")}
+                            />
                         </div>
                     </Sheet.Content>
                 </Sheet.Container>
+                <Sheet.Backdrop />
             </Sheet>
         </div>
 

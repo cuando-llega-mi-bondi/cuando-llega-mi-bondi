@@ -338,5 +338,4 @@
 body.arrivals-overlay-open {
     overflow: hidden;
     overscroll-behavior: none;
-    touch-action: none;
 }
