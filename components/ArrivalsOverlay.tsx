@@ -112,7 +112,7 @@ export function ArrivalsOverlay({
                 <Sheet.Container>
                     <Sheet.Header />
                     <Sheet.Content>
-                        <div className="flex flex-col gap-3 px-5 pb-8">
+                        <div className="flex flex-col gap-3 px-5 pb-[calc(96px+env(safe-area-inset-bottom,0px))]">
                             <TelegramShareCTA
                                 codLinea={codLinea}
                                 selectedRamal={selectedRamal}

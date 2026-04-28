@@ -116,7 +116,7 @@ export function InstallPwaPrompt() {
         <div
             role="dialog"
             aria-label="Instalar aplicación"
-            className="fixed inset-x-3 bottom-3 z-1000 mx-auto max-w-md rounded-2xl border border-border bg-surface/95 p-3 shadow-2xl backdrop-blur-md sm:inset-x-auto sm:right-4 sm:bottom-4 sm:left-auto sm:w-88"
+            className="fixed inset-x-3 bottom-[calc(96px+env(safe-area-inset-bottom,0))] z-1000 mx-auto max-w-md rounded-2xl border border-border bg-surface/95 p-3 shadow-2xl backdrop-blur-md sm:inset-x-auto sm:right-4 sm:bottom-[calc(100px+env(safe-area-inset-bottom,0))] sm:left-auto sm:w-88"
         >
             <div className="flex items-start gap-3">
                 <div
