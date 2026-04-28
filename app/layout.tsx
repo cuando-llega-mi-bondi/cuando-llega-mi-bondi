@@ -56,9 +56,6 @@ export const metadata: Metadata = {
         statusBarStyle: "black-translucent",
         title: "CuándoLlega",
     },
-    icons: {
-        apple: "/icon-192.png",
-    },
     verification: {
         google: [
             "KjCilanSVlDWUMLsTnJa4vj2NjVIeSNXFUlkG10JbgU",

@@ -92,7 +92,10 @@ export function Combobox({
     // Close and recompute position on scroll/resize
     useEffect(() => {
         if (!open) return;
-        const onScroll = () => close();
+        const onScroll = (e: Event) => {
+            if (portalRef.current?.contains(e.target as Node)) return;
+            close();
+        };
         const onResize = () => computeRect();
         window.addEventListener("scroll", onScroll, true);
         window.addEventListener("resize", onResize);
