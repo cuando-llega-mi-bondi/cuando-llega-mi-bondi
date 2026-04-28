@@ -20,6 +20,7 @@ import type { Arribo, Favorito, HistorialEntry, Linea } from "@/lib/types";
 import { cleanLabel } from "@/lib/utils";
 
 import { Header } from "@/components/Header";
+import { BottomNav } from "@/components/BottomNav";
 import { Footer } from "@/components/Footer";
 import { FavoritesList } from "@/components/FavoritesList";
 import { HistorialList } from "@/components/HistorialList";
@@ -51,8 +52,10 @@ export function HomeClient({ children }: { children?: ReactNode }) {
     useUrlSync({
         codLinea,
         paradaId,
+        tab,
         setCodLinea,
         setParadaId,
+        setTab,
         onHydratedSelection: () => setIsConsulting(true),
     });
 
@@ -377,8 +380,8 @@ export function HomeClient({ children }: { children?: ReactNode }) {
 
 
     return (
-        <div className="flex min-h-dvh flex-col">
-            <Header tab={tab} setTab={setTab} favCount={favoritos.length} />
+        <div className="flex min-h-dvh flex-col pb-24">
+            <Header />
 
             <PageShell>
                 {children}
@@ -457,6 +460,7 @@ export function HomeClient({ children }: { children?: ReactNode }) {
             />
 
             <Footer />
+            <BottomNav tab={tab} setTab={setTab} favCount={favoritos.length} />
         </div>
     );
 }
