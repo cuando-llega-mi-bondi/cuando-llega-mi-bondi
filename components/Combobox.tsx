@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef, useId, useCallback, useMemo } from "react";
+import { createPortal } from "react-dom";
 import { IconChevron } from "./icons/IconChevron";
 import { cn } from "@/lib/utils";
 
@@ -30,7 +31,14 @@ export function Combobox({
     const [open, setOpen] = useState(false);
     const [query, setQuery] = useState("");
     const [activeIndex, setActiveIndex] = useState(0);
-    const ref = useRef<HTMLDivElement>(null);
+    const [dropdownRect, setDropdownRect] = useState<{
+        top: number;
+        left: number;
+        width: number;
+    } | null>(null);
+
+    const wrapperRef = useRef<HTMLDivElement>(null);
+    const portalRef = useRef<HTMLDivElement>(null);
     const inputRef = useRef<HTMLInputElement>(null);
     const triggerRef = useRef<HTMLButtonElement>(null);
     const optionRefs = useRef<(HTMLDivElement | null)[]>([]);
@@ -51,22 +59,48 @@ export function Combobox({
         setActiveIndex(0);
     }, []);
 
+    const computeRect = useCallback(() => {
+        if (!triggerRef.current) return;
+        const r = triggerRef.current.getBoundingClientRect();
+        setDropdownRect({ top: r.bottom + 6, left: r.left, width: r.width });
+    }, []);
+
     const openList = useCallback(() => {
         if (disabled) return;
+        computeRect();
         setOpen(true);
         setQuery("");
         const visible = options.slice(0, 80);
         const idx = visible.findIndex((o) => o.value === value);
         setActiveIndex(idx >= 0 ? idx : 0);
-    }, [disabled, options, value]);
+    }, [disabled, options, value, computeRect]);
 
+    // Close on outside click — must check both wrapper and portal
     useEffect(() => {
         const handler = (e: MouseEvent) => {
-            if (ref.current && !ref.current.contains(e.target as Node)) close();
+            const target = e.target as Node;
+            if (
+                wrapperRef.current?.contains(target) ||
+                portalRef.current?.contains(target)
+            ) return;
+            close();
         };
         document.addEventListener("mousedown", handler);
         return () => document.removeEventListener("mousedown", handler);
     }, [close]);
+
+    // Close and recompute position on scroll/resize
+    useEffect(() => {
+        if (!open) return;
+        const onScroll = () => close();
+        const onResize = () => computeRect();
+        window.addEventListener("scroll", onScroll, true);
+        window.addEventListener("resize", onResize);
+        return () => {
+            window.removeEventListener("scroll", onScroll, true);
+            window.removeEventListener("resize", onResize);
+        };
+    }, [open, close, computeRect]);
 
     useEffect(() => {
         if (!open) return;
@@ -75,11 +109,7 @@ export function Combobox({
                 typeof window !== "undefined" &&
                 typeof window.matchMedia === "function" &&
                 window.matchMedia("(pointer: coarse)").matches;
-            if (isCoarsePointer) {
-                // En mobile no enfocamos el input para no abrir el teclado al toque.
-                // El usuario puede tocar "Buscar..." si quiere filtrar.
-                return;
-            }
+            if (isCoarsePointer) return;
             const t = window.setTimeout(() => inputRef.current?.focus(), 50);
             return () => window.clearTimeout(t);
         }
@@ -219,15 +249,86 @@ export function Combobox({
               ? { "aria-label": ariaLabel }
               : {};
 
+    const dropdown =
+        open && dropdownRect
+            ? createPortal(
+                  <div
+                      ref={portalRef}
+                      id={listboxId}
+                      role="listbox"
+                      aria-label="Opciones"
+                      style={{
+                          position: "fixed",
+                          top: dropdownRect.top,
+                          left: dropdownRect.left,
+                          width: dropdownRect.width,
+                          zIndex: 9999,
+                      }}
+                      className="overflow-hidden rounded-2xl border border-white/12 bg-black/95 shadow-[rgba(0,153,255,0.15)_0px_0px_0px_1px,0_18px_36px_rgba(0,0,0,0.65)]"
+                  >
+                      {showFilter ? (
+                          <div className="border-b border-white/10 px-2.5 py-2">
+                              <input
+                                  ref={inputRef}
+                                  value={query}
+                                  onChange={(e) => {
+                                      setQuery(e.target.value);
+                                      setActiveIndex(0);
+                                  }}
+                                  onKeyDown={onFilterKeyDown}
+                                  placeholder="Buscar..."
+                                  aria-label="Filtrar opciones"
+                                  className="min-h-10 w-full rounded-xl border border-white/12 bg-[rgba(255,255,255,0.04)] px-3 py-2 font-sans text-sm text-text outline-none transition-colors placeholder:text-text-muted focus:border-accent"
+                              />
+                          </div>
+                      ) : null}
+
+                      <div className="max-h-[220px] overflow-y-auto">
+                          {filtered.length === 0 ? (
+                              <div className="px-4 py-3 font-sans text-sm text-text-dim">
+                                  Sin resultados
+                              </div>
+                          ) : (
+                              filtered.map((o, i) => {
+                                  const isActive = i === safeActiveIndex;
+                                  const isSelected = o.value === value;
+                                  const optId = `${listboxId}-opt-${o.value}`;
+
+                                  return (
+                                      <div
+                                          key={o.value}
+                                          ref={(el) => {
+                                              optionRefs.current[i] = el;
+                                          }}
+                                          id={optId}
+                                          role="option"
+                                          aria-selected={isSelected}
+                                          tabIndex={-1}
+                                          onMouseDown={(e) => e.preventDefault()}
+                                          onClick={() => handleSelect(o.value)}
+                                          onMouseEnter={() => setActiveIndex(i)}
+                                          className={cn(
+                                              "flex min-h-11 w-full cursor-pointer items-center px-4 py-3 text-left font-sans text-[14px] font-medium tracking-[-0.01em] transition-colors",
+                                              isActive
+                                                  ? "bg-white/10 text-text"
+                                                  : isSelected
+                                                    ? "bg-accent/15 text-accent"
+                                                    : "bg-transparent text-text",
+                                          )}
+                                      >
+                                          {o.label}
+                                      </div>
+                                  );
+                              })
+                          )}
+                      </div>
+                  </div>,
+                  document.body,
+              )
+            : null;
+
     return (
-        <div
-            ref={ref}
-            className={cn(
-                "relative w-full",
-                // Keeps the active dropdown above neighboring fields on mobile.
-                open ? "z-220" : "z-0",
-            )}
-        >
+        <div ref={wrapperRef} className="relative w-full">
             <button
                 ref={triggerRef}
                 id={baseId}
@@ -258,71 +359,7 @@ export function Combobox({
                 <IconChevron open={open} />
             </button>
 
-            {open ? (
-                <div
-                    id={listboxId}
-                    role="listbox"
-                    aria-label="Opciones"
-                    className="absolute left-0 right-0 top-[calc(100%+6px)] z-230 overflow-hidden rounded-2xl border border-white/12 bg-black/95 shadow-[rgba(0,153,255,0.15)_0px_0px_0px_1px,0_18px_36px_rgba(0,0,0,0.65)]"
-                >
-                    {showFilter ? (
-                        <div className="border-b border-white/10 px-2.5 py-2">
-                            <input
-                                ref={inputRef}
-                                value={query}
-                                onChange={(e) => {
-                                    setQuery(e.target.value);
-                                    setActiveIndex(0);
-                                }}
-                                onKeyDown={onFilterKeyDown}
-                                placeholder="Buscar..."
-                                aria-label="Filtrar opciones"
-                                className="min-h-10 w-full rounded-xl border border-white/12 bg-[rgba(255,255,255,0.04)] px-3 py-2 font-sans text-sm text-text outline-none transition-colors placeholder:text-text-muted focus:border-accent"
-                            />
-                        </div>
-                    ) : null}
-
-                    <div className="max-h-[220px] overflow-y-auto">
-                        {filtered.length === 0 ? (
-                            <div className="px-4 py-3 font-sans text-sm text-text-dim">
-                                Sin resultados
-                            </div>
-                        ) : (
-                            filtered.map((o, i) => {
-                                const isActive = i === safeActiveIndex;
-                                const isSelected = o.value === value;
-                                const optId = `${listboxId}-opt-${o.value}`;
-
-                                return (
-                                    <div
-                                        key={o.value}
-                                        ref={(el) => {
-                                            optionRefs.current[i] = el;
-                                        }}
-                                        id={optId}
-                                        role="option"
-                                        aria-selected={isSelected}
-                                        tabIndex={-1}
-                                        onMouseDown={(e) => e.preventDefault()}
-                                        onClick={() => handleSelect(o.value)}
-                                        onMouseEnter={() => setActiveIndex(i)}
-                                        className={cn(
-                                            "flex min-h-11 w-full cursor-pointer items-center px-4 py-3 text-left font-sans text-[14px] font-medium tracking-[-0.01em] transition-colors",
-                                            isActive
-                                                ? "bg-white/10 text-text"
-                                                : isSelected
-                                                  ? "bg-accent/15 text-accent"
-                                                  : "bg-transparent text-text",
-                                        )}
-                                    >
-                                        {o.label}
-                                    </div>
-                                );
-                            })
-                        )}
-                    </div>
-                </div>
-            ) : null}
+            {dropdown}
         </div>
     );
 }
