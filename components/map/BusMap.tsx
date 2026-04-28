@@ -17,7 +17,19 @@ const IconMaximize = () => <svg width="22" height="22" viewBox="0 0 24 24" fill=
 const IconMinimize = () => <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M8 3v3a2 2 0 0 1-2 2H3m18 0h-3a2 2 0 0 1-2-2V3m0 18v-3a2 2 0 0 1 2-2h3M3 16h3a2 2 0 0 1 2 2v3"/></svg>;
 const IconTarget = () => <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/></svg>;
 
-function MapController({ arribos, paradaCoords, triggerFit, isFullscreen }: { arribos: Arribo[]; paradaCoords: [number, number]; triggerFit: number; isFullscreen: boolean }) {
+function MapController({
+    arribos,
+    liveBuses,
+    paradaCoords,
+    triggerFit,
+    isFullscreen,
+}: {
+    arribos: Arribo[];
+    liveBuses: { lat: number; lng: number; ramal: string | null }[];
+    paradaCoords: [number, number];
+    triggerFit: number;
+    isFullscreen: boolean;
+}) {
     const map = useMap();
     const lastTrigger = useRef(triggerFit);
     const hasInitialized = useRef(false);
@@ -50,13 +62,22 @@ function MapController({ arribos, paradaCoords, triggerFit, isFullscreen }: { ar
                 }
             });
 
+            liveBuses.forEach((b) => {
+                const lat = Number(b.lat);
+                const lon = Number(b.lng);
+                if (!Number.isNaN(lat) && !Number.isNaN(lon) && lat !== 0) {
+                    bounds.extend([lat, lon]);
+                    validCount += 1;
+                }
+            });
+
             if (validCount > 1) {
                 map.fitBounds(bounds, { padding: [50, 50], maxZoom: 16, animate: true });
             } else {
                 map.setView(paradaCoords, 16, { animate: true });
             }
         }
-    }, [map, arribos, paradaCoords, triggerFit]);
+    }, [map, arribos, liveBuses, paradaCoords, triggerFit]);
 
     return null;
 }
@@ -116,9 +137,16 @@ const BusMap = React.memo(function BusMap({
             pLat = parseFloat(arribos[0].LatitudParada);
             pLon = parseFloat(arribos[0].LongitudParada);
         }
+        if (
+            (Number.isNaN(pLat) || Number.isNaN(pLon) || pLat === 0) &&
+            liveBuses.length > 0
+        ) {
+            pLat = Number(liveBuses[0].lat);
+            pLon = Number(liveBuses[0].lng);
+        }
         if (Number.isNaN(pLat) || Number.isNaN(pLon) || pLat === 0) return null;
         return [pLat, pLon];
-    }, [paradaLat, paradaLon, arribos]);
+    }, [paradaLat, paradaLon, arribos, liveBuses]);
 
     if (!paradaCoords) return null;
 
@@ -224,7 +252,13 @@ const BusMap = React.memo(function BusMap({
                     );
                 })}
 
-                <MapController arribos={arribos} paradaCoords={paradaCoords} triggerFit={fitTrigger} isFullscreen={isFullscreen} />
+                <MapController
+                    arribos={arribos}
+                    liveBuses={liveBuses}
+                    paradaCoords={paradaCoords}
+                    triggerFit={fitTrigger}
+                    isFullscreen={isFullscreen}
+                />
 
                 <Marker position={paradaCoords} icon={stopIcon} zIndexOffset={-100}>
                     <Popup>

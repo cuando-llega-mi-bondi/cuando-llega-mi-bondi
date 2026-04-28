@@ -56,6 +56,9 @@ export function ArrivalsPanel({
     loadingOtras = false,
     onSelectOtraLinea,
 }: ArrivalsPanelProps) {
+    const hasArribos = displayArribos.length > 0;
+    const hasLiveSharings = liveSharings.length > 0;
+
     return (
         <div className="mt-3">
             <div className="mb-2.5 flex items-center justify-between">
@@ -89,9 +92,9 @@ export function ArrivalsPanel({
                 </div>
             </div>
 
-            {loadingArribos && displayArribos.length === 0 ? (
+            {loadingArribos && !hasArribos && !hasLiveSharings ? (
                 <ArrivalsLoading />
-            ) : displayArribos.length === 0 ? (
+            ) : !hasArribos && !hasLiveSharings ? (
                 <ArrivalsEmpty
                     isConsulting={isConsulting}
                     loadingArribos={loadingArribos}
@@ -117,14 +120,21 @@ export function ArrivalsPanel({
                         lineaCod={codLinea}
                         liveBuses={liveSharings}
                     />
-                    {displayArribos.map((a, i) => (
-                        <ArriboCard
-                            key={`${a.CodigoLineaParada}-${a.Arribo}-${i}`}
-                            arribo={a}
-                            favId={`${paradaId}_${a.CodigoLineaParada}`}
-                            onFav={() => handleFavFromArribos(a)}
-                        />
-                    ))}
+                    {hasArribos ? (
+                        displayArribos.map((a, i) => (
+                            <ArriboCard
+                                key={`${a.CodigoLineaParada}-${a.Arribo}-${i}`}
+                                arribo={a}
+                                favId={`${paradaId}_${a.CodigoLineaParada}`}
+                                onFav={() => handleFavFromArribos(a)}
+                            />
+                        ))
+                    ) : (
+                        <div className="rounded-[10px] border border-success/25 bg-success/5 px-4 py-3 font-mono text-[12px] leading-relaxed text-text-dim">
+                            Sin datos de arribos de la municipalidad en este momento. Igual podés ver
+                            ubicaciones compartidas en tiempo real en el mapa.
+                        </div>
+                    )}
                     {onSelectOtraLinea && (otrasLineas.length > 0 || loadingOtras) ? (
                         <OtrasLineasSuggestion
                             lineas={otrasLineas}

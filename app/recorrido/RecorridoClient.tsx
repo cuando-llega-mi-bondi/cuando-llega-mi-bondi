@@ -419,7 +419,7 @@ export default function RecorridoClient() {
           <div className="flex items-center gap-2 font-display text-lg font-black tracking-[0.5px] text-text">
             {selectedLine && (
               <span className="rounded-md bg-accent px-2 py-0.5 text-xl font-black text-black">
-                {selectedLine.CodigoLineaParada}
+                {selectedLine.Descripcion}
               </span>
             )}
             <span className="text-[15px] text-text">
@@ -478,7 +478,7 @@ export default function RecorridoClient() {
             key={`${selectedLine?.CodigoLineaParada ?? ""}-${selectedRamal?.key ?? ""}`}
             routeLine={routeLine}
             stops={mapStops}
-            lineNumber={selectedLine?.CodigoLineaParada}
+            lineNumber={selectedLine?.Descripcion}
             codigoLineaParada={selectedLine?.CodigoLineaParada}
             routeName={selectedRamal?.label ?? selectedLine?.Descripcion}
             accentColor="var(--accent)"
