@@ -3,6 +3,7 @@ import { Azeret_Mono, Inter, Outfit } from "next/font/google";
 import "./globals.css";
 import { Analytics } from "@vercel/analytics/react";
 import { JsonLd } from "@/components/JsonLd";
+import { InstallPwaPrompt } from "@/components/InstallPwaPrompt";
 
 const inter = Inter({
     subsets: ["latin"],
@@ -94,6 +95,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 <JsonLd />
                 <Analytics />
                 {children}
+                <InstallPwaPrompt />
             </body>
         </html>
     );

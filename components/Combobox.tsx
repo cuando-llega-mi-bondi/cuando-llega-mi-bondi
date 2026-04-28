@@ -71,6 +71,15 @@ export function Combobox({
     useEffect(() => {
         if (!open) return;
         if (showFilter) {
+            const isCoarsePointer =
+                typeof window !== "undefined" &&
+                typeof window.matchMedia === "function" &&
+                window.matchMedia("(pointer: coarse)").matches;
+            if (isCoarsePointer) {
+                // En mobile no enfocamos el input para no abrir el teclado al toque.
+                // El usuario puede tocar "Buscar..." si quiere filtrar.
+                return;
+            }
             const t = window.setTimeout(() => inputRef.current?.focus(), 50);
             return () => window.clearTimeout(t);
         }
