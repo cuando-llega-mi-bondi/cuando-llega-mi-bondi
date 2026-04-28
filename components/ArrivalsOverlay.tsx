@@ -81,6 +81,7 @@ export function ArrivalsOverlay({
     setError,
 }: ArrivalsOverlayProps) {
     return (
+        <>
         <div className="arrivals-overlay fixed inset-0 z-90 bg-bg">
             <div className="absolute inset-0">
                 <BusMap
@@ -101,20 +102,11 @@ export function ArrivalsOverlay({
                 />
             </div>
 
-            <button
-                type="button"
-                onClick={onClose}
-                aria-label="Cerrar panel de arribos"
-                className="absolute right-4 top-[max(env(safe-area-inset-top),1rem)] z-1000 flex min-h-11 min-w-11 items-center justify-center rounded-full border border-white/20 bg-black/60 text-text shadow-[0_8px_24px_rgba(0,0,0,0.45)] backdrop-blur-sm transition-colors hover:border-white/30"
-            >
-                <IconClose />
-            </button>
-
             <Sheet
                 isOpen={isOpen}
                 onClose={onClose}
-                snapPoints={[1, 0.5, 0.12]}
-                initialSnap={1}
+                snapPoints={[0, 0.12, 0.5, 1]}
+                initialSnap={2}
                 disableScrollLocking
             >
                 <Sheet.Container>
@@ -156,5 +148,15 @@ export function ArrivalsOverlay({
                 </Sheet.Container>
             </Sheet>
         </div>
+
+        <button
+            type="button"
+            onClick={onClose}
+            aria-label="Cerrar panel de arribos"
+            className="fixed right-4 top-[max(env(safe-area-inset-top),1rem)] z-10001 flex min-h-11 min-w-11 cursor-pointer items-center justify-center rounded-full border border-white/20 bg-black/60 text-text shadow-[0_8px_24px_rgba(0,0,0,0.45)] backdrop-blur-sm transition-colors hover:border-white/30"
+        >
+            <IconClose />
+        </button>
+        </>
     );
 }

@@ -199,14 +199,16 @@ const BusMap = React.memo(function BusMap({
           };
 
     const controlsTop = fillParent
-        ? envLocalSafeAreaTop(74)
+        ? "calc(env(safe-area-inset-top) + 70px)"
         : isFullscreen
           ? envLocalSafeAreaTop(16)
           : 12;
 
+    const controlsSide: React.CSSProperties = { right: 12 };
+
     return (
         <div style={containerStyle}>
-            <div style={{ position: "absolute", top: controlsTop, right: 12, zIndex: 1000, display: "flex", gap: 10, flexDirection: "column" }}>
+            <div style={{ position: "absolute", top: controlsTop, ...controlsSide, zIndex: 1000, display: "flex", gap: 10, flexDirection: "column" }}>
                 {!fillParent ? (
                     <button
                         onClick={() => setIsFullscreen(!isFullscreen)}
