@@ -18,9 +18,10 @@ export function BottomNav({ tab, setTab, favCount }: BottomNavProps) {
     const pathname = usePathname();
 
     const isRecorrido = pathname === "/recorrido";
+    const isAcerca = pathname === "/acerca";
 
     const handleTabClick = (t: "buscar" | "favoritos") => {
-        if (isRecorrido) {
+        if (isRecorrido || isAcerca) {
             router.push(`/?tab=${t}`);
             return;
         }
@@ -34,12 +35,12 @@ export function BottomNav({ tab, setTab, favCount }: BottomNavProps) {
                     onClick={() => handleTabClick("buscar")}
                     className={cn(
                         "flex flex-1 flex-col items-center justify-center gap-1.5 py-3 transition-colors",
-                        !isRecorrido && tab === "buscar" ? "text-accent" : "text-text-dim hover:text-text"
+                        !isRecorrido && !isAcerca && tab === "buscar" ? "text-accent" : "text-text-dim hover:text-text"
                     )}
                 >
                     <IconSearch className="h-[22px] w-[22px]" />
                     <span className="font-sans text-[11px] font-medium tracking-tight">Consultar</span>
-                    {!isRecorrido && tab === "buscar" && (
+                    {!isRecorrido && !isAcerca && tab === "buscar" && (
                         <div className="absolute bottom-1 h-1 w-1 rounded-full bg-accent" />
                     )}
                 </button>
@@ -62,11 +63,11 @@ export function BottomNav({ tab, setTab, favCount }: BottomNavProps) {
                     onClick={() => handleTabClick("favoritos")}
                     className={cn(
                         "flex flex-1 flex-col items-center justify-center gap-1.5 py-3 transition-colors",
-                        !isRecorrido && tab === "favoritos" ? "text-accent" : "text-text-dim hover:text-text"
+                        !isRecorrido && !isAcerca && tab === "favoritos" ? "text-accent" : "text-text-dim hover:text-text"
                     )}
                 >
                     <div className="relative">
-                        <IconStar filled={!isRecorrido && tab === "favoritos"} className="h-[22px] w-[22px]" />
+                        <IconStar filled={!isRecorrido && !isAcerca && tab === "favoritos"} className="h-[22px] w-[22px]" />
                         {favCount > 0 && (
                             <span className="absolute -right-2 -top-1 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-accent px-1 font-mono text-[9px] font-bold text-black">
                                 {favCount}
@@ -74,20 +75,23 @@ export function BottomNav({ tab, setTab, favCount }: BottomNavProps) {
                         )}
                     </div>
                     <span className="font-sans text-[11px] font-medium tracking-tight">Favoritos</span>
-                    {!isRecorrido && tab === "favoritos" && (
+                    {!isRecorrido && !isAcerca && tab === "favoritos" && (
                         <div className="absolute bottom-1 h-1 w-1 rounded-full bg-accent" />
                     )}
                 </button>
 
                 <button
-                    className="flex flex-1 flex-col items-center justify-center gap-1.5 py-3 text-text-dim transition-colors hover:text-text"
-                    onClick={() => {
-                        // Maybe show a simple alert or modal later
-                        alert("¿Cuándo Llega? MDP - Desarrollado con ❤️ para Mar del Plata.");
-                    }}
+                    onClick={() => router.push("/acerca")}
+                    className={cn(
+                        "flex flex-1 flex-col items-center justify-center gap-1.5 py-3 transition-colors",
+                        isAcerca ? "text-accent" : "text-text-dim hover:text-text"
+                    )}
                 >
                     <IconInfo className="h-[22px] w-[22px]" />
                     <span className="font-sans text-[11px] font-medium tracking-tight">Acerca de</span>
+                    {isAcerca && (
+                        <div className="absolute bottom-1 h-1 w-1 rounded-full bg-accent" />
+                    )}
                 </button>
             </div>
         </nav>
