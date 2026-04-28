@@ -1,19 +1,11 @@
 import { Combobox } from "./Combobox";
-import { ArriboCard } from "./ArriboCard";
-import { ShareButton } from "./ShareButton";
-import { IconRefresh } from "./icons/IconRefresh";
 import { IconX } from "./icons/IconX";
-import { IconTelegram } from "./icons/IconTelegram";
+import { TelegramShare } from "./TelegramShare";
+import { ArrivalsPanel } from "./ArrivalsPanel";
 import { type Arribo, type Parada, type Linea } from "@/lib/cuandoLlega.types";
 import { memo, useId } from "react";
-import dynamic from "next/dynamic";
-import { OtrasLineasSuggestion } from "./OtrasLineasSuggestion";
-import { encodeLiveSharePayload } from "@/lib/liveSharePayload";
+import { Sheet } from "react-modal-sheet";
 
-const BusMap = dynamic(() => import('@/components/Map'), { 
-    ssr: false, 
-    loading: () => <div style={{ height: "260px", width: "100%", borderRadius: "12px", background: "var(--surface2)", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: "16px", color: "var(--text-dim)", fontFamily: "var(--mono)", fontSize: 13, border: "1px solid var(--border)" }}>Cargando mapa...</div> 
-});
 
 interface SearchFlowProps {
     // State & Setters
@@ -67,6 +59,10 @@ interface SearchFlowProps {
 
     // Telegram share
     telegramUsername?: string;
+
+    // Sheet control
+    sheetOpen: boolean;
+    onCloseSheet: () => void;
 }
 
 export const SearchFlow = memo(function SearchFlow({
@@ -85,6 +81,8 @@ export const SearchFlow = memo(function SearchFlow({
     otrasLineas = [], loadingOtras = false, onSelectOtraLinea,
     liveSharings = [],
     telegramUsername = "",
+    sheetOpen, onCloseSheet,
+
 }: SearchFlowProps) {
     const uid = useId();
     const labelLinea = `sf-linea${uid}`;
@@ -207,210 +205,8 @@ export const SearchFlow = memo(function SearchFlow({
                 </button>
             )}
 
-            {/* Telegram: share live location */}
-            {codLinea && telegramUsername && (() => {
-                const ramalKey = selectedRamal === "TODOS" ? "" : selectedRamal;
-                let payload = "";
-                try { payload = encodeLiveSharePayload(codLinea, ramalKey); } catch { payload = codLinea; }
-                const tgHref = `https://t.me/${telegramUsername}?start=${encodeURIComponent(payload)}`;
-                return (
-                    <a
-                        href={tgHref}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        style={{
-                            display: "flex",
-                            alignItems: "center",
-                            gap: 10,
-                            padding: "12px 16px",
-                            background: "rgba(42,171,238,0.08)",
-                            border: "1px solid rgba(42,171,238,0.3)",
-                            borderRadius: 8,
-                            textDecoration: "none",
-                            color: "#2AABEE",
-                            fontFamily: "var(--display)",
-                            fontWeight: 700,
-                            fontSize: 14,
-                            transition: "background 0.15s",
-                        }}
-                        onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = "rgba(42,171,238,0.15)"; }}
-                        onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = "rgba(42,171,238,0.08)"; }}
-                    >
-                        <IconTelegram size={20} />
-                        <span style={{ flex: 1 }}>
-                            {selectedRamal && selectedRamal !== "TODOS"
-                                ? `¿Vas en el ramal ${selectedRamal}? Compartí tu ubicación en vivo`
-                                : "¿Vas en el colectivo? Compartí tu ubicación en vivo"}
-                        </span>
-                    </a>
-                );
-            })()}
-
-            {/* Arrivals */}
-            {(loadingArribos || displayArribos.length > 0 || isConsulting) ? (
-                <div style={{ marginTop: 12 }}>
-                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
-                        <label style={{ fontFamily: "var(--mono)", fontSize: 11, color: "var(--text-dim)", letterSpacing: 2 }}>
-                            PRÓXIMOS ARRIBOS
-                        </label>
-                        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                            {lastUpdate ? (
-                                <span style={{ fontFamily: "var(--mono)", fontSize: 10, color: "var(--text-muted)" }}>
-                                    {lastUpdate.toLocaleTimeString("es-AR", { hour: "2-digit", minute: "2-digit", second: "2-digit" })}
-                                </span>
-                            ) : null}
-                            <ShareButton
-                                arribos={displayArribos}
-                                calleLabel={calleLabel}
-                                interseccionLabel={interseccionLabel}
-                            />
-                            <button
-                                type="button"
-                                onClick={fetchArribos}
-                                disabled={loadingArribos}
-                                aria-label="Actualizar arribos"
-                                style={{
-                                    background: "none",
-                                    border: "1px solid var(--border)",
-                                    borderRadius: 8,
-                                    color: "var(--text-dim)",
-                                    minWidth: 44,
-                                    minHeight: 44,
-                                    padding: 0,
-                                    cursor: "pointer",
-                                    display: "flex",
-                                    alignItems: "center",
-                                    justifyContent: "center",
-                                }}
-                            >
-                                <IconRefresh loading={loadingArribos} />
-                            </button>
-                        </div>
-                    </div>
-
-                    {loadingArribos && displayArribos.length === 0 ? (
-                        <div className="arrivals-loading-panel">
-                            <div style={{
-                                display: "flex", alignItems: "center", justifyContent: "center", gap: 12,
-                                marginBottom: 18, fontFamily: "var(--mono)", fontSize: 13, color: "var(--text-dim)",
-                                letterSpacing: 1,
-                            }}>
-                                <span className="spin-slow" style={{
-                                    display: "inline-flex", width: 22, height: 22, borderRadius: "50%",
-                                    border: "2px solid var(--border)", borderTopColor: "var(--accent)",
-                                }} aria-hidden />
-                                <span>Consultando horarios…</span>
-                            </div>
-                            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                                <div className="arrivals-skeleton-row" />
-                                <div className="arrivals-skeleton-row" />
-                                <div className="arrivals-skeleton-row" style={{ opacity: 0.7 }} />
-                            </div>
-                        </div>
-                    ) : displayArribos.length === 0 ? (
-                        <div style={{
-                            padding: "24px", background: "var(--surface)", border: "1px solid var(--border)",
-                            borderRadius: 10, fontFamily: "var(--mono)", fontSize: 13, color: "var(--text-dim)",
-                            textAlign: "center",
-                        }}>
-                            {isConsulting ? (
-                                <>
-                                    <div style={{ marginBottom: 14, lineHeight: 1.5 }}>
-                                        Sin información en este momento. Podés reintentar o ver todos los ramales si filtraste uno.
-                                    </div>
-                                    <div style={{ display: "flex", flexDirection: "column", gap: 10, alignItems: "stretch" }}>
-                                        <button
-                                            type="button"
-                                            onClick={fetchArribos}
-                                            disabled={loadingArribos}
-                                            style={{
-                                                minHeight: 44, padding: "12px 14px", borderRadius: 8,
-                                                border: "1px solid var(--accent)", background: "rgba(245,166,35,0.12)",
-                                                color: "var(--accent)", fontFamily: "var(--display)", fontWeight: 800,
-                                                fontSize: 14, letterSpacing: 0.5, cursor: loadingArribos ? "wait" : "pointer",
-                                            }}
-                                        >
-                                            Reintentar
-                                        </button>
-                                        {selectedRamal !== "TODOS" ? (
-                                            <button
-                                                type="button"
-                                                onClick={() => setSelectedRamal("TODOS")}
-                                                style={{
-                                                    minHeight: 44, padding: "12px 14px", borderRadius: 8,
-                                                    border: "1px solid var(--border)", background: "transparent",
-                                                    color: "var(--text)", fontFamily: "var(--display)", fontWeight: 700,
-                                                    fontSize: 14, cursor: "pointer",
-                                                }}
-                                            >
-                                                Ver todos los ramales
-                                            </button>
-                                        ) : null}
-                                    </div>
-                                </>
-                            ) : (
-                                "Hacé clic en CONSULTAR"
-                            )}
-                        </div>
-                    ) : (
-                        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                            {liveSharings.length > 0 && (
-                                <div style={{
-                                    display: "flex", alignItems: "center", gap: 8,
-                                    padding: "8px 12px",
-                                    background: "rgba(34,197,94,0.08)",
-                                    border: "1px solid rgba(34,197,94,0.25)",
-                                    borderRadius: 8,
-                                }}>
-                                    <span style={{
-                                        width: 8, height: 8, borderRadius: "50%", flexShrink: 0,
-                                        background: "#22c55e", boxShadow: "0 0 0 0 rgba(34,197,94,0.4)",
-                                        animation: "pulse 1.5s ease-in-out infinite",
-                                    }} />
-                                    <span style={{ fontFamily: "var(--mono)", fontSize: 12, color: "#22c55e" }}>
-                                        {liveSharings.length === 1
-                                            ? "1 persona compartiendo su ubicación en tiempo real"
-                                            : `${liveSharings.length} personas compartiendo ubicación en tiempo real`}
-                                    </span>
-                                </div>
-                            )}
-                            <BusMap 
-                                arribos={displayArribos} 
-                                paradaLat={selectedParada?.LatitudParada || displayArribos[0]?.LatitudParada || ""} 
-                                paradaLon={selectedParada?.LongitudParada || displayArribos[0]?.LongitudParada || ""} 
-                                lineaCod={codLinea}
-                                liveBuses={liveSharings}
-                            />
-                            
-                            {displayArribos.map((a, i) => (
-                                <ArriboCard
-                                    key={i}
-                                    arribo={a}
-                                    favId={`${paradaId}_${a.CodigoLineaParada}`}
-                                    onFav={() => handleFavFromArribos(a)}
-                                />
-                            ))}
-                            
-                            {onSelectOtraLinea && (otrasLineas.length > 0 || loadingOtras) && (
-                                <OtrasLineasSuggestion
-                                    lineas={otrasLineas}
-                                    loading={loadingOtras}
-                                    onSelect={onSelectOtraLinea}
-                                />
-                            )}
-                        </div>
-                    )}
-
-                    {/* Auto-refresh indicator */}
-                    {isConsulting && !loadingArribos ? (
-                        <div style={{ marginTop: 8, fontFamily: "var(--mono)", fontSize: 10, color: "var(--text-muted)", textAlign: "center" }}>
-                            Actualización automática cada 30s
-                        </div>
-                    ) : null}
-                </div>
-            ) : null}
-
-            {error && (
+{/* Error outside sheet (for non-consulting errors like lineas load failure) */}
+{!isConsulting && error && (
                 <div style={{
                     padding: "14px 16px",
                     background: "rgba(239,68,68,0.08)",
@@ -421,7 +217,6 @@ export const SearchFlow = memo(function SearchFlow({
                     gap: 12,
                     animation: "slide-up 0.2s ease",
                 }}>
-                    {/* Warning icon */}
                     <span style={{ flexShrink: 0, marginTop: 1, color: "#ef4444" }}>
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                             <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z" />
@@ -441,17 +236,9 @@ export const SearchFlow = memo(function SearchFlow({
                         type="button"
                         onClick={() => setError("")}
                         style={{
-                            background: "none",
-                            border: "none",
-                            color: "rgba(239,68,68,0.6)",
-                            cursor: "pointer",
-                            flexShrink: 0,
-                            minWidth: 44,
-                            minHeight: 44,
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                            padding: 0,
+                            background: "none", border: "none", color: "rgba(239,68,68,0.6)",
+                            cursor: "pointer", flexShrink: 0, minWidth: 44, minHeight: 44,
+                            display: "flex", alignItems: "center", justifyContent: "center", padding: 0,
                         }}
                         aria-label="Cerrar error"
                     >
@@ -459,6 +246,95 @@ export const SearchFlow = memo(function SearchFlow({
                     </button>
                 </div>
             )}
+
+            {/* ── Arrivals Bottom Sheet ── */}
+            <Sheet
+                isOpen={sheetOpen}
+                onClose={onCloseSheet}
+                snapPoints={[0, 0.5, 1]}
+                initialSnap={1}
+                disableScrollLocking
+            >
+                <Sheet.Container>
+                    <Sheet.Header />
+                    <Sheet.Content disableDrag>
+                        <div style={{
+                            padding: "0 20px 32px",
+                            display: "flex",
+                            flexDirection: "column",
+                            gap: 12,
+                        }}>
+                            {/* Telegram share inside the sheet */}
+                            <TelegramShare
+                                codLinea={codLinea}
+                                selectedRamal={selectedRamal}
+                                telegramUsername={telegramUsername}
+                            />
+                            {/* Arrivals content */}
+                            <ArrivalsPanel
+                                codLinea={codLinea}
+                                paradaId={paradaId}
+                                selectedRamal={selectedRamal}
+                                setSelectedRamal={setSelectedRamal}
+                                isConsulting={isConsulting}
+                                loadingArribos={loadingArribos}
+                                displayArribos={displayArribos}
+                                selectedParada={selectedParada}
+                                lastUpdate={lastUpdate}
+                                calleLabel={calleLabel}
+                                interseccionLabel={interseccionLabel}
+                                fetchArribos={fetchArribos}
+                                handleFavFromArribos={handleFavFromArribos}
+                                otrasLineas={otrasLineas}
+                                loadingOtras={loadingOtras}
+                                onSelectOtraLinea={onSelectOtraLinea}
+                                liveSharings={liveSharings}
+                            />
+                            {/* Error inside sheet */}
+                            {isConsulting && error && (
+                                <div style={{
+                                    padding: "14px 16px",
+                                    background: "rgba(239,68,68,0.08)",
+                                    border: "1px solid rgba(239,68,68,0.35)",
+                                    borderRadius: 10,
+                                    display: "flex",
+                                    alignItems: "flex-start",
+                                    gap: 12,
+                                }}>
+                                    <span style={{ flexShrink: 0, marginTop: 1, color: "#ef4444" }}>
+                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                            <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z" />
+                                            <path d="M12 9v4" />
+                                            <path d="M12 17h.01" />
+                                        </svg>
+                                    </span>
+                                    <div style={{ flex: 1 }}>
+                                        <div style={{ fontFamily: "var(--display)", fontWeight: 700, fontSize: 13, color: "#ef4444", marginBottom: 3 }}>
+                                            El servidor no responde
+                                        </div>
+                                        <div style={{ fontFamily: "var(--mono)", fontSize: 12, color: "rgba(239,68,68,0.85)", lineHeight: 1.5 }}>
+                                            {error}
+                                        </div>
+                                    </div>
+                                    <button
+                                        type="button"
+                                        onClick={() => setError("")}
+                                        style={{
+                                            background: "none", border: "none", color: "rgba(239,68,68,0.6)",
+                                            cursor: "pointer", flexShrink: 0, minWidth: 44, minHeight: 44,
+                                            display: "flex", alignItems: "center", justifyContent: "center", padding: 0,
+                                        }}
+                                        aria-label="Cerrar error"
+                                    >
+                                        <IconX />
+                                    </button>
+                                </div>
+                            )}
+                        </div>
+                    </Sheet.Content>
+                </Sheet.Container>
+                <Sheet.Backdrop onTap={onCloseSheet} />
+            </Sheet>
         </div>
     );
 });

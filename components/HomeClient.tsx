@@ -57,6 +57,9 @@ export function HomeClient({ children }: { children?: ReactNode }) {
     const [isConsulting, setIsConsulting] = useState(false);
     const [lastUpdate, setLastUpdate] = useState<Date | null>(null);
 
+        // bottom sheet visibility (separate from isConsulting so data stays during close animation)
+    const [sheetOpen, setSheetOpen] = useState(false);
+
     // Sugerencias de otras lineas
     const [otrasLineas, setOtrasLineas] = useState<Linea[]>([]);
     const [loadingOtras, setLoadingOtras] = useState(false);
@@ -77,6 +80,7 @@ export function HomeClient({ children }: { children?: ReactNode }) {
             setCodLinea(urlLinea);
             setParadaId(urlParada);
             setIsConsulting(true);
+            setSheetOpen(true);
         }
     }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -333,7 +337,15 @@ export function HomeClient({ children }: { children?: ReactNode }) {
     const handleConsultar = useCallback(() => {
         if (!paradaId) return;
         setIsConsulting(true);
+        setSheetOpen(true);
     }, [paradaId]);
+
+        const handleCloseSheet = useCallback(() => {
+        setSheetOpen(false);
+        // Stop auto-refresh when the sheet is dismissed
+        setIsConsulting(false);
+    }, []);
+
 
     const handleFavFromArribos = useCallback((arribo: Arribo) => {
         const id = `${paradaId}_${arribo.CodigoLineaParada}`;
@@ -376,6 +388,7 @@ export function HomeClient({ children }: { children?: ReactNode }) {
         setCodLinea(fav.id.split("_")[1]);
         setSelectedRamal("TODOS");
         setIsConsulting(true);
+        setSheetOpen(true);
     }, []);
 
     const handleFetchArribos = useCallback(() => {
@@ -443,6 +456,7 @@ export function HomeClient({ children }: { children?: ReactNode }) {
         setSelectedRamal("TODOS");
         savedHistRef.current = ""; // allow re-saving if consulted again
         setIsConsulting(true);
+        setSheetOpen(true);
     }, []);
 
     const removeHistEntry = useCallback((id: string) => {
@@ -494,6 +508,9 @@ export function HomeClient({ children }: { children?: ReactNode }) {
                         onSelectOtraLinea={handleSelectOtraLinea}
                         liveSharings={liveSharings}
                         telegramUsername={process.env.NEXT_PUBLIC_TELEGRAM_BOT_USERNAME || "cuandollegamdp_bot"}
+                        sheetOpen={sheetOpen}
+                         onCloseSheet={handleCloseSheet}
+
                     />
                 ) : (
                     <>

@@ -311,3 +311,26 @@ button:focus:not(:focus-visible),
     color: var(--text-dim);
     margin: 0;
 }
+
+
+/* ── react-modal-sheet – dark theme overrides ── */
+.react-modal-sheet-backdrop {
+    background-color: rgba(0, 0, 0, 0.6) !important;
+}
+.react-modal-sheet-container {
+    background: var(--surface) !important;
+    border-top: 1px solid var(--border) !important;
+    box-shadow: 0 -8px 48px rgba(0, 0, 0, 0.6) !important;
+    border-radius: 16px 16px 0 0 !important;
+}
+.react-modal-sheet-header {
+    padding: 12px 0 4px !important;
+}
+.react-modal-sheet-drag-indicator {
+    background: var(--text-dim) !important;
+    width: 36px !important;
+    height: 4px !important;
+}
+.react-modal-sheet-content {
+    color: var(--text);
+}
