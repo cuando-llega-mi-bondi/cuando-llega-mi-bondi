@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { IconBus } from "./icons/IconBus";
 
 type BeforeInstallPromptEvent = Event & {
     prompt: () => Promise<void>;
@@ -122,7 +123,7 @@ export function InstallPwaPrompt() {
                     aria-hidden
                     className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-accent-2"
                 >
-                    <span className="text-lg">🚌</span>
+                    <IconBus />
                 </div>
                 <div className="min-w-0 flex-1">
                     <p className="font-display text-[0.95rem] font-semibold leading-tight text-text">
