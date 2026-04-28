@@ -17,7 +17,7 @@ export function Header({ tab, setTab, favCount }: HeaderProps) {
         <header className="block min-h-[90px] w-full border-b border-white/10 bg-black/95 px-[calc(20px+env(safe-area-inset-left,0px))] pt-[calc(16px+env(safe-area-inset-top,0px))] pr-[calc(20px+env(safe-area-inset-right,0px))]">
             <div className="mx-auto max-w-[520px]">
                 <div className="mb-3 flex items-center gap-2.5">
-                    <div className="flex rounded-full border border-accent/50 bg-accent/15 px-2.5 py-1.5 text-accent shadow-[0_0_0_1px_rgba(0,153,255,0.15)]">
+                    <div className="flex items-center justify-center p-1">
                         <IconBus />
                     </div>
                     <div className="min-w-0">
