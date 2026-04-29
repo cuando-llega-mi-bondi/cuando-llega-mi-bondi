@@ -1,246 +1,407 @@
-# Design System Inspired by Framer
+# Design System MDP — Adaptado desde Framer
 
 ## 1. Visual Theme & Atmosphere
 
-Framer's website is a cinematic, tool-obsessed dark canvas that radiates the confidence of a design tool built by designers who worship craft. The entire experience is drenched in pure black — not a warm charcoal or a cozy dark gray, but an absolute void (`#000000`) that makes every element, every screenshot, every typographic flourish feel like it's floating in deep space. This is a website that treats its own product UI as the hero art, embedding full-fidelity screenshots and interactive demos directly into the narrative flow.
+MDP es una plataforma de movilidad urbana accesible, precisa y orientada a la acción. El canvas principal en **light mode** es un blanco cálido apagado (`#f7f7f4`) — no un blanco clínico, sino una superficie suave que reduce la fatiga visual y da protagonismo al contenido. En **dark mode** el fondo profundiza a un azul petróleo oscuro (`#0f2d4a`), creando una experiencia nocturna coherente sin caer en el negro absoluto.
 
-The typography is the signature move: GT Walsheim with aggressively tight letter-spacing (as extreme as -5.5px on 110px display text) creates headlines that feel compressed, kinetic, almost spring-loaded — like words under pressure that might expand at any moment. The transition to Inter for body text is seamless, with extensive OpenType feature usage (`cv01`, `cv05`, `cv09`, `cv11`, `ss03`, `ss07`) that gives even small text a refined, custom feel. Framer Blue (`#0099ff`) is deployed sparingly but decisively — as link color, border accents, and subtle ring shadows — creating a cold, electric throughline against the warm-less black.
+El color amarillo MDP (`#f9cd4a`) actúa como acento principal de CTA — enérgico, visible, de alta accesibilidad cuando se combina con texto oscuro (`#0f2d4a`). El turquesa (`#1d7570`) define los elementos interactivos: focus rings, íconos activos, bordes de inputs. El rosa (`#c93679`) se reserva para acciones destructivas o de alerta de alto impacto.
 
-The overall effect is a nightclub for web designers: dark, precise, seductive, and unapologetically product-forward. Every section exists to showcase what the tool can do, with the website itself serving as proof of concept.
+La tipografía conserva la filosofía de compresión de Framer: GT Walsheim en display con tracking negativo agresivo, Inter en cuerpo con OpenType maximalist. La diferencia es el tono: donde Framer es nightclub, MDP es servicio público de primer nivel — confiable, claro, accesible, sin sacrificar personalidad.
 
 **Key Characteristics:**
-- Pure black (`#000000`) void canvas — absolute dark, not warm or gray-tinted
-- GT Walsheim display font with extreme negative letter-spacing (-5.5px at 110px)
-- Framer Blue (`#0099ff`) as the sole accent color — cold, electric, precise
-- Pill-shaped buttons (40px–100px radius) — no sharp corners on interactive elements
-- Product screenshots as hero art — the tool IS the marketing
-- Frosted glass button variants using `rgba(255, 255, 255, 0.1)` on dark surfaces
-- Extensive OpenType feature usage across Inter for refined micro-typography
+- Blanco cálido (`#f7f7f4`) en light / Azul petróleo (`#0f2d4a`) en dark — nunca grises neutros genéricos
+- Amarillo MDP (`#f9cd4a`) como único CTA primario — siempre con texto oscuro
+- Turquesa (`#1d7570`) como color interactivo / de sistema
+- Rosa (`#c93679`) reservado para alertas y acciones críticas
+- Botones pill (border-radius 1rem+) — ningún botón con esquinas vivas
+- WCAG AA mínimo en todos los pares de color — accesibilidad no negociable
+- Mínimo 44px de área táctil en todos los controles interactivos
+
+---
 
 ## 2. Color Palette & Roles
 
-### Primary
-- **Pure Black** (`#000000`): Primary background, the void canvas that defines Framer's dark-first identity
-- **Pure White** (`#ffffff`): Primary text color on dark surfaces, button text on accent backgrounds
-- **Framer Blue** (`#0099ff`): Primary accent color — links, borders, ring shadows, interactive highlights
+### Brand Tokens (invariantes modo claro/oscuro)
 
-### Secondary & Accent
-- **Muted Silver** (`#a6a6a6`): Secondary text, subdued labels, dimmed descriptions on dark surfaces
-- **Near Black** (`#090909`): Elevated dark surface, shadow ring color for subtle depth separation
+| Token | Valor | Rol |
+|---|---|---|
+| `--mdp-rosa` | `#c93679` | Alertas, destructivos, acciones críticas. Solo con texto `#ffffff`. Ratio ~5.0:1 ✓ AA |
+| `--mdp-amarillo` | `#f9cd4a` | CTA principal, acentos visuales. **Siempre** con texto `#0f2d4a`. Ratio 8.2:1 ✓ AAA |
+| `--mdp-turquesa` | `#1d7570` | Interactivos, focus rings, íconos activos. Con texto `#ffffff`. Ratio ~4.85:1 ✓ AA |
+| `--mdp-turquesa-light` | `#289b95` | Fondos decorativos, hover sobre turquesa |
+| `--mdp-error` | `#b83030` | Estados de error. Ratio ~5.4:1 ✓ AA |
+| `--mdp-success` | `#1e7a52` | Estados de éxito. Ratio ~5.1:1 ✓ AA |
 
-### Surface & Background
-- **Void Black** (`#000000`): Page background, primary canvas
-- **Frosted White** (`rgba(255, 255, 255, 0.1)`): Translucent button backgrounds, glass-effect surfaces on dark
-- **Subtle White** (`rgba(255, 255, 255, 0.5)`): Slightly more opaque frosted elements for hover states
+### Light Mode
 
-### Neutrals & Text
-- **Pure White** (`#ffffff`): Heading text, high-emphasis body text
-- **Muted Silver** (`#a6a6a6`): Body text, descriptions, secondary information
-- **Ghost White** (`rgba(255, 255, 255, 0.6)`): Tertiary text, placeholders on dark surfaces
+| Token CSS | Valor | Rol |
+|---|---|---|
+| `--background` | `#f7f7f4` | Fondo principal de página |
+| `--foreground` | `#0f2d4a` | Texto principal — máximo contraste |
+| `--card` | `#ffffff` | Superficie de tarjetas |
+| `--muted` | `#ededea` | Fondos secundarios, inputs |
+| `--muted-foreground` | `#4a6070` | Texto secundario / descriptivo. Ratio 5.2:1 ✓ |
+| `--border` | `#d4d4d0` | Bordes generales |
+| `--input` | `#ededea` | Fondo de campos de formulario |
+| `--ring` | `#1d7570` | Focus ring de teclado (turquesa) |
+| `--primary` | `#f9cd4a` | Botón primario / CTA |
+| `--primary-foreground` | `#0f2d4a` | Texto sobre primario |
+| `--secondary` | `#1d7570` | Botón secundario |
+| `--secondary-foreground` | `#ffffff` | Texto sobre secundario |
+| `--destructive` | `#c93679` | Acciones destructivas |
+| `--destructive-foreground` | `#ffffff` | Texto sobre destructivo |
 
-### Semantic & Accent
-- **Framer Blue** (`#0099ff`): Links, interactive borders, focus rings
-- **Blue Glow** (`rgba(0, 153, 255, 0.15)`): Focus ring shadow, subtle blue halo around interactive elements
-- **Default Link Blue** (`#0000ee`): Standard browser link color (used sparingly in content areas)
+### Dark Mode
 
-### Gradient System
-- No prominent gradient usage — Framer relies on pure flat black surfaces with occasional blue-tinted glows for depth
-- Subtle radial glow effects behind product screenshots using Framer Blue at very low opacity
+| Token CSS | Valor | Rol |
+|---|---|---|
+| `--background` | `#0f2d4a` | Fondo principal |
+| `--foreground` | `#f0f4f8` | Texto principal suavizado |
+| `--card` | `#122843` | Superficie de tarjetas |
+| `--muted` | `#0a2038` | Fondos secundarios |
+| `--muted-foreground` | `#8ba4bb` | Texto secundario. Ratio 4.6:1 ✓ |
+| `--border` | `#1e3f5c` | Bordes |
+| `--input` | `#0a2038` | Fondo de campos |
+| `--ring` | `#f9cd4a` | Focus ring en dark (amarillo visible) |
+| `--secondary` | `#24908a` | Turquesa más brillante en dark |
+| `--destructive` | `#e05588` | Rosa más brillante en dark |
+
+### Superficie Glassmorphism
+- **Tarjeta flotante light:** `rgba(255, 255, 255, 0.92)` + `backdrop-filter: blur(16px) saturate(1.6)`
+- **Tarjeta flotante dark:** `rgba(10, 32, 56, 0.88)` + `backdrop-filter: blur(16px) saturate(1.6)`
+- **Botón selector light:** `rgba(255, 255, 255, 0.95)` + `backdrop-filter: blur(16px)`
+- **Botón selector dark:** `rgba(10, 32, 56, 0.92)` + `backdrop-filter: blur(16px)`
+
+### Sistema de Elevación (Sombras)
+
+| Nivel | Tratamiento | Uso |
+|---|---|---|
+| Level 0 (Flat) | Sin sombra | Fondo base |
+| Level 1 (Ring) | `box-shadow: 0 0 0 1px var(--border)` | Tarjetas base, contenedores |
+| Level 2 (Turquesa Ring) | `box-shadow: 0 0 0 3px rgba(29,117,112,0.25)` | Focus ring en inputs activos |
+| Level 3 (Floating) | `0 4px 24px rgba(0,0,0,0.12), 0 1px 4px rgba(0,0,0,0.08)` | Tarjetas flotantes, dropdowns |
+| Level 4 (Selector) | `0 8px 32px rgba(0,0,0,0.18), 0 2px 6px rgba(0,0,0,0.1)` | Botones flotantes sobre mapa |
+
+---
 
 ## 3. Typography Rules
 
 ### Font Family
-- **Display**: `GT Walsheim Framer Medium` / `GT Walsheim Medium` — custom geometric sans-serif, weight 500. Fallbacks: `GT Walsheim Framer Medium Placeholder`, system sans-serif
-- **Body/UI**: `Inter Variable` / `Inter` — variable sans-serif with extensive OpenType features. Fallbacks: `Inter Placeholder`, `-apple-system`, `system-ui`
-- **Accent**: `Mona Sans` — GitHub's open-source font, used for select elements at ultra-light weight (100)
-- **Monospace**: `Azeret Mono` — companion mono for code and technical labels
-- **Rounded**: `Open Runde` — small rounded companion font for micro-labels
+- **Display**: `GT Walsheim Medium` — peso 500 exclusivamente, nunca bold ni regular
+- **Body/UI**: `Inter Variable` con OpenType features extensivos
+- **Mono**: `Azeret Mono` — código y etiquetas técnicas
+- **Rounded accent**: `Open Runde` — micro-etiquetas y badges
 
-### Hierarchy
+### Jerarquía
 
-| Role | Font | Size | Weight | Line Height | Letter Spacing | Notes |
-|------|------|------|--------|-------------|----------------|-------|
-| Display Hero | GT Walsheim Framer Medium | 110px | 500 | 0.85 | -5.5px | Extreme negative tracking, compressed impact |
-| Section Display | GT Walsheim Medium | 85px | 500 | 0.95 | -4.25px | OpenType: ss02, tnum |
-| Section Heading | GT Walsheim Medium | 62px | 500 | 1.00 | -3.1px | OpenType: ss02 |
-| Feature Heading | GT Walsheim Medium | 32px | 500 | 1.13 | -1px | Tightest of the smaller headings |
-| Accent Display | Mona Sans | 61.5px | 100 | 1.00 | -3.1px | Ultra-light weight, ethereal |
-| Card Title | Inter Variable | 24px | 400 | 1.30 | -0.01px | OpenType: cv01, cv05, cv09, cv11, ss03, ss07 |
-| Feature Title | Inter | 22px | 700 | 1.20 | -0.8px | OpenType: cv05 |
-| Sub-heading | Inter | 20px | 600 | 1.20 | -0.8px | OpenType: cv01, cv09 |
-| Body Large | Inter Variable | 18px | 400 | 1.30 | -0.01px | OpenType: cv01, cv05, cv09, cv11, ss03, ss07 |
-| Body | Inter Variable | 15px | 400 | 1.30 | -0.01px | OpenType: cv11 |
-| Nav/UI | Inter Variable | 15px | 400 | 1.00 | -0.15px | OpenType: cv06, cv11, dlig, ss03 |
-| Body Readable | Inter Framer Regular | 14px | 400 | 1.60 | normal | Long-form body text |
-| Caption | Inter Variable | 14px | 400 | 1.40 | normal | OpenType: cv01, cv06, cv09, cv11, ss03, ss07 |
-| Label | Inter | 13px | 500 | 1.60 | normal | OpenType: cv06, cv11, ss03 |
-| Small Caption | Inter Variable | 12px | 400 | 1.40 | normal | OpenType: cv01, cv06, cv09, cv11, ss03, ss07 |
-| Micro Code | Azeret Mono | 10.4px | 400 | 1.60 | normal | OpenType: cv06, cv11, ss03 |
-| Badge | Open Runde | 9px | 600 | 1.11 | normal | OpenType: cv01, cv09 |
-| Micro Uppercase | Inter Variable | 7px | 400 | 1.00 | 0.21px | uppercase transform |
+| Rol | Font | Size | Weight | Line Height | Letter Spacing | Notas |
+|---|---|---|---|---|---|---|
+| Display Hero | GT Walsheim Medium | 110px | 500 | 0.85 | -5.5px | Extremo — compresión máxima |
+| Section Display | GT Walsheim Medium | 85px | 500 | 0.95 | -4.25px | |
+| Section Heading | GT Walsheim Medium | 62px | 500 | 1.00 | -3.1px | |
+| Feature Heading | GT Walsheim Medium | 32px | 500 | 1.13 | -1px | |
+| Card Title | Inter Variable | 24px | 400 | 1.30 | -0.01px | cv01, cv05, cv09, cv11, ss03, ss07 |
+| Feature Title | Inter | 22px | 700 | 1.20 | -0.8px | cv05 |
+| Sub-heading | Inter | 20px | 600 | 1.20 | -0.8px | cv01, cv09 |
+| Body Large | Inter Variable | 18px | 400 | 1.30 | -0.01px | cv01, cv05, cv09, cv11, ss03, ss07 |
+| Body | Inter Variable | 15px | 400 | 1.30 | -0.01px | cv11 |
+| Nav/UI | Inter Variable | 15px | 400 | 1.00 | -0.15px | cv06, cv11, dlig, ss03 |
+| Body Readable | Inter Regular | 14px | 400 | 1.60 | normal | Cuerpo largo |
+| Caption | Inter Variable | 14px | 400 | 1.40 | normal | cv01, cv06, cv09, cv11, ss03, ss07 |
+| Label | Inter | 13px | 500 | 1.60 | normal | cv06, cv11, ss03 |
+| Small Caption | Inter Variable | 12px | 400 | 1.40 | normal | |
+| Micro Code | Azeret Mono | 10.4px | 400 | 1.60 | normal | |
+| Badge | Open Runde | 9px | 600 | 1.11 | normal | cv01, cv09 |
 
-### Principles
-- **Compression as personality**: GT Walsheim's extreme negative letter-spacing (-5.5px at 110px) is the defining typographic gesture — headlines feel spring-loaded, urgent, almost breathless
-- **OpenType maximalism**: Inter is deployed with 6+ OpenType features simultaneously (`cv01`, `cv05`, `cv09`, `cv11`, `ss03`, `ss07`), creating a subtly custom feel even at body sizes
-- **Weight restraint on display**: All GT Walsheim usage is weight 500 (medium) — never bold, never regular. This creates a confident-but-not-aggressive display tone
-- **Ultra-tight line heights**: Display text at 0.85 line-height means letters nearly overlap vertically — intentional density that rewards reading at arm's length
+### Principios
+- **Compresión como personalidad**: GT Walsheim con tracking negativo agresivo en displays
+- **OpenType maximalism**: Inter con 6+ features simultáneos en cuerpo
+- **GT Walsheim siempre a peso 500** — nunca bold, nunca regular
+- **Line-heights ultra-compactos** en display (0.85) para densidad intencional
+
+---
 
 ## 4. Component Stylings
 
 ### Buttons
-- **Frosted Pill**: `rgba(255, 255, 255, 0.1)` background, black text (`#000000`), pill shape (40px radius). The glass-effect button that lives on dark surfaces — translucent, ambient, subtle
-- **Solid White Pill**: `rgb(255, 255, 255)` background, black text (`#000000`), full pill shape (100px radius), padding `10px 15px`. The primary CTA — clean, high-contrast on dark, unmissable
-- **Ghost**: No visible background, white text, relies on text styling alone. Hover reveals subtle frosted background
-- **Transition**: Scale-based animations (matrix transform with 0.85 scale factor), opacity transitions for reveal effects
+
+| Variante | Background | Texto | Border Radius | Min Height | Notas |
+|---|---|---|---|---|---|
+| **Amarillo (Primary CTA)** | `#f9cd4a` | `#0f2d4a` | `1rem` | 44px | Hover: opacity 0.88 |
+| **Turquesa (Secondary)** | `#1d7570` | `#ffffff` | `1rem` | 44px | Hover: opacity 0.88 |
+| **Rosa (Destructive)** | `#c93679` | `#ffffff` | `1rem` | 44px | Solo acciones críticas |
+| **Ghost** | `transparent` | `var(--foreground)` | `1rem` | 44px | Borde `1px solid var(--border)` |
+| **Glassmorphism Selector** | `rgba(255,255,255,0.95)` | `var(--foreground)` | `1rem` | 44px | Para controles sobre mapa |
+
+Todos los botones:
+- `font-weight: 700`
+- `transition: opacity 0.15s ease, transform 0.1s ease`
+- `:active { transform: scale(0.98) }`
+- `:disabled { opacity: 0.45; cursor: not-allowed }`
 
 ### Cards & Containers
-- **Dark Surface Card**: Black or near-black (`#090909`) background, `rgba(0, 153, 255, 0.15) 0px 0px 0px 1px` blue ring shadow border, rounded corners (10px–15px radius)
-- **Elevated Card**: Multi-layer shadow — `rgba(255, 255, 255, 0.1) 0px 0.5px 0px 0.5px` (subtle top highlight) + `rgba(0, 0, 0, 0.25) 0px 10px 30px` (deep ambient shadow)
-- **Product Screenshots**: Full-width or padded within dark containers, 8px–12px border-radius for software UI previews
-- **Hover**: Subtle glow increase on Framer Blue ring shadow, or brightness shift on frosted surfaces
+
+```css
+/* Tarjeta base */
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg); /* 1rem */
+}
+
+/* Tarjeta flotante glassmorphism */
+.card-floating {
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(16px) saturate(1.6);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  box-shadow: 0 4px 24px rgba(0,0,0,0.12), 0 1px 4px rgba(0,0,0,0.08);
+}
+
+/* Dark mode */
+@media (prefers-color-scheme: dark) {
+  .card-floating {
+    background: rgba(10, 32, 56, 0.88);
+    border-color: rgba(255, 255, 255, 0.12);
+  }
+}
+
+/* Arrival card */
+.arrival-card {
+  background: rgba(255, 255, 255, 0.6);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.arrival-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0,0,0,0.1);
+}
+```
 
 ### Inputs & Forms
-- Minimal form presence on the marketing site
-- Input fields follow dark theme: dark background, subtle border, white text
-- Focus state: Framer Blue (`#0099ff`) ring border, `1px solid #0099ff`
-- Placeholder text in `rgba(255, 255, 255, 0.4)`
+
+```css
+.input {
+  border: 1.5px solid var(--border);        /* reposo */
+  background: var(--input);
+  border-radius: calc(var(--radius) - 2px); /* radius-md */
+  min-height: 44px;
+  padding: 0.75rem 0.875rem;
+  color: var(--foreground);
+  font-size: 0.875rem;
+}
+.input:hover  { border-color: var(--mdp-turquesa); }
+.input:focus  {
+  border-color: var(--mdp-turquesa);
+  box-shadow: 0 0 0 3px rgba(29,117,112,0.25);
+  outline: none;
+}
+.input--error {
+  border-color: var(--mdp-error);
+  box-shadow: 0 0 0 3px rgba(184,48,48,0.2);
+}
+.input--success {
+  border-color: var(--mdp-success);
+  box-shadow: 0 0 0 3px rgba(30,122,82,0.2);
+}
+```
+
+Helper text: `font-size: 0.8125rem; margin-top: 0.375rem`
+- Error: `color: var(--mdp-error)`
+- Éxito: `color: var(--mdp-success)`
 
 ### Navigation
-- **Dark floating nav bar**: Black background with frosted glass effect, white text links
-- **Nav links**: Inter at 15px, weight 400, white text with subtle hover opacity change
-- **CTA button**: Pill-shaped, white or frosted, positioned at right end of nav
-- **Mobile**: Collapses to hamburger menu, maintains dark theme
-- **Sticky behavior**: Nav remains fixed at top on scroll
+- Fondo: `var(--background)` con `backdrop-filter: blur(12px)` en sticky
+- Texto links: Inter 15px, peso 400, `var(--foreground)`
+- CTA nav: Pill amarillo (`#f9cd4a`) o ghost turquesa
+- Focus ring: `outline: 2.5px solid var(--ring); outline-offset: 3px`
+- Mobile: hamburger, mantiene paleta y pilotaje por color
 
-### Image Treatment
-- **Product screenshots as hero art**: Full-width embedded UI screenshots with rounded corners (8px–12px)
-- **Dark-on-dark composition**: Screenshots placed on black backgrounds with subtle shadow for depth separation
-- **16:9 and custom aspect ratios**: Product demos fill their containers
-- **No decorative imagery**: All images are functional — showing the tool, the output, or the workflow
+### Íconos Circulares
 
-### Trust & Social Proof
-- Customer logos and testimonials in muted gray on dark surfaces
-- Minimal ornamentation — the product screenshots serve as the trust signal
+```css
+.icon-wrap {
+  width: 40px; height: 40px;
+  border-radius: 50%;
+  background: var(--mdp-turquesa);
+  color: #ffffff;
+}
+.icon-wrap--amarillo {
+  background: var(--mdp-amarillo);
+  color: #0f2d4a; /* 8.2:1 ✓ AAA */
+}
+```
+
+### Bottom Sheet (react-modal-sheet)
+- `border-radius: 24px 24px 0 0`
+- Header sticky: `background: rgba(255,255,255,0.98); backdrop-filter: blur(12px)`
+- Dark header: `background: rgba(10,32,56,0.98)`
+- Drag indicator: `background: rgba(0,0,0,0.18)` → activo: `var(--mdp-turquesa)`
+- Scrollbar thumb: `rgba(0,0,0,0.18)`, dark: `rgba(255,255,255,0.2)`
+
+---
 
 ## 5. Layout Principles
 
 ### Spacing System
 - **Base unit**: 8px
-- **Scale**: 1px, 2px, 3px, 4px, 5px, 6px, 8px, 10px, 12px, 15px, 20px, 30px, 35px
-- **Section padding**: Large vertical spacing (80px–120px between sections)
-- **Card padding**: 15px–30px internal padding
-- **Component gaps**: 8px–20px between related elements
-
-### Grid & Container
-- **Max width**: ~1200px container, centered
-- **Column patterns**: Full-width hero, 2-column feature sections, single-column product showcases
-- **Asymmetric layouts**: Feature sections often pair text (40%) with screenshot (60%)
-
-### Whitespace Philosophy
-- **Breathe through darkness**: Generous vertical spacing between sections — the black background means whitespace manifests as void, creating dramatic pauses between content blocks
-- **Dense within, spacious between**: Individual components are tightly composed (tight line-heights, compressed text) but float in generous surrounding space
-- **Product-first density**: Screenshot areas are allowed to be dense and information-rich, contrasting with the sparse marketing text
+- **Escala**: 4px, 8px, 12px, 16px, 20px, 24px, 32px, 40px, 48px, 64px, 80px, 120px
+- **Padding de sección**: 80px–120px vertical
+- **Padding de tarjeta**: 16px–24px interno
+- **Gap entre elementos**: 8px–20px
 
 ### Border Radius Scale
-- **1px**: Micro-elements, nearly squared precision edges
-- **5px–7px**: Small UI elements, image thumbnails — subtly softened
-- **8px**: Standard component radius — code blocks, buttons, interactive elements
-- **10px–12px**: Cards, product screenshots — comfortably rounded
-- **15px–20px**: Large containers, feature cards — generously rounded
-- **30px–40px**: Navigation pills, pagination — noticeably rounded
-- **100px**: Full pill shape — primary CTAs, tag elements
 
-## 6. Depth & Elevation
+| Nombre token | Valor | Uso |
+|---|---|---|
+| `--radius-sm` | `calc(var(--radius) - 4px)` ≈ 12px | Badges, chips pequeños |
+| `--radius-md` | `calc(var(--radius) - 2px)` ≈ 14px | Inputs, campos |
+| `--radius-lg` | `var(--radius)` = 16px | Tarjetas estándar |
+| `--radius-xl` | `calc(var(--radius) + 4px)` ≈ 20px | Tarjetas destacadas |
+| `--radius-2xl` | `calc(var(--radius) + 8px)` ≈ 24px | Modales, sheets |
+| Pill | `9999px` o `100px` | Botones, tags, pills de filtro |
 
-| Level | Treatment | Use |
-|-------|-----------|-----|
-| Level 0 (Flat) | No shadow, pure black surface | Page background, empty areas |
-| Level 1 (Ring) | `rgba(0, 153, 255, 0.15) 0px 0px 0px 1px` | Card borders, interactive element outlines — Framer Blue glow ring |
-| Level 2 (Contained) | `rgb(9, 9, 9) 0px 0px 0px 2px` | Near-black ring for subtle containment on dark surfaces |
-| Level 3 (Floating) | `rgba(255, 255, 255, 0.1) 0px 0.5px 0px 0.5px, rgba(0, 0, 0, 0.25) 0px 10px 30px` | Elevated cards, floating elements — subtle white top-edge highlight + deep ambient shadow |
+### Grid & Container
+- **Max width**: ~1200px centrado
+- **Columnas**: Full-width hero, 2-col features, single-col showcases de producto
+- **Asimetría**: Texto 40% + componente/mapa 60%
 
-### Shadow Philosophy
-Framer's elevation system is inverted from traditional light-theme designs. Instead of darker shadows on light backgrounds, Framer uses:
-- **Blue-tinted ring shadows** at very low opacity (0.15) for containment — a signature move that subtly brands every bordered element
-- **White edge highlights** (0.5px) on the top edge of elevated elements — simulating light hitting the top surface
-- **Deep ambient shadows** for true floating elements — `rgba(0, 0, 0, 0.25)` at large spread (30px)
+### Filosofía de espacio
+- **Respiración generosa entre secciones** — el bg cálido necesita aire para lucir
+- **Densidad controlada dentro de componentes** — tarjetas compactas pero no ahogadas
+- **Mapa como hero art** — las vistas de recorridos son el showcase de producto
 
-### Decorative Depth
-- **Blue glow auras**: Subtle Framer Blue (`#0099ff`) radial gradients behind key interactive areas
-- **No background blur/glassmorphism**: Despite the frosted button effect, there's no heavy glass blur usage — the translucency is achieved through simple rgba opacity
+---
 
-## 7. Do's and Don'ts
+## 6. Accessibility Rules
 
-### Do
-- Use pure black (`#000000`) as the primary background — not dark gray, not charcoal
-- Apply extreme negative letter-spacing on GT Walsheim display text (-3px to -5.5px)
-- Keep all buttons pill-shaped (40px+ radius) — never use squared or slightly-rounded buttons
-- Use Framer Blue (`#0099ff`) exclusively for interactive accents — links, borders, focus states
-- Deploy `rgba(255, 255, 255, 0.1)` for frosted glass surfaces on dark backgrounds
-- Maintain GT Walsheim at weight 500 only — the medium weight IS the brand
-- Use extensive OpenType features on Inter text (cv01, cv05, cv09, cv11, ss03, ss07)
-- Let product screenshots be the visual centerpiece — the tool markets itself
-- Apply blue ring shadows (`rgba(0, 153, 255, 0.15) 0px 0px 0px 1px`) for card containment
+| Regla | Detalle |
+|---|---|
+| Touch target mínimo | 44px × 44px (`--touch-min: 44px`) |
+| Focus visible global | `outline: 2.5px solid var(--ring); outline-offset: 3px` |
+| Tap highlight | `-webkit-tap-highlight-color: transparent` + estados activos propios |
+| Contraste mínimo | WCAG AA (4.5:1 texto normal, 3:1 texto grande) en todos los pares |
+| Reduced motion | Todas las animaciones respetan `prefers-reduced-motion: reduce` |
+| Amarillo con texto | **Siempre** `#0f2d4a` (8.2:1 AAA) — nunca amarillo con texto claro |
+| Safe area iOS | `padding-bottom: max(1rem, env(safe-area-inset-bottom))` |
 
-### Don't
-- Use warm dark backgrounds (no `#1a1a1a`, `#2d2d2d`, or brownish blacks)
-- Apply bold (700+) weight to GT Walsheim display text — medium 500 only
-- Introduce additional accent colors beyond Framer Blue — this is a one-accent-color system
-- Use large border-radius on non-interactive elements (cards use 10px–15px, only buttons get 40px+)
-- Add decorative imagery, illustrations, or icons — the product IS the illustration
-- Use positive letter-spacing on headlines — everything is compressed, negative tracking
-- Create heavy drop shadows — depth is communicated through subtle rings and minimal ambients
-- Place light/white backgrounds behind content sections — the void is sacred
-- Use serif or display-weight fonts — the system is geometric sans-serif only
+---
+
+## 7. Animations & Motion
+
+```css
+/* Entrada principal */
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Skeleton loading */
+@keyframes skeleton-loading {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* Spinner */
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Pulse turquesa — highlight de parada activa */
+@keyframes pulse-highlight {
+  0%, 100% { box-shadow: 0 0 0px rgba(29,117,112,0); }
+  50%       { box-shadow: 0 0 12px rgba(29,117,112,0.6); }
+}
+```
+
+**Durations:**
+- Micro (hover/active): 100–150ms `ease`
+- Estándar (reveal, open): 250–300ms `cubic-bezier(0.34,1.56,0.64,1)` (spring)
+- Sheet (modal): 300ms `cubic-bezier(0.4,0,0.2,1)`
+- Skeleton: 1.4s `ease-in-out infinite`
+
+---
 
 ## 8. Responsive Behavior
 
-### Breakpoints
-| Name | Width | Key Changes |
-|------|-------|-------------|
-| Mobile | <809px | Single column, stacked feature sections, reduced hero text (62px→40px), hamburger nav |
-| Tablet | 809px–1199px | 2-column features begin, nav links partially visible, screenshots scale down |
-| Desktop | >1199px | Full layout, expanded nav with all links + CTA, 110px display hero, side-by-side features |
+| Breakpoint | Ancho | Cambios clave |
+|---|---|---|
+| Mobile | < 640px | Single column, hero text ~40px, hamburger nav, CTAs full-width |
+| Tablet | 640–1199px | 2-col features, nav parcial, componentes escalan |
+| Desktop | ≥ 1200px | Layout completo, 110px hero, nav full, side-by-side |
 
-### Touch Targets
-- Pill buttons: minimum 40px height with 10px vertical padding — exceeds 44px WCAG minimum
-- Nav links: 15px text with generous padding for touch accessibility
-- Mobile CTA buttons: Full-width pills on mobile for easy thumb reach
+**Estrategia de colapso:**
+- Navegación: horizontal → hamburger en mobile
+- Hero text: 110px → 85px → 62px → ~40px (tracking negativo proporcional)
+- Secciones feature: lado a lado → apilado vertical
+- Bottom sheets: solo aparecen en mobile (≤ 640px)
 
-### Collapsing Strategy
-- **Navigation**: Full horizontal nav → hamburger menu at mobile breakpoint
-- **Hero text**: 110px display → 85px → 62px → ~40px across breakpoints, maintaining extreme negative tracking proportionally
-- **Feature sections**: Side-by-side (text + screenshot) → stacked vertically on mobile
-- **Product screenshots**: Scale responsively within containers, maintaining aspect ratios
-- **Section spacing**: Reduces proportionally — 120px desktop → 60px mobile
+---
 
-### Image Behavior
-- Product screenshots are responsive, scaling within their container boundaries
-- No art direction changes — same crops across breakpoints
-- Dark background ensures screenshots maintain visual impact at any size
-- Screenshots lazy-load as user scrolls into view
+## 9. Do's and Don'ts
 
-## 9. Agent Prompt Guide
+### ✅ Do
+- Usar `#f7f7f4` como fondo light — no blanco puro ni grises genéricos
+- Usar `#0f2d4a` como fondo dark — no negro absoluto
+- Amarillo `#f9cd4a` **exclusivamente** con texto `#0f2d4a` — nunca con texto claro
+- Turquesa `#1d7570` para **todos** los estados interactivos: hover, focus, active
+- Rosa `#c93679` **solo** para acciones destructivas o alertas críticas
+- Todos los botones pill — `border-radius: 1rem` mínimo
+- GT Walsheim a **peso 500 solamente** en display
+- Focus ring visible en **todos** los elementos interactivos de teclado
+- 44px touch target mínimo en **todos** los controles
+
+### ❌ Don't
+- Usar amarillo como fondo de texto pequeño sobre blanco
+- Usar rosa como color decorativo o de énfasis general
+- Botones con esquinas vivas (`border-radius < 8px`) — nunca
+- GT Walsheim a peso 700+ — rompe la identidad de marca
+- Ignorar `prefers-reduced-motion` — todas las animaciones deben respetarla
+- Texto `--muted-foreground` sobre fondos que no sean `--background` o `--card` sin verificar contraste
+- Glassmorphism sin fallback para navegadores sin soporte a `backdrop-filter`
+- Más de un color de acento en la misma vista — el sistema es tri-color (amarillo/turquesa/rosa) con roles exclusivos
+
+---
+
+## 10. Agent Prompt Guide
 
 ### Quick Color Reference
-- Primary Background: Void Black (`#000000`)
-- Primary Text: Pure White (`#ffffff`)
-- Accent/CTA: Framer Blue (`#0099ff`)
-- Secondary Text: Muted Silver (`#a6a6a6`)
-- Frosted Surface: Translucent White (`rgba(255, 255, 255, 0.1)`)
-- Elevation Ring: Blue Glow (`rgba(0, 153, 255, 0.15)`)
+
+```
+Background light:    #f7f7f4
+Background dark:     #0f2d4a
+Foreground light:    #0f2d4a
+Foreground dark:     #f0f4f8
+CTA primario:        #f9cd4a  (texto: #0f2d4a — AAA)
+Interactivo:         #1d7570  (texto: #ffffff — AA)
+Alerta/Destructivo:  #c93679  (texto: #ffffff — AA)
+Error:               #b83030
+Éxito:               #1e7a52
+Borde light:         #d4d4d0
+Borde dark:          #1e3f5c
+Texto secundario L:  #4a6070
+Texto secundario D:  #8ba4bb
+```
 
 ### Example Component Prompts
-- "Create a hero section on pure black background with 110px GT Walsheim heading in white, letter-spacing -5.5px, line-height 0.85, and a pill-shaped white CTA button (100px radius) with black text"
-- "Design a feature card on black background with a 1px Framer Blue ring shadow border (rgba(0,153,255,0.15)), 12px border-radius, white heading in Inter at 22px weight 700, and muted silver (a6a6a6) body text"
-- "Build a navigation bar with black background, white Inter text links at 15px, and a frosted pill button (rgba(255,255,255,0.1) background, 40px radius) as the CTA"
-- "Create a product showcase section with a full-width screenshot embedded on black, 10px border-radius, subtle multi-layer shadow (white 0.5px top highlight + rgba(0,0,0,0.25) 30px ambient)"
-- "Design a pricing card using pure black surface, Framer Blue (#0099ff) accent for the selected plan border, white text hierarchy (24px Inter bold heading, 14px regular body), and a solid white pill CTA button"
+
+- *"Botón CTA principal: `background: #f9cd4a`, `color: #0f2d4a`, `font-weight: 700`, `border-radius: 1rem`, `min-height: 44px`. Hover: `opacity: 0.88`. Active: `transform: scale(0.98)`"*
+
+- *"Tarjeta estándar: `background: var(--card)`, `border: 1px solid #d4d4d0`, `border-radius: 1rem`. Dark: `background: #122843`, `border-color: #1e3f5c`"*
+
+- *"Input activo: `border: 1.5px solid #1d7570`, `box-shadow: 0 0 0 3px rgba(29,117,112,0.25)`, `outline: none`"*
+
+- *"Badge de éxito: `background: rgba(30,122,82,0.12)`, `color: #1e7a52`, `border: 1px solid #1e7a52`, `border-radius: 9999px`, `font-size: 12px`, `font-weight: 600`"*
+
+- *"Tarjeta flotante sobre mapa: `background: rgba(255,255,255,0.92)`, `backdrop-filter: blur(16px) saturate(1.6)`, `border: 1px solid rgba(255,255,255,0.6)`, `box-shadow: 0 4px 24px rgba(0,0,0,0.12)`"*
+
+- *"Ícono circular turquesa: `width/height: 40px`, `border-radius: 50%`, `background: #1d7570`, `color: #ffffff`. Variante amarillo: `background: #f9cd4a`, `color: #0f2d4a`"*
+
+- *"Hero section: fondo `#f7f7f4` (light) / `#0f2d4a` (dark), heading GT Walsheim 110px peso 500 `letter-spacing: -5.5px` `line-height: 0.85`, CTA pill amarillo `border-radius: 100px`"*
 
 ### Iteration Guide
-When refining existing screens generated with this design system:
-1. Focus on ONE component at a time — the dark canvas makes each element precious
-2. Always verify letter-spacing on GT Walsheim headings — the extreme negative tracking is non-negotiable
-3. Check that Framer Blue appears ONLY on interactive elements — never as decorative background or text color for non-links
-4. Ensure all buttons are pill-shaped — any squared corner immediately breaks the Framer aesthetic
-5. Test frosted glass surfaces by checking they have exactly `rgba(255, 255, 255, 0.1)` — too opaque looks like a bug, too transparent disappears
+1. Verificar siempre el par de contraste antes de usar amarillo — **nunca** sin texto `#0f2d4a`
+2. Turquesa va en interactivos; rosa va en destructivos — no intercambiarlos
+3. GT Walsheim siempre peso 500 — si el heading se ve débil, subir el tamaño, no el peso
+4. Focus ring debe ser visible en modo teclado — `outline: 2.5px solid var(--ring)` es obligatorio
+5. Glassmorphism requiere `backdrop-filter` + fallback sólido para Safari antiguo
