@@ -115,7 +115,7 @@ export const SearchFlow = memo(function SearchFlow({
                 <div className="motion-step">
                     <label
                         id={labelRamal}
-                        className="mb-1.5 block font-mono text-[10px] tracking-[1.4px] text-text-dim"
+                        className="mb-1.5 block font-mono text-[10px] tracking-[1.4px] text-muted-foreground"
                     >
                         05 / RAMAL
                     </label>

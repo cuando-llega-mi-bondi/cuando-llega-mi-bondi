@@ -8,8 +8,8 @@ import { ArrivalsPanel, ErrorBanner, TelegramShareCTA } from "@/components/searc
 const BusMap = dynamic(() => import("@/components/map/BusMap"), {
     ssr: false,
     loading: () => (
-        <div className="h-full w-full bg-surface-2" />
-    ),
+        <div className="h-full w-full bg-muted" />
+        ),
 });
 
 type LiveSharing = { lat: number; lng: number; ramal: string | null };
@@ -82,7 +82,7 @@ export function ArrivalsOverlay({
 }: ArrivalsOverlayProps) {
     return (
         <>
-        <div className="arrivals-overlay fixed inset-0 z-90 bg-bg">
+        <div className="arrivals-overlay fixed inset-0 z-90 bg-background">
             <div className="absolute inset-0">
                 <BusMap
                     arribos={displayArribos}
@@ -152,7 +152,7 @@ export function ArrivalsOverlay({
             type="button"
             onClick={onClose}
             aria-label="Cerrar panel de arribos"
-            className="fixed right-4 top-[max(env(safe-area-inset-top),1rem)] z-10001 flex min-h-11 min-w-11 cursor-pointer items-center justify-center rounded-full border border-white/20 bg-black/60 text-text shadow-[0_8px_24px_rgba(0,0,0,0.45)] backdrop-blur-sm transition-colors hover:border-white/30"
+            className="fixed right-4 top-[max(env(safe-area-inset-top),1rem)] z-10001 flex min-h-11 min-w-11 cursor-pointer items-center justify-center rounded-full border border-border bg-background/80 text-foreground shadow-sm backdrop-blur-md transition-colors hover:border-secondary hover:text-secondary"
         >
             <IconClose />
         </button>

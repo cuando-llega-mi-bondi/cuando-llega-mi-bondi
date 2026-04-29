@@ -27,7 +27,7 @@ export function StepField({
         <div className={className}>
             <label
                 id={labelId}
-                className="mb-1.5 block font-mono text-[10px] tracking-[1.4px] text-text-dim"
+                className="mb-1.5 block font-mono text-[10px] tracking-[1.4px] text-muted-foreground"
             >
                 {stepText}
             </label>

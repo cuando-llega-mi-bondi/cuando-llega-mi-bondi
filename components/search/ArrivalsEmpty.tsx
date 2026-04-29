@@ -16,7 +16,7 @@ export function ArrivalsEmpty({
     onResetRamal,
 }: ArrivalsEmptyProps) {
     return (
-        <Card className="rounded-xl px-6 py-6 text-center font-sans text-sm text-text-dim">
+        <Card className="rounded-xl px-6 py-6 text-center font-sans text-sm text-muted-foreground">
             {isConsulting ? (
                 <>
                     <div className="mb-3.5 leading-relaxed">
@@ -28,7 +28,7 @@ export function ArrivalsEmpty({
                             type="button"
                             onClick={onRetry}
                             disabled={loadingArribos}
-                            variant="accent"
+                            variant="secondary"
                             className="text-sm"
                         >
                             Reintentar
@@ -38,7 +38,7 @@ export function ArrivalsEmpty({
                                 type="button"
                                 onClick={onResetRamal}
                                 variant="secondary"
-                                className="text-sm text-text"
+                                className="text-sm text-foreground"
                             >
                                 Ver todos los ramales
                             </Button>

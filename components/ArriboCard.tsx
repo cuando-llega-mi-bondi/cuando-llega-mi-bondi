@@ -19,18 +19,18 @@ export function ArriboCard({ arribo, onFav, favId }: { arribo: Arribo; onFav: ()
         color === "#22c55e"
             ? "text-success"
             : color === "#0099ff"
-              ? "text-accent"
-              : "text-text";
+              ? "text-secondary"
+              : "text-foreground";
 
     return (
-        <div className="arrival-row flex flex-col gap-3 rounded-xl bg-surface p-4 shadow-[rgba(0,153,255,0.15)_0px_0px_0px_1px,0_10px_24px_rgba(0,0,0,0.45)]">
+        <div className="arrival-row arrival-card flex flex-col gap-3">
             <div className="flex items-center gap-3.5">
-                <div className="min-w-16 flex-shrink-0 rounded-full border border-accent/45 bg-accent/18 px-3 py-1.5 text-center font-display text-[22px] font-semibold tracking-[-0.03em] text-accent shadow-[0_2px_10px_rgba(0,153,255,0.35)]">
+                <div className="min-w-16 flex-shrink-0 rounded-full border border-border bg-muted px-3 py-1.5 text-center font-display text-[22px] font-medium tracking-tight text-foreground shadow-sm">
                     {arribo.DescripcionLinea}
                 </div>
 
                 <div className="min-w-0 flex-1">
-                    <div className="mb-0.5 font-sans text-[12px] font-medium tracking-[0.02em] text-text-dim">
+                    <div className="mb-0.5 font-sans text-[12px] font-medium tracking-[0.02em] text-muted-foreground">
                         {arribo.DescripcionCartelBandera.toUpperCase()}
                     </div>
                     <div
@@ -46,8 +46,8 @@ export function ArriboCard({ arribo, onFav, favId }: { arribo: Arribo; onFav: ()
                 <button
                     onClick={onFav}
                     className={cn(
-                        "cursor-pointer rounded-full border border-white/10 bg-white/5 p-2 transition-transform duration-150 hover:scale-110 hover:border-white/20",
-                        fav ? "text-accent" : "text-text-muted",
+                        "cursor-pointer rounded-full border border-border bg-card p-2 transition-transform duration-150 hover:scale-110 hover:border-secondary",
+                        fav ? "text-secondary" : "text-muted-foreground",
                     )}
                     title={fav ? "Quitar favorito" : "Guardar favorito"}
                 >
@@ -55,22 +55,22 @@ export function ArriboCard({ arribo, onFav, favId }: { arribo: Arribo; onFav: ()
                 </button>
             </div>
 
-            <div className="h-px bg-white/8" />
+            <div className="h-px bg-border" />
 
             <div className="grid grid-cols-2 gap-2">
                 <div className="flex flex-col gap-1">
-                    <div className="flex items-center gap-1.5 font-mono text-[11px] text-text-dim">
-                        <span className="font-bold text-accent">
+                    <div className="flex items-center gap-1.5 font-mono text-[11px] text-muted-foreground">
+                        <span className="font-bold text-foreground">
                             INTERNO {arribo.IdentificadorCoche}
                         </span>
                         {isAdaptado && (
-                            <div className="flex items-center gap-1 rounded border border-accent/55 px-1 py-[1px] text-[8px] text-accent">
+                            <div className="flex items-center gap-1 rounded border border-border px-1 py-[1px] text-[8px] text-muted-foreground">
                                 <IconWheelchair /> ADAPTADO
                             </div>
                         )}
                     </div>
                     {arribo.IdentificadorChofer && (
-                        <div className="flex items-center gap-1.5 font-mono text-[11px] text-text-muted">
+                        <div className="flex items-center gap-1.5 font-mono text-[11px] text-muted-foreground">
                             <IconUser /> {arribo.IdentificadorChofer}
                         </div>
                     )}
@@ -83,13 +83,13 @@ export function ArriboCard({ arribo, onFav, favId }: { arribo: Arribo; onFav: ()
                                 "rounded px-1.5 py-0.5 font-mono text-[10px] font-bold",
                                 desvio.isEarly
                                     ? "border border-success/35 bg-success/15 text-success"
-                                    : "border border-danger/35 bg-danger/15 text-danger",
+                                    : "border border-error/35 bg-error/15 text-error",
                             )}
                         >
                             {desvio.label} {desvio.isEarly ? "ADELANTADO" : "ATRASADO"}
                         </div>
                     )}
-                    <div className="flex items-center gap-1.5 font-mono text-[10px] text-text-muted">
+                    <div className="flex items-center gap-1.5 font-mono text-[10px] text-muted-foreground">
                         <IconClock /> GPS: {arribo.UltimaFechaHoraGPS.split(" ")[1]}
                     </div>
                 </div>

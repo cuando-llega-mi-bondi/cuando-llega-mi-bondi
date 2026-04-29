@@ -48,12 +48,12 @@ export function ArrivalsPanel({
     return (
         <div className="mt-3">
             <div className="mb-2.5 flex items-center justify-between">
-                <label className="font-mono text-[10px] tracking-[1.4px] text-text-dim">
+                <label className="font-mono text-[10px] tracking-[1.4px] text-muted-foreground">
                     PRÓXIMOS ARRIBOS
                 </label>
                 <div className="flex items-center gap-2">
                     {lastUpdate ? (
-                        <span className="font-mono text-[10px] text-text-muted">
+                        <span className="font-mono text-[10px] text-muted-foreground">
                             {lastUpdate.toLocaleTimeString("es-AR", {
                                 hour: "2-digit",
                                 minute: "2-digit",
@@ -71,7 +71,7 @@ export function ArrivalsPanel({
                         onClick={fetchArribos}
                         disabled={loadingArribos}
                         aria-label="Actualizar arribos"
-                        className="flex min-h-11 min-w-11 cursor-pointer items-center justify-center rounded-full border border-white/10 bg-white/5 p-0 text-text-dim transition-colors hover:border-white/20 hover:text-text disabled:cursor-not-allowed disabled:opacity-60"
+                        className="flex min-h-11 min-w-11 cursor-pointer items-center justify-center rounded-full border border-border bg-card p-0 text-muted-foreground transition-colors hover:border-secondary hover:text-foreground disabled:cursor-not-allowed disabled:opacity-60"
                     >
                         <IconRefresh loading={loadingArribos} />
                     </button>
@@ -101,7 +101,7 @@ export function ArrivalsPanel({
                             />
                         ))
                     ) : (
-                        <div className="rounded-[10px] border border-success/25 bg-success/5 px-4 py-3 font-mono text-[12px] leading-relaxed text-text-dim">
+                        <div className="rounded-[10px] border border-success/35 bg-success/10 px-4 py-3 font-mono text-[12px] leading-relaxed text-muted-foreground">
                             Sin datos de arribos de la municipalidad en este momento. Igual podés ver
                             ubicaciones compartidas en tiempo real en el mapa.
                         </div>
@@ -117,7 +117,7 @@ export function ArrivalsPanel({
             )}
 
             {isConsulting && !loadingArribos ? (
-                <div className="mt-2 text-center font-mono text-[10px] text-text-muted">
+                <div className="mt-2 text-center font-mono text-[10px] text-muted-foreground">
                     Actualización automática cada 30s
                 </div>
             ) : null}

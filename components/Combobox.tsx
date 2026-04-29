@@ -267,10 +267,10 @@ export function Combobox({
                           width: dropdownRect.width,
                           zIndex: 9999,
                       }}
-                      className="overflow-hidden rounded-2xl border border-white/12 bg-black/95 shadow-[rgba(0,153,255,0.15)_0px_0px_0px_1px,0_18px_36px_rgba(0,0,0,0.65)]"
+                      className="overflow-hidden rounded-2xl border border-border bg-background/95 shadow-lg backdrop-blur-md"
                   >
                       {showFilter ? (
-                          <div className="border-b border-white/10 px-2.5 py-2">
+                          <div className="border-b border-border px-2.5 py-2">
                               <input
                                   ref={inputRef}
                                   value={query}
@@ -281,14 +281,14 @@ export function Combobox({
                                   onKeyDown={onFilterKeyDown}
                                   placeholder="Buscar..."
                                   aria-label="Filtrar opciones"
-                                  className="min-h-10 w-full rounded-xl border border-white/12 bg-[rgba(255,255,255,0.04)] px-3 py-2 font-sans text-sm text-text outline-none transition-colors placeholder:text-text-muted focus:border-accent"
+                                  className="min-h-10 w-full rounded-xl border border-border bg-input px-3 py-2 font-sans text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground focus:border-secondary"
                               />
                           </div>
                       ) : null}
 
                       <div className="max-h-[220px] overflow-y-auto">
                           {filtered.length === 0 ? (
-                              <div className="px-4 py-3 font-sans text-sm text-text-dim">
+                              <div className="px-4 py-3 font-sans text-sm text-muted-foreground">
                                   Sin resultados
                               </div>
                           ) : (
@@ -313,10 +313,10 @@ export function Combobox({
                                           className={cn(
                                               "flex min-h-11 w-full cursor-pointer items-center px-4 py-3 text-left font-sans text-[14px] font-medium tracking-[-0.01em] transition-colors",
                                               isActive
-                                                  ? "bg-white/10 text-text"
+                                                  ? "bg-muted text-foreground"
                                                   : isSelected
-                                                    ? "bg-accent/15 text-accent"
-                                                    : "bg-transparent text-text",
+                                                    ? "bg-secondary/15 text-secondary"
+                                                    : "bg-transparent text-foreground",
                                           )}
                                       >
                                           {o.label}
@@ -349,13 +349,13 @@ export function Combobox({
                 onKeyDown={onTriggerKeyDown}
                 disabled={disabled}
                 className={cn(
-                    "flex min-h-11 w-full items-center justify-between rounded-full border bg-[rgba(255,255,255,0.05)] px-4 py-2.5 font-sans text-[15px] font-medium tracking-[-0.01em] transition-colors",
-                    selected ? "text-text" : "text-text-dim",
+                    "input flex min-h-11 w-full items-center justify-between rounded-full border bg-input px-4 py-2.5 font-sans text-[15px] font-medium tracking-tight transition-colors",
+                    selected ? "text-foreground" : "text-muted-foreground",
                     disabled
-                        ? "cursor-not-allowed border-white/10 opacity-50"
+                        ? "cursor-not-allowed border-border opacity-50"
                         : open
-                          ? "cursor-pointer border-accent shadow-[0_0_0_1px_rgba(0,153,255,0.15)]"
-                          : "cursor-pointer border-white/12 hover:border-white/20",
+                          ? "cursor-pointer border-secondary shadow-[0_0_0_3px_rgba(29,117,112,0.25)]"
+                          : "cursor-pointer border-border hover:border-secondary",
                 )}
             >
                 <span>{loading ? "Cargando..." : selected?.label ?? placeholder}</span>
