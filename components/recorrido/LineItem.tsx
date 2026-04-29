@@ -11,23 +11,23 @@ export function LineItem({ line, onSelect }: LineItemProps) {
     return (
         <button
             onClick={() => onSelect(line)}
-            className="mb-1.5 flex w-full cursor-pointer items-center gap-3 rounded-xl bg-surface px-3.5 py-3 text-left transition hover:-translate-y-px hover:bg-white/3 hover:shadow-[rgba(0,153,255,0.15)_0px_0px_0px_1px]"
+            className="mb-1.5 flex w-full cursor-pointer items-center gap-3 rounded-xl bg-card border border-border px-3.5 py-3 text-left transition hover:-translate-y-px hover:bg-muted hover:border-secondary hover:shadow-sm"
         >
-            <div className="flex h-10 min-w-[52px] flex-shrink-0 items-center justify-center rounded-full border border-accent/45 bg-accent/15 font-display text-[17px] font-semibold tracking-[-0.03em] text-accent">
+            <div className="flex h-10 min-w-[52px] flex-shrink-0 items-center justify-center rounded-full border border-border bg-muted font-display text-[17px] font-medium tracking-tight text-foreground">
                 {line.CodigoLineaParada}
             </div>
 
             <div className="min-w-0 flex-1">
-                <div className="truncate font-sans text-sm font-semibold text-text">
+                <div className="truncate font-sans text-sm font-semibold text-foreground">
                     {desc}
                 </div>
-                <div className="mt-0.5 font-mono text-[10px] text-text-dim">
+                <div className="mt-0.5 font-mono text-[10px] text-muted-foreground">
                     Ver recorrido en mapa
                 </div>
             </div>
 
             <svg
-                className="shrink-0 text-text-muted"
+                className="shrink-0 text-muted-foreground"
                 width="16"
                 height="16"
                 viewBox="0 0 24 24"

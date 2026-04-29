@@ -7,8 +7,8 @@ interface MapErrorOverlayProps {
 
 export function MapErrorOverlay({ message, onRetry }: MapErrorOverlayProps) {
     return (
-        <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 bg-bg px-6">
-            <div className="text-text-dim">
+        <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 bg-background px-6">
+            <div className="text-muted-foreground">
                 <svg
                     width="48"
                     height="48"
@@ -24,7 +24,7 @@ export function MapErrorOverlay({ message, onRetry }: MapErrorOverlayProps) {
                     <path d="M12 17h.01" />
                 </svg>
             </div>
-            <div className="max-w-[280px] text-center font-sans text-sm leading-relaxed text-text-dim">
+            <div className="max-w-[280px] text-center font-sans text-sm leading-relaxed text-muted-foreground">
                 {message}
             </div>
             <Button

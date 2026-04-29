@@ -138,7 +138,7 @@ export default function RecorridoClient() {
       const manualCodes = new Set(MANUAL_LINES.map(m => m.CodigoLineaParada));
       const filteredCache = data.filter((l) => !manualCodes.has(l.CodigoLineaParada));
       const merged = [...filteredCache, ...MANUAL_LINES];
-      
+
       setLines(merged);
       setLinesLoading(false);
       return;
@@ -350,7 +350,7 @@ export default function RecorridoClient() {
   if (step === "selector") {
     return (
       <div className="flex min-h-dvh flex-col bg-bg">
-        <header className="z-50 flex shrink-0 items-center gap-3 border-b border-white/10 bg-black/95 px-4 py-3.5">
+        <header className="z-50 flex shrink-0 items-center gap-3 border-b border-white/10 px-4 py-3.5">
           <Link
             href="/"
             className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-white/12 bg-white/5 text-text-dim no-underline transition hover:border-white/20 hover:text-text"
@@ -371,7 +371,7 @@ export default function RecorridoClient() {
           </div>
         </header>
 
-        <div className="shrink-0 border-b border-white/10 bg-black/95 px-4 pb-2 pt-3.5">
+        <div className="shrink-0 border-b border-white/10  px-4 pb-2 pt-3.5">
           <div className="relative">
             <span className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-text-dim">
               <IconSearch />
@@ -382,7 +382,7 @@ export default function RecorridoClient() {
               placeholder="Buscar línea por número o destino…"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="box-border w-full rounded-full border border-white/12 bg-white/5 py-[11px] pl-10 pr-3.5 font-sans text-sm text-text outline-none transition-colors placeholder:text-text-muted focus:border-accent"
+              className="box-border w-full rounded-full border border-border bg-card py-[11px] pl-10 pr-3.5 font-sans text-sm text-text outline-none transition-colors placeholder:text-muted-foreground focus:border-secondary"
             />
           </div>
         </div>
@@ -400,7 +400,7 @@ export default function RecorridoClient() {
             ))
           )}
         </div>
-        <BottomNav tab="buscar" setTab={() => {}} favCount={favoritos.length} />
+        <BottomNav tab="buscar" setTab={() => { }} favCount={favoritos.length} />
       </div>
     );
   }
@@ -493,7 +493,7 @@ export default function RecorridoClient() {
           />
         )}
       </div>
-      <BottomNav tab="buscar" setTab={() => {}} favCount={favoritos.length} />
+      <BottomNav tab="buscar" setTab={() => { }} favCount={favoritos.length} />
     </div>
   );
 }
