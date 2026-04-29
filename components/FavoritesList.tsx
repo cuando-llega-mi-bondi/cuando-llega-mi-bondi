@@ -20,14 +20,14 @@ const IconEdit = () => (
 export const FavoritesList = memo(function FavoritesList({ favoritos, onView, onRemove, onRename }: FavoritesListProps) {
     if (favoritos.length === 0) {
         return (
-            <div className="mt-10 text-center font-sans text-sm tracking-[-0.01em] text-text-dim">
-                <div className="mb-4 flex justify-center text-text-muted">
+            <div className="mt-10 text-center font-sans text-[15px] tracking-tight text-muted-foreground">
+                <div className="mb-4 flex justify-center text-muted-foreground opacity-50">
                     <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
                         <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
                     </svg>
                 </div>
                 <div>Guardá paradas como favoritas</div>
-                <div className="mt-1.5 text-[11px] text-text-muted">
+                <div className="mt-2 text-[14px] text-muted-foreground opacity-80">
                     Presioná el ícono de estrella en cualquier arribo para guardar
                 </div>
             </div>
@@ -38,14 +38,14 @@ export const FavoritesList = memo(function FavoritesList({ favoritos, onView, on
         <div className="flex flex-col gap-2.5">
             {favoritos.map(fav => (
                 <Card key={fav.id} className="flex items-center gap-3 px-4 py-3.5">
-                    <div className="min-w-14 flex-shrink-0 rounded-full border border-accent/45 bg-accent/18 px-2.5 py-1 text-center font-display text-lg font-semibold tracking-[-0.03em] text-accent">
+                    <div className="min-w-14 flex-shrink-0 rounded-full border border-border bg-muted px-2.5 py-1 text-center font-display text-lg font-medium tracking-tight text-foreground">
                         {fav.descripcionLinea}
                     </div>
                     <div className="flex-1">
-                        <div className="mb-0.5 font-sans text-[15px] font-medium tracking-[-0.01em] text-text">
+                        <div className="mb-0.5 font-sans text-[15px] font-medium tracking-tight text-foreground">
                             {fav.nombre}
                         </div>
-                        <div className="font-mono text-[11px] text-text-dim">
+                        <div className="font-mono text-[11px] text-muted-foreground">
                             {fav.identificadorParada}
                         </div>
                     </div>
@@ -54,7 +54,7 @@ export const FavoritesList = memo(function FavoritesList({ favoritos, onView, on
                             onClick={() => onRename(fav)}
                             variant="secondary"
                             size="icon"
-                            className="h-9 w-9 p-0 text-text-dim"
+                            className="h-9 w-9 p-0 text-muted-foreground hover:text-secondary"
                             title="Editar nombre"
                         >
                             <IconEdit />
@@ -71,7 +71,7 @@ export const FavoritesList = memo(function FavoritesList({ favoritos, onView, on
                             onClick={() => onRemove(fav.id)}
                             variant="secondary"
                             size="icon"
-                            className="h-9 w-9 p-0 text-text-dim"
+                            className="h-9 w-9 p-0 text-muted-foreground hover:text-destructive"
                             title="Eliminar"
                         >
                             <IconX />

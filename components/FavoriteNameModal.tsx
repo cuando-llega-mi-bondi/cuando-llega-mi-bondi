@@ -27,16 +27,16 @@ export function FavoriteNameModal({ isOpen, onClose, onSave, initialName, title 
         <Modal open={isOpen} onClose={onClose} className="animate-slide-up">
             <button
                 onClick={onClose}
-                className="absolute right-4 top-4 cursor-pointer rounded-full border border-white/10 bg-white/5 p-1 text-text-dim transition-colors hover:border-white/20 hover:text-text"
+                className="absolute right-4 top-4 cursor-pointer rounded-full border border-border bg-muted p-1 text-muted-foreground transition-colors hover:border-secondary hover:text-foreground"
                 aria-label="Cerrar"
             >
                 <IconX size={20} />
             </button>
 
-            <h3 className="mb-2 font-display text-[22px] font-semibold tracking-[-0.04em] text-text">
+            <h3 className="mb-2 font-display text-[22px] font-medium tracking-[-1px] text-foreground">
                 {title}
             </h3>
-            <p className="mb-5 font-sans text-sm leading-relaxed text-text-muted">
+            <p className="mb-5 font-sans text-sm leading-relaxed text-muted-foreground">
                 Asignale un nombre descriptivo a esta parada para encontrarla más rápido.
             </p>
 
@@ -51,7 +51,7 @@ export function FavoriteNameModal({ isOpen, onClose, onSave, initialName, title 
                     }}
                     defaultValue={initialName}
                     placeholder="Ej: Mi Casa, Trabajo..."
-                    className="w-full rounded-2xl border border-white/12 bg-white/6 px-4 py-3 font-sans text-base font-medium tracking-[-0.01em] text-text outline-none transition-colors placeholder:text-text-muted focus:border-accent"
+                    className="w-full rounded-2xl border border-border bg-input px-4 py-3 font-sans text-base font-medium tracking-tight text-foreground outline-none transition-colors placeholder:text-muted-foreground focus:border-secondary"
                 />
             </div>
 
@@ -60,7 +60,7 @@ export function FavoriteNameModal({ isOpen, onClose, onSave, initialName, title 
                     onClick={onClose}
                     variant="secondary"
                     size="md"
-                    className="flex-1 text-text-dim"
+                    className="flex-1 text-muted-foreground"
                 >
                     CANCELAR
                 </Button>

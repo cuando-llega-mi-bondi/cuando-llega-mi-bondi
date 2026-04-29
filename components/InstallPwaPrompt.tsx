@@ -116,30 +116,30 @@ export function InstallPwaPrompt() {
         <div
             role="dialog"
             aria-label="Instalar aplicación"
-            className="fixed inset-x-3 bottom-[calc(96px+env(safe-area-inset-bottom,0))] z-1000 mx-auto max-w-md rounded-2xl border border-border bg-surface/95 p-3 shadow-2xl backdrop-blur-md sm:inset-x-auto sm:right-4 sm:bottom-[calc(100px+env(safe-area-inset-bottom,0))] sm:left-auto sm:w-88"
+            className="fixed inset-x-3 bottom-[calc(96px+env(safe-area-inset-bottom,0))] z-[1000] mx-auto max-w-md rounded-2xl border border-border bg-background/95 p-3 shadow-2xl backdrop-blur-md sm:inset-x-auto sm:right-4 sm:bottom-[calc(100px+env(safe-area-inset-bottom,0))] sm:left-auto sm:w-88"
         >
             <div className="flex items-start gap-3">
                 <div
                     aria-hidden
-                    className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-accent-2"
+                    className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-primary text-primary-foreground"
                 >
                     <IconBus />
                 </div>
                 <div className="min-w-0 flex-1">
-                    <p className="font-display text-[0.95rem] font-semibold leading-tight text-text">
+                    <p className="font-display text-[0.95rem] font-semibold leading-tight text-foreground">
                         Instalá CuándoLlega
                     </p>
                     {showIosHint ? (
-                        <p className="mt-1 text-[0.8rem] leading-snug text-text-dim">
+                        <p className="mt-1 text-[0.8rem] leading-snug text-muted-foreground">
                             Tocá{" "}
-                            <span className="font-medium text-text">Compartir</span> y luego{" "}
-                            <span className="font-medium text-text">
+                            <span className="font-medium text-foreground">Compartir</span> y luego{" "}
+                            <span className="font-medium text-foreground">
                                 Agregar a pantalla de inicio
                             </span>
                             .
                         </p>
                     ) : (
-                        <p className="mt-1 text-[0.8rem] leading-snug text-text-dim">
+                        <p className="mt-1 text-[0.8rem] leading-snug text-muted-foreground">
                             Sumala a tu pantalla de inicio para abrirla más rápido y verla
                             sin barras del navegador.
                         </p>
@@ -150,7 +150,7 @@ export function InstallPwaPrompt() {
                                 type="button"
                                 onClick={install}
                                 disabled={installing || !deferred}
-                                className="rounded-full bg-accent px-3 py-1.5 text-[0.8rem] font-semibold text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
+                                className="rounded-full bg-primary px-3 py-1.5 text-[0.8rem] font-semibold text-primary-foreground transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
                             >
                                 {installing ? "Instalando…" : "Instalar"}
                             </button>
@@ -158,7 +158,7 @@ export function InstallPwaPrompt() {
                         <button
                             type="button"
                             onClick={dismiss}
-                            className="rounded-full px-3 py-1.5 text-[0.8rem] font-medium text-text-dim transition hover:text-text"
+                            className="rounded-full px-3 py-1.5 text-[0.8rem] font-medium text-muted-foreground transition hover:text-foreground"
                         >
                             Ahora no
                         </button>
@@ -168,7 +168,7 @@ export function InstallPwaPrompt() {
                     type="button"
                     aria-label="Cerrar"
                     onClick={dismiss}
-                    className="-mr-1 -mt-1 rounded-md p-1 text-text-muted transition hover:text-text"
+                    className="-mr-1 -mt-1 rounded-md p-1 text-muted-foreground transition hover:text-foreground"
                 >
                     <svg
                         width="16"

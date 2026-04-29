@@ -84,8 +84,8 @@ export function ShareButton({ arribos, calleLabel, interseccionLabel }: ShareBut
             className={cn(
                 "flex min-h-11 cursor-pointer items-center justify-center gap-1.5 whitespace-nowrap rounded-full border px-3.5 font-sans text-[12px] font-medium tracking-[-0.01em] transition",
                 isIdle
-                    ? "border-white/12 bg-white/5 text-text-dim hover:border-white/20 hover:text-text"
-                    : "border-green-400/50 bg-green-400/10 text-green-400",
+                    ? "border-border bg-muted text-muted-foreground hover:border-secondary hover:text-foreground"
+                    : "border-success/50 bg-success/10 text-success",
             )}
         >
             <svg

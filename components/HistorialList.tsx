@@ -37,14 +37,14 @@ export const HistorialList = memo(function HistorialList({
     return (
         <div className="mt-8">
             <div className="mb-3 flex items-center justify-between">
-                <div className="flex items-center gap-1.5 font-mono text-[10px] tracking-[1.4px] text-text-dim">
+                <div className="flex items-center gap-1.5 font-mono text-[10px] tracking-[1.4px] text-muted-foreground">
                     <IconClock />
                     HISTORIAL RECIENTE
                 </div>
                 <button
                     onClick={onClear}
                     title="Borrar historial"
-                    className="cursor-pointer bg-transparent px-1.5 py-0.5 font-sans text-[11px] tracking-[-0.01em] text-text-muted underline underline-offset-2 transition-colors hover:text-text-dim"
+                    className="cursor-pointer bg-transparent px-1.5 py-0.5 font-sans text-[12px] tracking-tight text-muted-foreground underline underline-offset-2 transition-colors hover:text-destructive"
                 >
                     BORRAR TODO
                 </button>
@@ -56,21 +56,21 @@ export const HistorialList = memo(function HistorialList({
                         key={h.id}
                         className="flex animate-slide-up items-center gap-3 px-3.5 py-3 opacity-90"
                     >
-                        <div className="min-w-12 flex-shrink-0 rounded-full border border-accent/40 bg-accent/16 px-2.5 py-1 text-center font-display text-base font-semibold tracking-[-0.03em] text-accent">
+                        <div className="min-w-12 flex-shrink-0 rounded-full border border-border bg-muted px-2.5 py-1 text-center font-display text-base font-medium tracking-tight text-foreground">
                             {h.descripcionLinea}
                         </div>
 
                         <div className="min-w-0 flex-1">
-                            <div className="mb-0.5 truncate font-sans text-sm font-medium tracking-[-0.01em] text-text">
+                            <div className="mb-0.5 truncate font-sans text-[15px] font-medium tracking-tight text-foreground">
                                 {h.descripcionBandera}
                             </div>
                             {(h.calleLabel || h.interseccionLabel) && (
-                                <div className="mb-0.5 truncate font-mono text-[10px] text-text-dim">
+                                <div className="mb-0.5 truncate font-mono text-[10px] text-muted-foreground">
                                     {h.calleLabel}
                                     {h.interseccionLabel ? ` y ${h.interseccionLabel}` : ""}
                                 </div>
                             )}
-                            <div className="flex items-center gap-1 font-mono text-[10px] text-text-muted">
+                            <div className="flex items-center gap-1 font-mono text-[10px] text-muted-foreground">
                                 <IconClock />
                                 {formatRelative(h.timestamp)}
                             </div>
@@ -90,7 +90,7 @@ export const HistorialList = memo(function HistorialList({
                                 title="Quitar del historial"
                                 variant="secondary"
                                 size="icon"
-                                className="h-8 w-8 p-0 text-text-muted"
+                                className="h-8 w-8 p-0 text-muted-foreground hover:text-destructive"
                             >
                                 <IconX />
                             </Button>
