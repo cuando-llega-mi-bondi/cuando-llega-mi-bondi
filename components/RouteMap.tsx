@@ -359,7 +359,7 @@ export default function RouteMap({
 
   const containerStyle: React.CSSProperties = isFullscreen
     ? { position: "fixed", inset: 0, zIndex: 99999, background: "#000", display: "flex", flexDirection: "column" }
-    : { height: "100%", width: "100%", overflow: "hidden", position: "relative", zIndex: 1, display: "flex", flexDirection: "column" };
+    : { height: "100%", width: "100%", overflow: "hidden", position: "relative", display: "flex", flexDirection: "column" };
 
   return (
     <div style={containerStyle}>

@@ -409,7 +409,7 @@ export default function RecorridoClient() {
   // MAP SCREEN
   // ─────────────────────────────────────────────────────────────────────────────
   return (
-    <div className="flex h-dvh flex-col bg-background">
+    <div className="flex h-dvh flex-col bg-background pb-[calc(5rem+env(safe-area-inset-bottom,0px))]">
       <header className="z-50 flex shrink-0 items-center gap-3 border-b border-border bg-background/90 backdrop-blur-md px-[calc(16px+env(safe-area-inset-left,0px))] pr-[calc(16px+env(safe-area-inset-right,0px))] pt-[calc(10px+env(safe-area-inset-top,0px))] pb-3">
         <button
           type="button"
