@@ -64,7 +64,7 @@ export function HomeClient({ children }: { children?: ReactNode }) {
     });
     const { callesRaw, loadingCalles } = useCalles(codLinea);
     const { intersecciones, loadingInter } = useIntersecciones(codLinea, codCalle);
-    const { paradas } = useParadas(
+    const { paradas, loadingParadas } = useParadas(
         codLinea,
         codCalle,
         codInterseccion,
@@ -222,6 +222,30 @@ export function HomeClient({ children }: { children?: ReactNode }) {
         setIsConsulting(false);
         setSelectedRamal("TODOS");
     }, []);
+
+    useEffect(() => {
+        if (!codLinea || codCalle || loadingCalles) return;
+        if (calles.length !== 1) return;
+        handleCalleChange(calles[0].value);
+    }, [codLinea, codCalle, loadingCalles, calles, handleCalleChange]);
+
+    useEffect(() => {
+        if (!codCalle || codInterseccion || loadingInter) return;
+        if (interOptions.length !== 1) return;
+        handleInterseccionChange(interOptions[0].value);
+    }, [codCalle, codInterseccion, loadingInter, interOptions, handleInterseccionChange]);
+
+    useEffect(() => {
+        if (!codInterseccion || paradaId || loadingParadas) return;
+        if (destinoOptions.length !== 1) return;
+        handleParadaChange(destinoOptions[0].value);
+    }, [
+        codInterseccion,
+        paradaId,
+        loadingParadas,
+        destinoOptions,
+        handleParadaChange,
+    ]);
 
     const handleConsultar = useCallback(() => {
         if (!paradaId) return;

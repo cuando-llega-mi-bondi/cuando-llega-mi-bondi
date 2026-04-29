@@ -12,6 +12,7 @@ export function Combobox({
     options,
     disabled = false,
     loading = false,
+    autoSelectSingleFilterMatch = true,
     "aria-labelledby": ariaLabelledby,
     "aria-label": ariaLabel,
 }: {
@@ -21,6 +22,8 @@ export function Combobox({
     options: { value: string; label: string }[];
     disabled?: boolean;
     loading?: boolean;
+    /** When the filter narrows to one option, select it after a short delay */
+    autoSelectSingleFilterMatch?: boolean;
     "aria-labelledby"?: string;
     "aria-label"?: string;
 }) {
@@ -50,6 +53,9 @@ export function Combobox({
             ? options.filter((o) => o.label.toLowerCase().includes(query.toLowerCase())).slice(0, 40)
             : options.slice(0, 80);
     }, [options, query]);
+
+    const singleFilteredValue =
+        filtered.length === 1 ? filtered[0].value : null;
 
     const selected = options.find((o) => o.value === value);
 
@@ -129,6 +135,33 @@ export function Combobox({
         const el = optionRefs.current[safeActiveIndex];
         el?.scrollIntoView({ block: "nearest" });
     }, [safeActiveIndex, open]);
+
+    useEffect(() => {
+        if (!autoSelectSingleFilterMatch || !open || !showFilter || disabled || loading) return;
+        if (!query.trim() || singleFilteredValue == null) return;
+
+        const tid = window.setTimeout(() => {
+            if (singleFilteredValue !== value) {
+                onChange(singleFilteredValue);
+            }
+            setOpen(false);
+            setQuery("");
+            setActiveIndex(0);
+            triggerRef.current?.focus();
+        }, 350);
+
+        return () => window.clearTimeout(tid);
+    }, [
+        autoSelectSingleFilterMatch,
+        open,
+        showFilter,
+        disabled,
+        loading,
+        query,
+        singleFilteredValue,
+        value,
+        onChange,
+    ]);
 
     const handleSelect = useCallback(
         (v: string) => {

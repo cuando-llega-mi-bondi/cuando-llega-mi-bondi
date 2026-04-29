@@ -10,6 +10,8 @@ interface StepFieldProps {
     loading?: boolean;
     disabled?: boolean;
     className?: string;
+    /** Passed to Combobox; default true */
+    autoSelectSingleFilterMatch?: boolean;
 }
 
 export function StepField({
@@ -22,6 +24,7 @@ export function StepField({
     loading,
     disabled,
     className,
+    autoSelectSingleFilterMatch,
 }: StepFieldProps) {
     return (
         <div className={className}>
@@ -39,6 +42,7 @@ export function StepField({
                 options={options}
                 loading={loading}
                 disabled={disabled}
+                autoSelectSingleFilterMatch={autoSelectSingleFilterMatch}
             />
         </div>
     );
