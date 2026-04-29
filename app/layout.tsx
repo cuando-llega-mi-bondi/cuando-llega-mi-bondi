@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Azeret_Mono, Inter, Outfit } from "next/font/google";
+import { Azeret_Mono, Inter } from "next/font/google";
 import "./globals.css";
 import { Analytics } from "@vercel/analytics/react";
 import { JsonLd } from "@/components/JsonLd";
@@ -10,13 +10,6 @@ const inter = Inter({
     weight: ["400", "500", "600", "700"],
     display: "swap",
     variable: "--font-inter",
-});
-
-const outfit = Outfit({
-    subsets: ["latin"],
-    weight: ["400", "500", "600", "700", "800", "900"],
-    display: "swap",
-    variable: "--font-outfit",
 });
 
 const azeretMono = Azeret_Mono({
@@ -65,7 +58,10 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-    themeColor: "#000000",
+    themeColor: [
+        { media: '(prefers-color-scheme: light)', color: '#f7f7f4' },
+        { media: '(prefers-color-scheme: dark)', color: '#0f2d4a' },
+    ],
     width: "device-width",
     initialScale: 1,
     viewportFit: "cover",
@@ -88,7 +84,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                     }}
                 />
             </head>
-            <body className={`${inter.variable} ${outfit.variable} ${azeretMono.variable}`}>
+            <body className={`${inter.variable} ${azeretMono.variable}`}>
                 <JsonLd />
                 <Analytics />
                 {children}
