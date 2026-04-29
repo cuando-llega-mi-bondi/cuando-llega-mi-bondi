@@ -20,13 +20,13 @@ const azeretMono = Azeret_Mono({
 });
 
 export const metadata: Metadata = {
-    metadataBase: new URL("https://cuandollega-tawny.vercel.app"),
+    metadataBase: new URL("https://www.bondimdp.com.ar"),
     title: {
-        default: "¿Cuándo Llega? MDP — Colectivos en Tiempo Real",
-        template: "%s | CuándoLlega MDP",
+        default: "Bondi MDP — Colectivos en Tiempo Real",
+        template: "%s | Bondi MDP",
     },
     description: "Consultá cuándo llega el colectivo en Mar del Plata. Horarios, recorridos y paradas en tiempo real de todas las líneas (511, 522, 541, etc.) de MGP.",
-    keywords: ["colectivos mar del plata", "cuando llega mdp", "horarios colectivos mar del plata", "transporte publico mdp", "mgp", "paradas de colectivo"],
+    keywords: ["bondimdp", "bondi mdp", "colectivos mar del plata", "cuando llega mdp", "horarios colectivos mar del plata", "transporte publico mdp", "mgp", "paradas de colectivo"],
     manifest: "/manifest.json",
     alternates: {
         canonical: "/",
@@ -34,20 +34,20 @@ export const metadata: Metadata = {
     openGraph: {
         type: "website",
         locale: "es_AR",
-        url: "https://cuandollega-tawny.vercel.app",
-        title: "¿Cuándo Llega? MDP — Colectivos en Tiempo Real",
+        url: "https://www.bondimdp.com.ar",
+        title: "Bondi MDP — Colectivos en Tiempo Real",
         description: "La forma más rápida de saber cuándo llega tu colectivo en Mar del Plata. Datos oficiales de MGP en una interfaz moderna.",
-        siteName: "¿Cuándo Llega? MDP",
+        siteName: "Bondi MDP",
     },
     twitter: {
         card: "summary_large_image",
-        title: "¿Cuándo Llega? MDP",
+        title: "Bondi MDP",
         description: "Colectivos en tiempo real en Mar del Plata. No pierdas más tiempo esperando.",
     },
     appleWebApp: {
         capable: true,
         statusBarStyle: "black-translucent",
-        title: "CuándoLlega",
+        title: "Bondi MDP",
     },
     verification: {
         google: [

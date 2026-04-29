@@ -409,59 +409,69 @@ export default function RecorridoClient() {
   // MAP SCREEN
   // ─────────────────────────────────────────────────────────────────────────────
   return (
-    <div className="flex h-dvh flex-col bg-bg">
-      <header className="z-50 flex shrink-0 items-center gap-3 border-b border-white/10 bg-black/95 px-4 py-3">
+    <div className="flex h-dvh flex-col bg-background">
+      <header className="z-50 flex shrink-0 items-center gap-3 border-b border-border bg-background/90 backdrop-blur-md px-[calc(16px+env(safe-area-inset-left,0px))] pr-[calc(16px+env(safe-area-inset-right,0px))] pt-[calc(10px+env(safe-area-inset-top,0px))] pb-3">
         <button
+          type="button"
           onClick={goBack}
-          className="flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center rounded-full border border-white/12 bg-white/5 text-text-dim transition hover:border-white/20 hover:text-text"
+          className="flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center rounded-full border border-border bg-muted text-muted-foreground transition hover:border-secondary hover:text-foreground"
           title="Volver a la lista"
         >
           <IconBack />
         </button>
 
         <div className="min-w-0 flex-1">
-          <div className="flex items-center gap-2 font-display text-lg font-semibold tracking-[-0.03em] text-text">
+          <div className="flex min-w-0 items-center gap-2">
             {selectedLine && (
-              <span className="rounded-full border border-accent/45 bg-accent/15 px-2.5 py-0.5 text-xl font-semibold text-accent">
-                {selectedLine.Descripcion}
+              <span className="shrink-0 rounded-full border border-secondary/45 bg-secondary/12 px-2.5 py-0.5 font-display text-base font-semibold tracking-[-0.03em] text-secondary">
+                {selectedLine.CodigoLineaParada}
               </span>
             )}
-            <span className="text-[15px] text-text">
-              {mapLoading ? "Cargando…" : (selectedRamal?.label ?? selectedLine?.Descripcion ?? "")}
+            <span className="min-w-0 truncate font-sans text-[15px] font-semibold tracking-[-0.02em] text-foreground">
+              {mapLoading ? "Cargando…" : (selectedLine?.Descripcion ?? "")}
             </span>
           </div>
+          {!mapLoading && selectedRamal && (
+            <p className="mt-0.5 truncate font-sans text-[13px] text-muted-foreground">
+              <span className="font-medium text-foreground/85">Sentido: </span>
+              {selectedRamal.label}
+            </p>
+          )}
           {!mapLoading && selectedLine && (
-            <div className="mt-0.5 font-mono text-[10px] text-text-dim">
-              {mapStops.length > 0 ? `${mapStops.length} paradas · ` : ""}{ramales.length > 1 ? `${ramales.length} ramales` : ""}
+            <div className="mt-0.5 font-mono text-[10px] text-muted-foreground">
+              {mapStops.length > 0 ? `${mapStops.length} paradas` : ""}
+              {mapStops.length > 0 && ramales.length > 1 ? " · " : ""}
+              {ramales.length > 1 ? `${ramales.length} ramales` : ""}
             </div>
           )}
         </div>
 
-        <div className="shrink-0 rounded-full border border-accent/35 bg-accent/12 px-3 py-1 font-sans text-[11px] font-medium tracking-[-0.01em] text-accent">
+        <div className="shrink-0 rounded-full border border-secondary/35 bg-secondary/12 px-3 py-1 font-sans text-[11px] font-medium tracking-[-0.01em] text-secondary">
           MAPA
         </div>
       </header>
 
       {ramales.length > 1 && !mapLoading && (
-        <div className="shrink-0 overflow-x-auto border-b border-white/10 bg-black/95 [scrollbar-width:none]">
-          <div className="flex w-max gap-2 px-3 py-2.5">
+        <div className="shrink-0 overflow-x-auto border-b border-border bg-background/90 backdrop-blur-md [scrollbar-width:none]">
+          <div className="flex w-max gap-2 px-[calc(12px+env(safe-area-inset-left,0px))] py-2.5 pr-[calc(12px+env(safe-area-inset-right,0px))]">
             {ramales.map((ramal) => {
               const isActive = ramal.key === selectedRamal?.key;
               return (
                 <button
                   key={ramal.key}
+                  type="button"
                   onClick={() => setSelectedRamal(ramal)}
                   className={cn(
                     "flex cursor-pointer items-center gap-1.5 whitespace-nowrap rounded-full border px-3.5 py-[7px] font-sans text-[13px] font-medium tracking-[-0.01em] transition",
                     isActive
-                      ? "border-accent bg-accent/16 text-accent"
-                      : "border-white/12 bg-white/5 text-text-dim",
+                      ? "border-secondary bg-secondary/14 text-secondary"
+                      : "border-border bg-muted text-muted-foreground hover:border-secondary/50 hover:text-foreground",
                   )}
                 >
                   <span
                     className={cn(
                       "h-2 w-2 flex-shrink-0 rounded-full transition-colors",
-                      isActive ? "bg-accent" : "bg-white/20",
+                      isActive ? "bg-secondary" : "bg-muted-foreground/35",
                     )}
                   />
                   {ramal.label}
@@ -482,10 +492,10 @@ export default function RecorridoClient() {
             key={`${selectedLine?.CodigoLineaParada ?? ""}-${selectedRamal?.key ?? ""}`}
             routeLine={routeLine}
             stops={mapStops}
-            lineNumber={selectedLine?.Descripcion}
+            lineNumber={selectedLine?.CodigoLineaParada}
             codigoLineaParada={selectedLine?.CodigoLineaParada}
             routeName={selectedRamal?.label ?? selectedLine?.Descripcion}
-            accentColor="var(--accent)"
+            accentColor="var(--secondary)"
             liveBuses={liveBuses}
             ramalKey={selectedRamal?.key}
             ramalLabel={selectedRamal?.label}

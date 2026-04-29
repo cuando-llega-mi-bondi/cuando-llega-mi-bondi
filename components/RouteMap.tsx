@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import React, { useEffect, useState, useRef, useMemo, Fragment } from "react";
+import React, { useEffect, useLayoutEffect, useState, useRef, useMemo, Fragment } from "react";
 import { MapContainer, TileLayer, Marker, Polyline, useMap, Popup } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
@@ -274,18 +274,38 @@ export default function RouteMap({
   const [search, setSearch] = useState("");
   const [fitTrigger, setFitTrigger] = useState(0);
 
+  /** Drawn path: API polyline, or stop-to-stop fallback when geometry is missing */
+  const pathPositions = useMemo<[number, number][]>(() => {
+    if (routeLine.length >= 2) return routeLine;
+    if (stops.length < 2) return [];
+    const ordered = [...stops].sort((a, b) => a.id - b.id);
+    return ordered.map((s) => [s.lat, s.lng] as [number, number]);
+  }, [routeLine, stops]);
+
+  /** Leaflet SVG stroke may not resolve CSS vars; resolve to rgb for Polyline/markers */
+  const [resolvedStroke, setResolvedStroke] = useState(() => accentColor);
+  useLayoutEffect(() => {
+    if (typeof document === "undefined") return;
+    const el = document.createElement("span");
+    el.style.cssText = `position:absolute;visibility:hidden;color:${accentColor}`;
+    document.documentElement.appendChild(el);
+    const rgb = getComputedStyle(el).color;
+    document.documentElement.removeChild(el);
+    setResolvedStroke(rgb && rgb !== "rgba(0, 0, 0, 0)" ? rgb : accentColor);
+  }, [accentColor]);
+
   const bounds = useMemo<L.LatLngBoundsExpression | null>(() => {
-    if (routeLine.length === 0) return null;
-    return L.latLngBounds(routeLine);
-  }, [routeLine]);
+    if (pathPositions.length === 0) return null;
+    return L.latLngBounds(pathPositions);
+  }, [pathPositions]);
 
   // Direction arrows along the route
   const arrowMarkers = useMemo(() => {
     const arrows: { pos: [number, number]; bearing: number }[] = [];
-    if (routeLine.length < 5) return arrows;
-    for (let j = 10; j < routeLine.length - 2; j += 20) {
-      const p1 = routeLine[Math.max(0, j - 2)];
-      const p2 = routeLine[Math.min(routeLine.length - 1, j + 2)];
+    if (pathPositions.length < 5) return arrows;
+    for (let j = 10; j < pathPositions.length - 2; j += 20) {
+      const p1 = pathPositions[Math.max(0, j - 2)];
+      const p2 = pathPositions[Math.min(pathPositions.length - 1, j + 2)];
       if (p1 && p2) {
         const dLon = p2[1] - p1[1];
         const y = Math.sin((dLon * Math.PI) / 180) * Math.cos((p2[0] * Math.PI) / 180);
@@ -295,11 +315,11 @@ export default function RouteMap({
             Math.cos((p2[0] * Math.PI) / 180) *
             Math.cos((dLon * Math.PI) / 180);
         const bearing = (Math.atan2(y, x) * 180) / Math.PI;
-        arrows.push({ pos: routeLine[j], bearing });
+        arrows.push({ pos: pathPositions[j], bearing });
       }
     }
     return arrows;
-  }, [routeLine]);
+  }, [pathPositions]);
 
   const filteredStops = useMemo(() => {
     if (!search.trim()) return stops;
@@ -311,9 +331,11 @@ export default function RouteMap({
 
   const selected = stops.find((s) => s.id === selectedStop) ?? null;
 
-  const center: [number, number] = routeLine.length > 0
-    ? routeLine[Math.floor(routeLine.length / 2)]
-    : [-38.0, -57.5];
+  const center: [number, number] = pathPositions.length > 0
+    ? pathPositions[Math.floor(pathPositions.length / 2)]
+    : stops.length > 0
+      ? [stops[0].lat, stops[0].lng]
+      : [-38.0, -57.5];
 
   const telegramStartPayload = useMemo(() => {
     if (!lineNumber) return "";
@@ -398,11 +420,11 @@ export default function RouteMap({
         />
 
         {/* Route line */}
-        {routeLine.length > 0 && (
+        {pathPositions.length > 0 && (
           <Fragment>
             <Polyline
-              positions={routeLine}
-              color={accentColor}
+              positions={pathPositions}
+              color={resolvedStroke}
               weight={8}
               opacity={1}
               lineCap="round"
@@ -426,7 +448,7 @@ export default function RouteMap({
             <Marker
               key={stop.id}
               position={[stop.lat, stop.lng]}
-              icon={createStopIcon(stop.id, isSel, accentColor)}
+              icon={createStopIcon(stop.id, isSel, resolvedStroke)}
               eventHandlers={{ click: () => setSelectedStop(isSel ? null : stop.id) }}
               zIndexOffset={isSel ? 1000 : 0}
             >

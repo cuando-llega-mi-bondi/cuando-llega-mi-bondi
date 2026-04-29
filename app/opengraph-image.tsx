@@ -1,6 +1,6 @@
 import { ImageResponse } from "next/og";
 
-export const alt = "¿Cuándo Llega? MDP — Colectivos en tiempo real en Mar del Plata";
+export const alt = "Bondi MDP — Colectivos en tiempo real en Mar del Plata";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
@@ -52,7 +52,7 @@ export default function OpenGraphImage() {
                                 lineHeight: 1.05,
                             }}
                         >
-                            ¿Cuándo Llega?
+                            Bondi MDP
                         </span>
                         <span
                             style={{

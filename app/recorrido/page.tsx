@@ -14,11 +14,11 @@ export const metadata: Metadata = {
     openGraph: {
         type: "website",
         locale: "es_AR",
-        url: "https://cuandollega-tawny.vercel.app/recorrido",
-        title: "Recorridos de Colectivos MDP | CuándoLlega MDP",
+        url: "https://www.bondimdp.com.ar/recorrido",
+        title: "Recorridos de Colectivos MDP | Bondi MDP",
         description:
             "Mapa interactivo con recorridos y paradas de colectivos en Mar del Plata. Datos MGP.",
-        siteName: "¿Cuándo Llega? MDP",
+        siteName: "Bondi MDP",
     },
     twitter: {
         card: "summary_large_image",

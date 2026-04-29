@@ -2,21 +2,21 @@ export function JsonLd() {
     const webApp = {
         "@context": "https://schema.org",
         "@type": "WebApplication",
-        "name": "¿Cuándo Llega? MDP",
+        "name": "Bondi MDP",
         "description": "Aplicación para consultar el tiempo de arribo de colectivos en Mar del Plata en tiempo real.",
         "applicationCategory": "TravelApplication",
         "operatingSystem": "All",
-        "url": "https://cuandollega-tawny.vercel.app",
+        "url": "https://www.bondimdp.com.ar",
         "author": {
             "@type": "Organization",
-            "name": "Cuándo Llega MDP Team"
+            "name": "Bondi MDP Team"
         },
         "offers": {
             "@type": "Offer",
             "price": "0",
             "priceCurrency": "ARS"
         },
-        "screenshot": "https://cuandollega-tawny.vercel.app/icon-512.png",
+        "screenshot": "https://www.bondimdp.com.ar/icon-512.png",
         "featureList": [
             "Tiempo real de arribos",
             "Recorridos completos",
@@ -28,27 +28,27 @@ export function JsonLd() {
     const organization = {
         "@context": "https://schema.org",
         "@type": "Organization",
-        "name": "Cuándo Llega MDP",
-        "url": "https://cuandollega-tawny.vercel.app",
-        "logo": "https://cuandollega-tawny.vercel.app/icon-512.png"
+        "name": "Bondi MDP",
+        "url": "https://www.bondimdp.com.ar",
+        "logo": "https://www.bondimdp.com.ar/icon-512.png"
     };
 
     const webSite = {
         "@context": "https://schema.org",
         "@type": "WebSite",
-        "name": "¿Cuándo Llega? MDP",
-        "url": "https://cuandollega-tawny.vercel.app"
+        "name": "Bondi MDP",
+        "url": "https://www.bondimdp.com.ar"
     };
 
     const speakable = {
         "@context": "https://schema.org",
         "@type": "WebPage",
-        "name": "¿Cuándo Llega? MDP",
+        "name": "Bondi MDP",
         "speakable": {
             "@type": "SpeakableSpecification",
             "cssSelector": [".arrival-times", ".route-info"]
         },
-        "url": "https://cuandollega-tawny.vercel.app"
+        "url": "https://www.bondimdp.com.ar"
     };
 
     return (

@@ -2,7 +2,7 @@ import { MetadataRoute } from "next";
 export const revalidate = 3600; // Cachear por 1 hora
 
 export default function sitemap(): MetadataRoute.Sitemap {
-    const baseUrl = "https://cuandollega-tawny.vercel.app";
+    const baseUrl = "https://www.bondimdp.com.ar";
     const now = new Date();
 
     return [

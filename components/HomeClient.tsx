@@ -459,7 +459,7 @@ export function HomeClient({ children }: { children?: ReactNode }) {
                 title={editingFav ? "Renombrar parada" : "Guardar parada"}
             />
 
-            <Footer />
+            {/* <Footer /> */}
             <BottomNav tab={tab} setTab={setTab} favCount={favoritos.length} />
         </div>
     );

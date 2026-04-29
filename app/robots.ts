@@ -12,6 +12,6 @@ export default function robots(): MetadataRoute.Robots {
                 allow: "/",
             }
         ],
-        sitemap: "https://cuandollega-tawny.vercel.app/sitemap.xml",
+        sitemap: "https://www.bondimdp.com.ar/sitemap.xml",
     };
 }

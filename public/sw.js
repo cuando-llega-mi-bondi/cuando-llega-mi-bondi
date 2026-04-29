@@ -1,9 +1,9 @@
-// ¿Cuándo Llega? — Service Worker
+// Bondi MDP — Service Worker
 // Strategy: Cache-first for static assets, Network-first for API calls
 
-const CACHE_VERSION = 'v1';
-const STATIC_CACHE = `cuandollega-static-${CACHE_VERSION}`;
-const API_CACHE = `cuandollega-api-${CACHE_VERSION}`;
+const CACHE_VERSION = 'v2';
+const STATIC_CACHE = `bondimdp-static-${CACHE_VERSION}`;
+const API_CACHE = `bondimdp-api-${CACHE_VERSION}`;
 
 // Assets to pre-cache on install
 const PRECACHE_URLS = [
@@ -28,7 +28,11 @@ self.addEventListener('activate', (event) => {
     caches.keys().then((cacheNames) => {
       return Promise.all(
         cacheNames
-          .filter((name) => name.startsWith('cuandollega-') && name !== STATIC_CACHE && name !== API_CACHE)
+          .filter((name) =>
+            (name.startsWith('cuandollega-') || name.startsWith('bondimdp-')) &&
+            name !== STATIC_CACHE &&
+            name !== API_CACHE
+          )
           .map((name) => caches.delete(name))
       );
     }).then(() => self.clients.claim())

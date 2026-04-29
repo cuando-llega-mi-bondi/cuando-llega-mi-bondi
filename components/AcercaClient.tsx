@@ -29,7 +29,7 @@ const FAQ = [
 export function AcercaClient() {
     const handleShareWhatsApp = () => {
         const text = encodeURIComponent(
-            "Mirá esta app para ver cuándo llega el bondi en Mar del Plata 🚌 https://cuandollega-tawny.vercel.app",
+            "Mirá esta app para ver cuándo llega el bondi en Mar del Plata 🚌 https://www.bondimdp.com.ar",
         );
         window.open(`https://wa.me/?text=${text}`, "_blank");
     };
@@ -38,9 +38,9 @@ export function AcercaClient() {
         if (navigator.share) {
             try {
                 await navigator.share({
-                    title: "¿Cuándo Llega? MDP",
+                    title: "Bondi MDP",
                     text: "Consultá cuándo llega tu colectivo en Mar del Plata",
-                    url: "https://cuandollega-tawny.vercel.app",
+                    url: "https://www.bondimdp.com.ar",
                 });
             } catch {
                 /* user cancelled */
@@ -57,14 +57,14 @@ export function AcercaClient() {
             <PageShell className="space-y-10 pt-8">
                 {/* ── HERO ─────────────────────────────────── */}
                 <section className="flex flex-col items-center gap-5 text-center">
-                    <div className="flex h-20 w-20 items-center justify-center rounded-2xl bg-secondary/10 text-secondary">
+                    <div className="flex  items-center justify-center text-secondary">
                         <IconBus />
                     </div>
 
                     <div>
                         <h1 className="font-display text-[32px] font-extrabold uppercase leading-none tracking-[-0.05em]">
-                            ¿CUÁNDO{" "}
-                            <span className="font-light text-secondary">LLEGA?</span>
+                            BONDI{" "}
+                            <span className="font-light text-secondary">MDP</span>
                         </h1>
                         <p className="mt-1 font-mono text-[10px] tracking-[1.4px] text-muted-foreground">
                             MAR DEL PLATA
@@ -126,7 +126,7 @@ export function AcercaClient() {
                         {/* Links */}
                         <div className="flex flex-wrap gap-2">
                             <a
-                                href="https://github.com/Celiz"
+                                href="https://github.com/dotfn"
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="flex items-center gap-2 rounded-lg border border-border bg-muted px-3 py-2 text-[13px] font-medium text-muted-foreground transition-colors hover:border-secondary hover:text-foreground"
@@ -136,7 +136,7 @@ export function AcercaClient() {
                             </a>
 
                             <a
-                                href="https://www.linkedin.com/in/celizm/"
+                                href="https://linkedin.com/in/dotfn"
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="flex items-center gap-2 rounded-lg border border-border bg-muted px-3 py-2 text-[13px] font-medium text-muted-foreground transition-colors hover:border-secondary hover:text-foreground"
@@ -146,7 +146,7 @@ export function AcercaClient() {
                             </a>
 
                             <a
-                                href=""
+                                href="https://dotfn.github.io/dotfn/"
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="flex items-center gap-2 rounded-lg border border-border bg-muted px-3 py-2 text-[13px] font-medium text-muted-foreground transition-colors hover:border-secondary hover:text-foreground"
@@ -201,7 +201,7 @@ export function AcercaClient() {
                         {/* Links */}
                         <div className="flex flex-wrap gap-2">
                             <a
-                                href="https://github.com/dotfn"
+                                href="https://github.com/Celiz"
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="flex items-center gap-2 rounded-lg border border-border bg-muted px-3 py-2 text-[13px] font-medium text-muted-foreground transition-colors hover:border-secondary hover:text-foreground"
@@ -211,7 +211,7 @@ export function AcercaClient() {
                             </a>
 
                             <a
-                                href="https://linkedin.com/in/dotfn"
+                                href="https://www.linkedin.com/in/celizm/"
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="flex items-center gap-2 rounded-lg border border-border bg-muted px-3 py-2 text-[13px] font-medium text-muted-foreground transition-colors hover:border-secondary hover:text-foreground"
@@ -221,7 +221,7 @@ export function AcercaClient() {
                             </a>
 
                             <a
-                                href="https://dotfn.github.io/dotfn/"
+                                href="https://celizin.dev"
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="flex items-center gap-2 rounded-lg border border-border bg-muted px-3 py-2 text-[13px] font-medium text-muted-foreground transition-colors hover:border-secondary hover:text-foreground"
@@ -382,7 +382,7 @@ export function AcercaClient() {
                 {/* ── FOOTER ─────────────────────────────── */}
                 <footer className="space-y-1 pb-2 pt-4 text-center">
                     <p className="font-mono text-[10px] tracking-[0.5px] text-muted-foreground opacity-80">
-                        © 2026 ¿Cuándo Llega? · Mar del Plata
+                        © 2026 Bondi MDP · Mar del Plata
                     </p>
                     <p className="text-[12px] text-muted-foreground opacity-80">
                         Hecha con ❤️ para marplatenses 🌊

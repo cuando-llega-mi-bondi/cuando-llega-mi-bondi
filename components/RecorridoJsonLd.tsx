@@ -1,4 +1,4 @@
-const BASE = "https://cuandollega-tawny.vercel.app";
+const BASE = "https://www.bondimdp.com.ar";
 
 const breadcrumbList = {
     "@context": "https://schema.org",

@@ -1,5 +1,5 @@
 {
-  "name": "cuandollegamibondi",
+  "name": "bondimdp",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -9,6 +9,7 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@khmyznikov/pwa-install": "^0.6.3",
     "@supabase/supabase-js": "^2.103.3",
     "@vercel/analytics": "^2.0.1",
     "leaflet": "^1.9.4",

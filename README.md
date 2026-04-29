@@ -1,14 +1,14 @@
 <div align="center">
-  <img src="public/icon-192.png" alt="Cuándo Llega MDP Logo" width="120" />
+  <img src="public/icon-192.png" alt="Bondi MDP Logo" width="120" />
 
-  <h1>¿Cuándo Llega? MDP</h1>
+  <h1>Bondi MDP</h1>
 
   <p>
     <strong>Tiempos de arribo de colectivos en tiempo real para Mar del Plata.</strong>
   </p>
 
   <p>
-    <a href="https://cuandollega-tawny.vercel.app/">Demo en Vivo</a> •
+    <a href="https://www.bondimdp.com.ar/">Sitio en vivo</a> •
     <a href="#-empezar-getting-started">Empezar</a> •
     <a href="CONTRIBUTING.md">Contribuir</a> •
     <a href="#-arquitectura--stack-tecnológico">Arquitectura</a>
