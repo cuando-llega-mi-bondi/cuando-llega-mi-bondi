@@ -2,7 +2,7 @@
 export function HomeIntro() {
     return (
         <section
-            className="route-info mb-4 border-b border-border pb-1"
+            className="sr-only route-info mb-4 border-b border-border pb-1"
             aria-labelledby="home-seo-title"
         >
             <h1
