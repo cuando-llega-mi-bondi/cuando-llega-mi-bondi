@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { IconSearch } from "./icons/IconSearch";
 import { IconStar } from "./icons/IconStar";
@@ -16,6 +17,11 @@ interface BottomNavProps {
 export function BottomNav({ tab, setTab, favCount }: BottomNavProps) {
     const router = useRouter();
     const pathname = usePathname();
+    const [mounted, setMounted] = useState(false);
+
+    useEffect(() => {
+        setMounted(true);
+    }, []);
 
     const isRecorrido = pathname === "/recorrido";
     const isAcerca = pathname === "/acerca";
@@ -68,7 +74,7 @@ export function BottomNav({ tab, setTab, favCount }: BottomNavProps) {
                 >
                     <div className="relative">
                         <IconStar filled={!isRecorrido && !isAcerca && tab === "favoritos"} className="h-[22px] w-[22px]" />
-                        {favCount > 0 && (
+                        {mounted && favCount > 0 && (
                             <span className="absolute -right-2 -top-1 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-primary px-1 font-mono text-[9px] font-bold text-primary-foreground">
                                 {favCount}
                             </span>
