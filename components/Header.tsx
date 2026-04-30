@@ -1,6 +1,7 @@
 "use client";
 
 import { IconBus } from "./icons/IconBus";
+import { BrandLogo } from "./ui/BrandLogo";
 
 export function Header() {
     return (
@@ -11,12 +12,7 @@ export function Header() {
                         <IconBus />
                     </div>
                     <div className="min-w-0">
-                        <p className="m-0 p-0 font-display text-[24px] font-medium leading-[0.85] tracking-[-1px] text-foreground">
-                            BONDI MDP
-                        </p>
-                        <div className="font-mono text-[10px] tracking-[1.4px] text-muted-foreground">
-                            MAR DEL PLATA · TIEMPO REAL
-                        </div>
+                        <BrandLogo className="text-2xl lg:text-4xl" />
                     </div>
                 </div>
             </div>

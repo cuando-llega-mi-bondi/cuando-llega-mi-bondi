@@ -21,10 +21,10 @@
   --color-amarillo: var(--mdp-amarillo);
   --color-rosa: var(--mdp-rosa);
 
-  --font-display: var(--font-display-custom);
+  --font-display: var(--font-inter);
   --font-sans: var(--font-inter);
-  --font-mono: var(--font-azeret-mono);
-  --font-badge: var(--font-badge-custom);
+  --font-mono: var(--font-inter);
+  --font-badge: var(--font-inter);
 
   --radius-sm: var(--radius-sm);
   --radius-md: var(--radius-md);
@@ -73,8 +73,8 @@
     --text: var(--foreground);
     --text-dim: var(--muted-foreground);
     --text-muted: var(--muted-foreground);
-    --display: var(--font-display-custom);
-    --mono: var(--font-azeret-mono), ui-monospace, monospace;
+    --display: var(--font-inter);
+    --mono: var(--font-inter);
     --body: var(--font-inter), system-ui, sans-serif;
 
     /* Base Variables */
@@ -84,9 +84,6 @@
     --radius-lg: var(--radius); /* 16px */
     --radius-xl: calc(var(--radius) + 4px); /* 20px */
     --radius-2xl: calc(var(--radius) + 8px); /* 24px */
-
-    --font-display-custom: 'GT Walsheim Medium', 'GT Walsheim', var(--font-inter), sans-serif;
-    --font-badge-custom: 'Open Runde', var(--font-inter), sans-serif;
   }
 
   @media (prefers-color-scheme: dark) {
@@ -114,7 +111,7 @@
   html {
     background: var(--background);
     color: var(--foreground);
-    font-family: var(--font-sans);
+    font-family: var(--font-inter), system-ui, sans-serif;
     font-feature-settings:
       "cv01" 1,
       "cv05" 1,
@@ -130,7 +127,7 @@
     min-height: 100dvh;
     background-color: var(--background);
     color: var(--foreground);
-    font-family: var(--font-sans);
+    font-family: var(--font-inter), system-ui, sans-serif;
   }
 
   /* Accessibility Global Focus */
@@ -142,6 +139,12 @@
   button:focus:not(:focus-visible),
   [role="combobox"]:focus:not(:focus-visible) {
     outline: none;
+  }
+}
+
+@layer utilities {
+  .font-mono {
+    font-variant-numeric: tabular-nums;
   }
 }
 
@@ -342,6 +345,23 @@
   border: 1px solid var(--border);
 }
 .btn-ghost:hover:not(:disabled) { background: var(--muted); }
+
+/* Landing Page Buttons */
+.btn-mdp-turquesa {
+  background: var(--mdp-turquesa);
+  color: #ffffff;
+  transition: opacity 0.15s ease, transform 0.1s ease;
+}
+.btn-mdp-turquesa:hover:not(:disabled) { opacity: 0.88; }
+.btn-mdp-turquesa:active:not(:disabled) { transform: scale(0.98); }
+
+.btn-mdp-amarillo {
+  background: var(--mdp-amarillo);
+  color: #0f2d4a;
+  transition: opacity 0.15s ease, transform 0.1s ease;
+}
+.btn-mdp-amarillo:hover:not(:disabled) { opacity: 0.88; }
+.btn-mdp-amarillo:active:not(:disabled) { transform: scale(0.98); }
 
 /* Circular Icons */
 .icon-wrap {
