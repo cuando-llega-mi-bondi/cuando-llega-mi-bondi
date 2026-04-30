@@ -13,6 +13,8 @@ import { IconSearch } from "./icons/IconSearch";
 import { Header } from "./Header";
 import { BottomNav } from "./BottomNav";
 import { PageShell } from "./layout";
+import { BrandLogo } from "./ui/BrandLogo";
+import { Footer } from "./Footer";
 
 const FAQ = [
     { q: "¿Es gratis?", a: "Sí. 100% gratuita y sin anuncios." },
@@ -52,7 +54,6 @@ export function AcercaClient() {
 
     return (
         <div className="flex min-h-dvh flex-col pb-24">
-            <Header />
 
             <PageShell className="space-y-10 pt-8">
                 {/* ── HERO ─────────────────────────────────── */}
@@ -62,10 +63,11 @@ export function AcercaClient() {
                     </div>
 
                     <div>
-                        <h1 className="text-[32px] font-medium uppercase leading-tight tracking-[-1px]">
+                        <h1 className="sr-only text-[32px] font-medium uppercase leading-tight tracking-[-1px]">
                             BONDI{" "}
                             <span className="text-secondary">MDP</span>
                         </h1>
+                        <BrandLogo className="text-4xl lg:text-[40px]" />
                         <p className="mt-1 text-[10.4px] uppercase tracking-wider text-muted-foreground">
                             MAR DEL PLATA
                         </p>
@@ -380,14 +382,7 @@ export function AcercaClient() {
                 </section>
 
                 {/* ── FOOTER ─────────────────────────────── */}
-                <footer className="space-y-1 pb-2 pt-4 text-center">
-                    <p className="text-[10.4px] uppercase tracking-wider text-muted-foreground opacity-80">
-                        © 2026 Bondi MDP · Mar del Plata
-                    </p>
-                    <p className="text-[12px] text-muted-foreground opacity-80">
-                        Hecha con ❤️ para marplatenses 🌊
-                    </p>
-                </footer>
+                <Footer />
             </PageShell>
 
             <BottomNav tab="buscar" setTab={() => { }} favCount={0} />
