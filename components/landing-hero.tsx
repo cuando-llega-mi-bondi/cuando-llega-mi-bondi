@@ -37,7 +37,7 @@ export function LandingHero() {
               </Link>
 
               <Link
-                href="/favoritos"
+                href="/consultar?tab=favoritos"
                 className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-full text-lg font-bold bg-muted hover:bg-muted/80 text-foreground transition-colors"
               >
                 <Star className="w-5 h-5" />
@@ -84,7 +84,7 @@ export function LandingHero() {
                     </div>
                     <div className="bg-amarillo/20 rounded-xl p-4 border border-amarillo/30">
                       <div className="text-xs font-bold uppercase text-muted-foreground mb-1">
-                        Próximo arrivals
+                        Próximo arribo
                       </div>
                       <div className="flex items-end gap-2">
                         <span className="text-5xl font-bold tracking-tight text-turquesa">
