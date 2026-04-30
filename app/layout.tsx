@@ -1,22 +1,16 @@
 import type { Metadata, Viewport } from "next";
-import { Azeret_Mono, Inter } from "next/font/google";
+import { Inter } from "next/font/google";
 import "./globals.css";
 import { Analytics } from "@vercel/analytics/react";
 import { JsonLd } from "@/components/JsonLd";
 import { InstallPwaPrompt } from "@/components/InstallPwaPrompt";
+import Script from "next/script";
 
 const inter = Inter({
     subsets: ["latin"],
-    weight: ["400", "500", "600", "700"],
+    weight: ["400", "500", "600", "700", "800", "900"],
     display: "swap",
     variable: "--font-inter",
-});
-
-const azeretMono = Azeret_Mono({
-    subsets: ["latin"],
-    weight: ["400", "500", "600"],
-    display: "swap",
-    variable: "--font-azeret-mono",
 });
 
 export const metadata: Metadata = {
@@ -71,7 +65,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     return (
         <html lang="es">
             <head>
-                <script
+                <Script
+                    id="sw-registration"
+                    strategy="afterInteractive"
                     dangerouslySetInnerHTML={{
                         __html: `
                             if ('serviceWorker' in navigator && window.location.hostname !== 'localhost') {
@@ -84,7 +80,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                     }}
                 />
             </head>
-            <body className={`${inter.variable} ${azeretMono.variable}`}>
+            <body className={`${inter.variable}`}>
                 <JsonLd />
                 <Analytics />
                 {children}

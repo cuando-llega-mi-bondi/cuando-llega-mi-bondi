@@ -28,7 +28,7 @@ export function BottomNav({ tab, setTab, favCount }: BottomNavProps) {
 
     const handleTabClick = (t: "buscar" | "favoritos") => {
         if (isRecorrido || isAcerca) {
-            router.push(`/?tab=${t}`);
+            router.push(`consultar/?tab=${t}`);
             return;
         }
         setTab(t);

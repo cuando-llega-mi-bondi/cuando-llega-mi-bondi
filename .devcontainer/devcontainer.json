@@ -1,0 +1,32 @@
+{
+  "name": "cuando-llega-mi-bondi",
+  "build": {
+    "context": "..",
+    "dockerfile": "../Dockerfile"
+  },
+  // 1. Forzamos el montaje de la carpeta actual directamente en /workspaces
+  "workspaceMount": "source=${localWorkspaceFolder},target=/workspaces,type=bind",
+  // 2. Indicamos que el directorio de trabajo es la raíz del montaje
+  "workspaceFolder": "/workspaces",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "esbenp.prettier-vscode",
+        "dbaeumer.vscode-eslint",
+        "bradlc.vscode-tailwindcss",
+        "astro-build.astro-vscode",
+        "streetsidesoftware.code-spell-checker"
+      ],
+      "settings": {
+        "editor.formatOnSave": true
+      }
+    }
+  },
+  "forwardPorts": [
+    3000
+  ],
+  "remoteEnv": {
+    "NODE_ENV": "development"
+  },
+  "remoteUser": "node"
+}

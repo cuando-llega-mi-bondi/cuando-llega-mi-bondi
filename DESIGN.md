@@ -87,37 +87,33 @@ La tipografía conserva la filosofía de compresión de Framer: GT Walsheim en d
 ## 3. Typography Rules
 
 ### Font Family
-- **Display**: `GT Walsheim Medium` — peso 500 exclusivamente, nunca bold ni regular
-- **Body/UI**: `Inter Variable` con OpenType features extensivos
-- **Mono**: `Azeret Mono` — código y etiquetas técnicas
-- **Rounded accent**: `Open Runde` — micro-etiquetas y badges
+- **Global**: `Inter Variable` — Única familia tipográfica utilizada en todo el proyecto. Se aprovechan sus variables de peso y OpenType features extensivos para cubrir todas las necesidades de jerarquía (Display, Body, Mono/Code, UI).
 
 ### Jerarquía
 
 | Rol | Font | Size | Weight | Line Height | Letter Spacing | Notas |
 |---|---|---|---|---|---|---|
-| Display Hero | GT Walsheim Medium | 110px | 500 | 0.85 | -5.5px | Extremo — compresión máxima |
-| Section Display | GT Walsheim Medium | 85px | 500 | 0.95 | -4.25px | |
-| Section Heading | GT Walsheim Medium | 62px | 500 | 1.00 | -3.1px | |
-| Feature Heading | GT Walsheim Medium | 32px | 500 | 1.13 | -1px | |
-| Card Title | Inter Variable | 24px | 400 | 1.30 | -0.01px | cv01, cv05, cv09, cv11, ss03, ss07 |
-| Feature Title | Inter | 22px | 700 | 1.20 | -0.8px | cv05 |
-| Sub-heading | Inter | 20px | 600 | 1.20 | -0.8px | cv01, cv09 |
+| Display Hero | Inter Variable | 96px | 700 | 0.95 | -3px | Compresión y peso para alto impacto |
+| Section Display | Inter Variable | 72px | 700 | 1.00 | -2px | |
+| Section Heading | Inter Variable | 56px | 600 | 1.05 | -1.5px | |
+| Feature Heading | Inter Variable | 32px | 600 | 1.13 | -1px | |
+| Card Title | Inter Variable | 24px | 500 | 1.30 | -0.01px | cv01, cv05, cv09, cv11, ss03, ss07 |
+| Feature Title | Inter Variable | 22px | 700 | 1.20 | -0.8px | cv05 |
+| Sub-heading | Inter Variable | 20px | 600 | 1.20 | -0.8px | cv01, cv09 |
 | Body Large | Inter Variable | 18px | 400 | 1.30 | -0.01px | cv01, cv05, cv09, cv11, ss03, ss07 |
 | Body | Inter Variable | 15px | 400 | 1.30 | -0.01px | cv11 |
-| Nav/UI | Inter Variable | 15px | 400 | 1.00 | -0.15px | cv06, cv11, dlig, ss03 |
-| Body Readable | Inter Regular | 14px | 400 | 1.60 | normal | Cuerpo largo |
+| Nav/UI | Inter Variable | 15px | 500 | 1.00 | -0.15px | cv06, cv11, dlig, ss03 |
+| Body Readable | Inter Variable | 14px | 400 | 1.60 | normal | Cuerpo largo |
 | Caption | Inter Variable | 14px | 400 | 1.40 | normal | cv01, cv06, cv09, cv11, ss03, ss07 |
-| Label | Inter | 13px | 500 | 1.60 | normal | cv06, cv11, ss03 |
+| Label | Inter Variable | 13px | 500 | 1.60 | normal | cv06, cv11, ss03 |
 | Small Caption | Inter Variable | 12px | 400 | 1.40 | normal | |
-| Micro Code | Azeret Mono | 10.4px | 400 | 1.60 | normal | |
-| Badge | Open Runde | 9px | 600 | 1.11 | normal | cv01, cv09 |
+| Micro Code | Inter Variable | 11px | 400 | 1.60 | normal | tabular nums / mono-like |
+| Badge | Inter Variable | 10px | 600 | 1.11 | normal | cv01, cv09, uppercase |
 
 ### Principios
-- **Compresión como personalidad**: GT Walsheim con tracking negativo agresivo en displays
-- **OpenType maximalism**: Inter con 6+ features simultáneos en cuerpo
-- **GT Walsheim siempre a peso 500** — nunca bold, nunca regular
-- **Line-heights ultra-compactos** en display (0.85) para densidad intencional
+- **Unificación tipográfica**: Inter es la única tipografía para mantener coherencia extrema y optimizar la carga.
+- **OpenType maximalism**: Inter con múltiples features simultáneos para adaptar la lectura.
+- **Display con tracking negativo**: Para mantener el impacto visual sin necesidad de fuentes condensadas adicionales.
 
 ---
 
@@ -347,7 +343,7 @@ Helper text: `font-size: 0.8125rem; margin-top: 0.375rem`
 - Turquesa `#1d7570` para **todos** los estados interactivos: hover, focus, active
 - Rosa `#c93679` **solo** para acciones destructivas o alertas críticas
 - Todos los botones pill — `border-radius: 1rem` mínimo
-- GT Walsheim a **peso 500 solamente** en display
+- Usar **únicamente** la fuente Inter en todos sus pesos y variables
 - Focus ring visible en **todos** los elementos interactivos de teclado
 - 44px touch target mínimo en **todos** los controles
 
@@ -355,7 +351,7 @@ Helper text: `font-size: 0.8125rem; margin-top: 0.375rem`
 - Usar amarillo como fondo de texto pequeño sobre blanco
 - Usar rosa como color decorativo o de énfasis general
 - Botones con esquinas vivas (`border-radius < 8px`) — nunca
-- GT Walsheim a peso 700+ — rompe la identidad de marca
+- Introducir tipografías adicionales a Inter — rompe la identidad de marca unificada
 - Ignorar `prefers-reduced-motion` — todas las animaciones deben respetarla
 - Texto `--muted-foreground` sobre fondos que no sean `--background` o `--card` sin verificar contraste
 - Glassmorphism sin fallback para navegadores sin soporte a `backdrop-filter`
@@ -397,11 +393,11 @@ Texto secundario D:  #8ba4bb
 
 - *"Ícono circular turquesa: `width/height: 40px`, `border-radius: 50%`, `background: #1d7570`, `color: #ffffff`. Variante amarillo: `background: #f9cd4a`, `color: #0f2d4a`"*
 
-- *"Hero section: fondo `#f7f7f4` (light) / `#0f2d4a` (dark), heading GT Walsheim 110px peso 500 `letter-spacing: -5.5px` `line-height: 0.85`, CTA pill amarillo `border-radius: 100px`"*
+- *"Hero section: fondo `#f7f7f4` (light) / `#0f2d4a` (dark), heading Inter 96px peso 700 `letter-spacing: -3px` `line-height: 0.95`, CTA pill amarillo `border-radius: 100px`"*
 
 ### Iteration Guide
 1. Verificar siempre el par de contraste antes de usar amarillo — **nunca** sin texto `#0f2d4a`
 2. Turquesa va en interactivos; rosa va en destructivos — no intercambiarlos
-3. GT Walsheim siempre peso 500 — si el heading se ve débil, subir el tamaño, no el peso
+3. Inter es la única fuente permitida — ajustar peso y tracking para lograr jerarquía en vez de cambiar de tipografía
 4. Focus ring debe ser visible en modo teclado — `outline: 2.5px solid var(--ring)` es obligatorio
 5. Glassmorphism requiere `backdrop-filter` + fallback sólido para Safari antiguo

@@ -13,6 +13,8 @@ import { IconSearch } from "./icons/IconSearch";
 import { Header } from "./Header";
 import { BottomNav } from "./BottomNav";
 import { PageShell } from "./layout";
+import { BrandLogo } from "./ui/BrandLogo";
+import { Footer } from "./Footer";
 
 const FAQ = [
     { q: "¿Es gratis?", a: "Sí. 100% gratuita y sin anuncios." },
@@ -52,7 +54,6 @@ export function AcercaClient() {
 
     return (
         <div className="flex min-h-dvh flex-col pb-24">
-            <Header />
 
             <PageShell className="space-y-10 pt-8">
                 {/* ── HERO ─────────────────────────────────── */}
@@ -62,11 +63,12 @@ export function AcercaClient() {
                     </div>
 
                     <div>
-                        <h1 className="font-display text-[32px] font-extrabold uppercase leading-none tracking-[-0.05em]">
+                        <h1 className="sr-only text-[32px] font-medium uppercase leading-tight tracking-[-1px]">
                             BONDI{" "}
-                            <span className="font-light text-secondary">MDP</span>
+                            <span className="text-secondary">MDP</span>
                         </h1>
-                        <p className="mt-1 font-mono text-[10px] tracking-[1.4px] text-muted-foreground">
+                        <BrandLogo className="text-4xl lg:text-[40px]" />
+                        <p className="mt-1 text-[10.4px] uppercase tracking-wider text-muted-foreground">
                             MAR DEL PLATA
                         </p>
                     </div>
@@ -79,7 +81,7 @@ export function AcercaClient() {
 
                 {/* ── HECHO POR ────────────────────────────── */}
                 <section className="space-y-3">
-                    <h2 className="font-mono text-[10px] font-bold uppercase tracking-[1.4px] text-muted-foreground">
+                    <h2 className="text-[10.4px] font-normal uppercase tracking-wider text-muted-foreground">
                         Hecho por
                     </h2>
 
@@ -91,7 +93,7 @@ export function AcercaClient() {
                                     <h3 className="text-[15px] font-semibold">
                                         Nicolás Jiménez
                                     </h3>
-                                    <span className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-success/10 px-2.5 py-1 text-[11px] font-medium text-success">
+                                    <span className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-success bg-success/10 px-2.5 py-1 text-[12px] font-semibold text-success">
                                         <span className="h-1.5 w-1.5 animate-pulse-soft rounded-full bg-current" />
                                         Conectemos
                                     </span>
@@ -164,7 +166,7 @@ export function AcercaClient() {
                                     <h3 className="text-[15px] font-semibold">
                                         Matias Celiz Ramos
                                     </h3>
-                                    <span className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-success/10 px-2.5 py-1 text-[11px] font-medium text-success">
+                                    <span className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-success bg-success/10 px-2.5 py-1 text-[12px] font-semibold text-success">
                                         <span className="h-1.5 w-1.5 animate-pulse-soft rounded-full bg-current" />
                                         Conectemos
                                     </span>
@@ -236,7 +238,7 @@ export function AcercaClient() {
 
                 {/* ── COMPARTIR ────────────────────────────── */}
                 <section className="space-y-3">
-                    <h2 className="font-mono text-[10px] font-bold uppercase tracking-[1.4px] text-muted-foreground">
+                    <h2 className="text-[10.4px] font-normal uppercase tracking-wider text-muted-foreground">
                         Compartir
                     </h2>
 
@@ -244,7 +246,7 @@ export function AcercaClient() {
                         <button
                             id="share-whatsapp-btn"
                             onClick={handleShareWhatsApp}
-                            className="flex items-center justify-center gap-2 rounded-xl bg-[#25D366] px-4 py-3 text-[13px] font-semibold text-white transition-transform active:scale-95"
+                            className="btn-pill btn-secondary w-full gap-2 text-[13px]"
                         >
                             <IconWhatsApp className="h-5 w-5" />
                             WhatsApp
@@ -253,7 +255,7 @@ export function AcercaClient() {
                         <button
                             id="share-native-btn"
                             onClick={handleShareNative}
-                            className="flex items-center justify-center gap-2 rounded-xl bg-secondary px-4 py-3 text-[13px] font-semibold text-secondary-foreground transition-transform active:scale-95"
+                            className="btn-pill btn-primary w-full gap-2 text-[13px]"
                         >
                             <IconShare className="h-5 w-5" />
                             Compartir
@@ -263,7 +265,7 @@ export function AcercaClient() {
 
                 {/* ── SOBRE LA APP ─────────────────────────── */}
                 <section className="space-y-3">
-                    <h2 className="font-mono text-[10px] font-bold uppercase tracking-[1.4px] text-muted-foreground">
+                    <h2 className="text-[10.4px] font-normal uppercase tracking-wider text-muted-foreground">
                         Sobre la app
                     </h2>
 
@@ -309,7 +311,7 @@ export function AcercaClient() {
 
                 {/* ── CÓDIGO ABIERTO ──────────────────────── */}
                 <section className="space-y-3">
-                    <h2 className="font-mono text-[10px] font-bold uppercase tracking-[1.4px] text-muted-foreground">
+                    <h2 className="text-[10.4px] font-normal uppercase tracking-wider text-muted-foreground">
                         Código abierto
                     </h2>
 
@@ -358,7 +360,7 @@ export function AcercaClient() {
 
                 {/* ── FAQ ─────────────────────────────────── */}
                 <section className="space-y-3">
-                    <h2 className="font-mono text-[10px] font-bold uppercase tracking-[1.4px] text-muted-foreground">
+                    <h2 className="text-[10.4px] font-normal uppercase tracking-wider text-muted-foreground">
                         Preguntas frecuentes
                     </h2>
 
@@ -380,14 +382,7 @@ export function AcercaClient() {
                 </section>
 
                 {/* ── FOOTER ─────────────────────────────── */}
-                <footer className="space-y-1 pb-2 pt-4 text-center">
-                    <p className="font-mono text-[10px] tracking-[0.5px] text-muted-foreground opacity-80">
-                        © 2026 Bondi MDP · Mar del Plata
-                    </p>
-                    <p className="text-[12px] text-muted-foreground opacity-80">
-                        Hecha con ❤️ para marplatenses 🌊
-                    </p>
-                </footer>
+                <Footer />
             </PageShell>
 
             <BottomNav tab="buscar" setTab={() => { }} favCount={0} />
