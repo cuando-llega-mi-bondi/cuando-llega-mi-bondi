@@ -2,8 +2,13 @@
 
 export function Footer() {
     return (
-        <footer className="border-t border-border px-[calc(20px+env(safe-area-inset-left,0px))] pt-3 pb-[calc(12px+env(safe-area-inset-bottom,0px))] pr-[calc(20px+env(safe-area-inset-right,0px))] text-center font-mono text-[10px] tracking-[1px] text-muted-foreground">
-            DATOS: MUNICIPALIDAD DE GENERAL PUEYRREDÓN · MGP
+        <footer className="space-y-1 pb-2 pt-4 text-center mb-20">
+            <p className="text-[10.4px] uppercase tracking-wider text-muted-foreground opacity-80">
+                © 2026 Bondi MDP · Mar del Plata
+            </p>
+            <p className="text-[12px] text-muted-foreground opacity-80">
+                Hecha con ❤️ para marplatenses 🌊
+            </p>
         </footer>
     );
 }
