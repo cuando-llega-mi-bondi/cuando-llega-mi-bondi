@@ -45,6 +45,7 @@ export function useUrlSync({
     }
 
     if (urlTab && setTab && (urlTab === "buscar" || urlTab === "favoritos")) {
+      skipUrlSync.current = true;
       setTab(urlTab);
     }
   }, [onHydratedSelection, searchParams, setCodLinea, setParadaId, setTab]);
