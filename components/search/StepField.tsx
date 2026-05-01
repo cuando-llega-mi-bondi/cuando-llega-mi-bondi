@@ -127,8 +127,11 @@ export function StepField({
                         </div>
 
                         {/* Chevron */}
-                        <div className={cn("shrink-0 transition-transform duration-300", open && "rotate-180")}>
-                            <IconChevron className={cn("h-6 w-6", isActive ? "text-amarillo" : "text-muted-foreground")} />
+                        <div className="shrink-0">
+                            <IconChevron
+                                open={open}
+                                className={cn("h-6 w-6", isActive ? "text-amarillo" : "text-muted-foreground")}
+                            />
                         </div>
                     </button>
                 )}
