@@ -15,6 +15,9 @@ export function Combobox({
     autoSelectSingleFilterMatch = true,
     "aria-labelledby": ariaLabelledby,
     "aria-label": ariaLabel,
+    label,
+    renderTrigger,
+    triggerClassName,
 }: {
     placeholder: string;
     value: string;
@@ -26,6 +29,20 @@ export function Combobox({
     autoSelectSingleFilterMatch?: boolean;
     "aria-labelledby"?: string;
     "aria-label"?: string;
+    /** Optional label for the trigger when no value is selected */
+    label?: string;
+    /** Optional custom trigger renderer */
+    renderTrigger?: (props: {
+        open: boolean;
+        selectedLabel: string | null;
+        placeholder: string;
+        disabled: boolean;
+        loading: boolean;
+        onClick: () => void;
+        onKeyDown: (e: React.KeyboardEvent) => void;
+        ref: React.RefObject<HTMLButtonElement | null>;
+    }) => React.ReactNode;
+    triggerClassName?: string;
 }) {
     const reactId = useId();
     const listboxId = `cb-list-${reactId}`;
@@ -363,37 +380,53 @@ export function Combobox({
               )
             : null;
 
+    const triggerProps = {
+        ref: triggerRef,
+        id: baseId,
+        type: "button" as const,
+        role: "combobox" as const,
+        "aria-expanded": open,
+        "aria-controls": listboxId,
+        "aria-haspopup": "listbox" as const,
+        "aria-autocomplete": "list" as const,
+        ...(activeDescendantId ? { "aria-activedescendant": activeDescendantId } : {}),
+        ...comboboxLabelProps,
+        onClick: handleTriggerClick,
+        onKeyDown: onTriggerKeyDown,
+        disabled,
+    };
+
     return (
         <div ref={wrapperRef} className="relative w-full">
-            <button
-                ref={triggerRef}
-                id={baseId}
-                type="button"
-                role="combobox"
-                aria-expanded={open}
-                aria-controls={listboxId}
-                aria-haspopup="listbox"
-                aria-autocomplete="list"
-                {...(activeDescendantId
-                    ? { "aria-activedescendant": activeDescendantId }
-                    : {})}
-                {...comboboxLabelProps}
-                onClick={handleTriggerClick}
-                onKeyDown={onTriggerKeyDown}
-                disabled={disabled}
-                className={cn(
-                    "input flex min-h-11 w-full items-center justify-between rounded-full border bg-input px-4 py-2.5 font-sans text-[15px] font-medium tracking-tight transition-colors",
-                    selected ? "text-foreground" : "text-muted-foreground",
-                    disabled
-                        ? "cursor-not-allowed border-border opacity-50"
-                        : open
-                          ? "cursor-pointer border-secondary shadow-[0_0_0_3px_rgba(29,117,112,0.25)]"
-                          : "cursor-pointer border-border hover:border-secondary",
-                )}
-            >
-                <span>{loading ? "Cargando..." : selected?.label ?? placeholder}</span>
-                <IconChevron open={open} />
-            </button>
+            {renderTrigger ? (
+                renderTrigger({
+                    open,
+                    selectedLabel: selected?.label ?? null,
+                    placeholder,
+                    disabled,
+                    loading,
+                    onClick: handleTriggerClick,
+                    onKeyDown: onTriggerKeyDown,
+                    ref: triggerRef,
+                })
+            ) : (
+                <button
+                    {...triggerProps}
+                    className={cn(
+                        "input flex min-h-11 w-full items-center justify-between rounded-full border bg-input px-4 py-2.5 font-sans text-[15px] font-medium tracking-tight transition-colors",
+                        selected ? "text-foreground" : "text-muted-foreground",
+                        disabled
+                            ? "cursor-not-allowed border-border opacity-50"
+                            : open
+                              ? "cursor-pointer border-secondary shadow-[0_0_0_3px_rgba(29,117,112,0.25)]"
+                              : "cursor-pointer border-border hover:border-secondary",
+                        triggerClassName,
+                    )}
+                >
+                    <span>{loading ? "Cargando..." : selected?.label ?? placeholder}</span>
+                    <IconChevron open={open} />
+                </button>
+            )}
 
             {dropdown}
         </div>

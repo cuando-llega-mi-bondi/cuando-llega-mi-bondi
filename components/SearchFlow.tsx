@@ -63,25 +63,35 @@ export const SearchFlow = memo(function SearchFlow({
         <div className="flex flex-col gap-3">
             <StepField
                 labelId={labelLinea}
-                stepText="01 / LÍNEA"
-                placeholder="Seleccioná la línea..."
+                stepNumber={1}
+                stepText="LÍNEA"
+                placeholder="Seleccioná la línea"
                 value={codLinea}
                 onChange={setCodLinea}
                 options={lineaOptions}
                 loading={loadingLineas}
+                isActive={!codLinea}
+                isCompleted={!!codLinea}
+                required
+                description="Seleccioná una línea"
             />
 
             {codLinea ? (
                 <StepField
                     className="motion-step"
                     labelId={labelCalle}
-                    stepText="02 / CALLE"
-                    placeholder="Seleccioná la calle..."
+                    stepNumber={2}
+                    stepText="CALLE"
+                    placeholder="Seleccioná la calle"
                     value={codCalle}
                     onChange={setCodCalle}
                     options={calles}
                     loading={loadingCalles}
                     disabled={loadingCalles}
+                    isActive={codLinea && !codCalle}
+                    isCompleted={!!codCalle}
+                    required
+                    description="Seleccioná una calle"
                 />
             ) : null}
 
@@ -89,13 +99,18 @@ export const SearchFlow = memo(function SearchFlow({
                 <StepField
                     className="motion-step"
                     labelId={labelInter}
-                    stepText="03 / INTERSECCIÓN"
-                    placeholder="Elegí la esquina..."
+                    stepNumber={3}
+                    stepText="INTERSECCIÓN"
+                    placeholder="Elegí la esquina"
                     value={codInterseccion}
                     onChange={setCodInterseccion}
                     options={interOptions}
                     loading={loadingInter}
                     disabled={loadingInter}
+                    isActive={codCalle && !codInterseccion}
+                    isCompleted={!!codInterseccion}
+                    required
+                    description="Seleccioná una intersección"
                 />
             ) : null}
 
@@ -103,43 +118,48 @@ export const SearchFlow = memo(function SearchFlow({
                 <StepField
                     className="motion-step"
                     labelId={labelDestino}
-                    stepText="04 / DESTINO"
-                    placeholder="Elegí el destino..."
+                    stepNumber={4}
+                    stepText="PARADA"
+                    placeholder="Seleccionar parada"
                     value={paradaId}
                     onChange={setParadaId}
                     options={destinoOptions}
+                    isActive={codInterseccion && !paradaId}
+                    isCompleted={!!paradaId}
+                    required
+                    description="Seleccioná una opción"
                 />
             ) : null}
 
             {paradaId ? (
-                <div className="motion-step">
-                    <label
-                        id={labelRamal}
-                        className="mb-1.5 block font-mono text-[10px] tracking-[1.4px] text-muted-foreground"
-                    >
-                        05 / RAMAL
-                    </label>
-                    <Combobox
-                        aria-labelledby={labelRamal}
-                        placeholder="Elegí el ramal..."
-                        value={selectedRamal}
-                        onChange={setSelectedRamal}
-                        options={ramalOptions}
-                    />
-                </div>
+                <StepField
+                    className="motion-step"
+                    labelId={labelRamal}
+                    stepNumber={5}
+                    stepText="RAMAL"
+                    placeholder="Elegí el ramal"
+                    value={selectedRamal}
+                    onChange={setSelectedRamal}
+                    options={ramalOptions}
+                    isActive={paradaId && selectedRamal === "TODOS"}
+                    isCompleted={selectedRamal !== "TODOS"}
+                    description="Opcional: filtrar por ramal"
+                />
             ) : null}
 
             {paradaId && (
-                <Button
-                    type="button"
-                    onClick={handleConsultar}
-                    disabled={loadingArribos}
-                    variant="primary"
-                    size="lg"
-                    className="mt-2 text-base"
-                >
-                    {loadingArribos ? "CONSULTANDO..." : "CONSULTAR"}
-                </Button>
+                <div className="motion-step mt-2 px-1">
+                    <Button
+                        type="button"
+                        onClick={handleConsultar}
+                        disabled={loadingArribos}
+                        variant="primary"
+                        size="lg"
+                        className="w-full h-14 rounded-3xl text-lg font-bold shadow-lg"
+                    >
+                        {loadingArribos ? "CONSULTANDO..." : "VER CUANDO LLEGA"}
+                    </Button>
+                </div>
             )}
 
             <ErrorBanner message={!isConsulting ? error : ""} onClose={() => setError("")} />
