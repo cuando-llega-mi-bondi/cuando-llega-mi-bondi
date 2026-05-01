@@ -1,5 +1,7 @@
 import { memo } from "react";
 import { IconX } from "./icons/IconX";
+import { IconStar } from "./icons/IconStar";
+import { IconSearch } from "./icons/IconSearch";
 import type { Favorito } from "@/lib/types";
 import { Button, Card } from "@/components/ui";
 
@@ -8,6 +10,7 @@ interface FavoritesListProps {
     onView: (fav: Favorito) => void;
     onRemove: (id: string) => void;
     onRename: (fav: Favorito) => void;
+    onGoToSearch?: () => void;
 }
 
 const IconEdit = () => (
@@ -17,19 +20,33 @@ const IconEdit = () => (
     </svg>
 );
 
-export const FavoritesList = memo(function FavoritesList({ favoritos, onView, onRemove, onRename }: FavoritesListProps) {
+export const FavoritesList = memo(function FavoritesList({ favoritos, onView, onRemove, onRename, onGoToSearch }: FavoritesListProps) {
     if (favoritos.length === 0) {
         return (
-            <div className="mt-10 text-center font-sans text-[15px] tracking-tight text-muted-foreground">
-                <div className="mb-4 flex justify-center text-muted-foreground opacity-50">
-                    <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
-                    </svg>
+            <div className="flex flex-col items-center justify-center px-6 py-12 text-center animate-slide-up">
+                <div className="mb-8 flex h-20 w-20 items-center justify-center rounded-full bg-muted text-muted-foreground/60">
+                    <IconStar filled={false} className="h-10 w-10 stroke-[1.5]" />
                 </div>
-                <div>Guardá paradas como favoritas</div>
-                <div className="mt-2 text-[14px] text-muted-foreground opacity-80">
-                    Presioná el ícono de estrella en cualquier arribo para guardar
-                </div>
+                
+                <h3 className="mb-2 font-display text-2xl font-black tracking-tight text-foreground uppercase">
+                    Sin favoritos
+                </h3>
+                
+                <p className="mb-10 max-w-[240px] text-[16px] leading-relaxed text-muted-foreground">
+                    Guarda tus paradas favoritas para acceso rápido
+                </p>
+
+                {onGoToSearch && (
+                    <Button 
+                        variant="primary" 
+                        size="lg"
+                        onClick={onGoToSearch}
+                        className="h-14 px-8 text-lg font-bold shadow-sm"
+                        leftIcon={<IconSearch className="h-5 w-5" />}
+                    >
+                        Buscar colectivo
+                    </Button>
+                )}
             </div>
         );
     }

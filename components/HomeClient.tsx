@@ -433,6 +433,7 @@ export function HomeClient({ children }: { children?: ReactNode }) {
                             onView={fetchFavArribos}
                             onRemove={removeFav}
                             onRename={handleEditFavName}
+                            onGoToSearch={() => setTab("buscar")}
                         />
                         <HistorialList
                             historial={historial}
