@@ -203,7 +203,7 @@ export function Combobox({
         [filtered.length]
     );
 
-    const onTriggerKeyDown = (e: React.KeyboardEvent<HTMLButtonElement>) => {
+    const onTriggerKeyDown = (e: React.KeyboardEvent) => {
         if (disabled) return;
         switch (e.key) {
             case "ArrowDown":

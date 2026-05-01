@@ -11,6 +11,7 @@
     <a href="https://www.bondimdp.com.ar/">Sitio en vivo</a> •
     <a href="#-empezar-getting-started">Empezar</a> •
     <a href="CONTRIBUTING.md">Contribuir</a> •
+    <a href="docs/DIATAXIS.md">Documentación (Diátaxis)</a> •
     <a href="#-arquitectura--stack-tecnológico">Arquitectura</a>
   </p>
 </div>
@@ -35,7 +36,7 @@
     - Marcado de paradas con **navegación rápida** (vía Google Maps).
     - Trazado de recorridos completos sobre el mapa.
 - **Modo PWA & Caché:** Instalación nativa en móviles e información estática (calles, recorridos) persistida localmente por 24hs.
-- **WhatsApp Share:** Generación de mensajes rápidos con tiempos de arribo y ubicación exacta.
+- **Compartir:** Mensajes rápidos por WhatsApp con tiempos de arribo y ubicación; enlaces al bot de Telegram para seguir un recorrido y (con backend configurado) ubicación en vivo en el mapa.
 - **Status de API:** Detección y alerta visual si el servidor de la Municipalidad está fuera de servicio.
 
 ## 🛠 Arquitectura & Stack Tecnológico
@@ -44,11 +45,13 @@ La aplicación está diseñada pensando en la performance y la facilidad de exte
 
 | Tecnología        | Propósito                                                            |
 |-------------------|----------------------------------------------------------------------|
-| **Next.js 16 (App Router)** | Framework base, optimización de bundles, y Proxy API. |
-| **React 19**      | UI responsiva y gestión de estado mediante Hooks.                   |
+| **Next.js 16 (App Router)** | Framework base, optimización de bundles, y proxy `/api/cuando`. |
+| **React 19**      | UI responsiva y gestión de estado mediante hooks.                   |
+| **Tailwind CSS 4** | Utilidades de estilo; tokens y tema en `app/globals.css`.      |
 | **SWR**           | Fetching de datos con revalidación automática y caché en memoria.   |
 | **Leaflet**       | Motor de mapas liviano para visualización de GPS y GeoJSON.          |
 | **LocalStorage**  | Persistencia de favoritos, historial y caché de calles (24hs TTL).    |
+| **Supabase** (opcional) | Backend para ubicación en vivo vinculada al bot de Telegram y el mapa. |
 
 ### Flujo de Datos
 
@@ -69,8 +72,21 @@ Estas instrucciones te permitirán obtener una copia del proyecto y ejecutarlo e
 
 ### Prerrequisitos
 
-- **Node.js** (v18.x o superior)
-- **NPM** (usualmente viene con Node.js)
+- **Node.js** (v20.x recomendado; mínimo compatible con Next.js 16)
+- **npm** (incluido con Node.js)
+
+### Variables de entorno (opcional)
+
+Para la app básica de consulta de arribos no hace falta configurar nada. Para probar **Telegram** (webhook, mensajes del bot) y **ubicación en vivo** en el mapa necesitás:
+
+| Variable | Uso |
+|----------|-----|
+| `NEXT_PUBLIC_TELEGRAM_BOT_USERNAME` | Usuario del bot (sin `@`) para enlaces `t.me/...`. |
+| `TELEGRAM_BOT_TOKEN` | Token del bot; el webhook responde con `sendMessage`. |
+| `NEXT_PUBLIC_SUPABASE_URL` | URL del proyecto Supabase. |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Clave anónima (el webhook y el cliente leen/actualizan ubicaciones). |
+
+Los detalles de rutas y tablas están orientados a quien despliega el backend; si no configurás estas variables, la consulta municipal y el mapa estándar siguen funcionando.
 
 ### Instalación
 
@@ -94,7 +110,7 @@ Estas instrucciones te permitirán obtener una copia del proyecto y ejecutarlo e
 
 ## 📡 API Reference
 
-Toda la comunicación con la MGP pasa a través del un único proxy en nuestro backend para evadir restricciones de CORS y ocultar orígenes.
+Toda la comunicación con la MGP pasa a través de un único proxy en nuestro backend para evadir restricciones de CORS y homogeneizar el cliente.
 
 **Endpoint:** `POST /api/cuando`
 
@@ -108,13 +124,13 @@ El body asume codificación `application/x-www-form-urlencoded`.
 - `RecuperarParadasConBanderaPorLineaCalleEInterseccion`: Retorna las banderas y el identificador de la parada.
 - `RecuperarProximosArribosW`: Recibe `identificadorParada` y `codigoLineaParada`. Retorna la información de tiempo real GPS de arribos.
 
-*(La implementación completa se encuentra en `lib/cuandoLlega.ts` usando la función `post()` base).*
+*(El cliente del proxy está en `lib/api/client.ts` (`post`, `swrFetcher`); las acciones concretas viven en `lib/api/` y los tipos en `lib/types.ts`.)*
 
 ## 🤝 Contribuir
 
 ¡Las contribuciones (pull requests, reporte de bugs, sugerencias) son bienvenidas!
 
-Revisá nuestro archivo [CONTRIBUTING.md](CONTRIBUTING.md) para más detalles sobre cómo estructurar el código, hacer un Pull Request o agregar nuevas integraciones.
+Revisá [CONTRIBUTING.md](CONTRIBUTING.md) para el árbol del repo, convenciones y PRs. Para nuevos textos de documentación, el marco está en [docs/DIATAXIS.md](docs/DIATAXIS.md).
 
 ## 📄 Licencia
 

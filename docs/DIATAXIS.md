@@ -2,24 +2,34 @@
 
 Este proyecto utiliza el marco de trabajo **Diátaxis** para organizar la documentación técnica. Diátaxis propone dividir el contenido en cuatro cuadrantes según el propósito y el contexto del usuario.
 
-## 1. Tutoriales (Orientado al Aprendizaje)
-Ayudan al principiante a dar sus primeros pasos. En este proyecto, la sección **"Empezar"** del README es nuestro tutorial base.
-- *Meta:* Que el usuario logre correr la app localmente en menos de 5 minutos.
+## 1. Tutoriales (orientado al aprendizaje)
 
-## 2. Guías de "Cómo hacer" (Orientado a la Tarea)
-Instrucciones paso a paso para resolver un problema específico.
-- **Agregar Líneas Manuales:** Ver en [CONTRIBUTING.md](../CONTRIBUTING.md).
-- **Contribuir con Código:** Ver en [CONTRIBUTING.md](../CONTRIBUTING.md).
+Ayudan al principiante a dar sus primeros pasos. En este proyecto, la sección **«Empezar»** del [README](../README.md) es el tutorial base.
 
-## 3. Referencia (Orientado a la Información)
+- *Meta:* Correr la app localmente en pocos minutos (clonar, `npm install`, `npm run dev`).
+
+## 2. Guías «cómo hacer» (orientado a la tarea)
+
+Instrucciones paso a paso para resolver un problema concreto.
+
+- **Agregar líneas manuales (GeoJSON):** [CONTRIBUTING.md](../CONTRIBUTING.md) («Cómo agregar una línea manual»).
+- **Contribuir con código y PRs:** [CONTRIBUTING.md](../CONTRIBUTING.md) (setup, estructura, convenciones).
+- **Variables opcionales (Telegram / Supabase):** tabla en el [README](../README.md) («Variables de entorno (opcional)»).
+
+## 3. Referencia (orientado a la información)
+
 Descripciones técnicas precisas del funcionamiento.
-- **API Reference:** Detalles de los endpoints del proxy en el README.
-- **Tipos TypeScript:** Consultar `lib/cuandoLlega.types.ts`.
 
-## 4. Explicación (Orientado a la Comprensión)
+- **Proxy municipal:** `POST /api/cuando`, acciones y body — [README](../README.md) («API Reference»); implementación en `app/api/cuando/route.ts`; cliente en `lib/api/client.ts`.
+- **Tipos TypeScript:** `lib/types.ts`.
+- **Webhook Telegram (opcional):** `app/api/telegram-webhook/route.ts`.
+
+## 4. Explicación (orientado a la comprensión)
+
 Conceptos de alto nivel, arquitectura y decisiones de diseño.
-- **Flujo de Datos:** Diagrama Mermaid en el README.
-- **Estructura del Proyecto:** Desglose en CONTRIBUTING.md.
+
+- **Flujo de datos:** diagrama Mermaid en el [README](../README.md).
+- **Estructura del repo y stack:** tablas y listas en el [README](../README.md) y árbol en [CONTRIBUTING.md](../CONTRIBUTING.md).
 
 ---
 

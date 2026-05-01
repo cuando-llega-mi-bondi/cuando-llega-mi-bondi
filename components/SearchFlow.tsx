@@ -88,7 +88,7 @@ export const SearchFlow = memo(function SearchFlow({
                     options={calles}
                     loading={loadingCalles}
                     disabled={loadingCalles}
-                    isActive={codLinea && !codCalle}
+                    isActive={!!codLinea && !codCalle}
                     isCompleted={!!codCalle}
                     required
                     description="Seleccioná una calle"
@@ -107,7 +107,7 @@ export const SearchFlow = memo(function SearchFlow({
                     options={interOptions}
                     loading={loadingInter}
                     disabled={loadingInter}
-                    isActive={codCalle && !codInterseccion}
+                    isActive={!!codCalle && !codInterseccion}
                     isCompleted={!!codInterseccion}
                     required
                     description="Seleccioná una intersección"
@@ -124,7 +124,7 @@ export const SearchFlow = memo(function SearchFlow({
                     value={paradaId}
                     onChange={setParadaId}
                     options={destinoOptions}
-                    isActive={codInterseccion && !paradaId}
+                    isActive={!!codInterseccion && !paradaId}
                     isCompleted={!!paradaId}
                     required
                     description="Seleccioná una opción"
@@ -141,7 +141,7 @@ export const SearchFlow = memo(function SearchFlow({
                     value={selectedRamal}
                     onChange={setSelectedRamal}
                     options={ramalOptions}
-                    isActive={paradaId && selectedRamal === "TODOS"}
+                    isActive={!!paradaId && selectedRamal === "TODOS"}
                     isCompleted={selectedRamal !== "TODOS"}
                     description="Opcional: filtrar por ramal"
                 />

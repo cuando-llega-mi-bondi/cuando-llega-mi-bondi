@@ -2,12 +2,17 @@
 
 import Link from "next/link";
 import { ArrowRight, Bus, Clock, Star } from "lucide-react";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import { BrandLogo } from "@/components/ui/BrandLogo";
 
 export function LandingHero() {
   return (
     <section className="relative overflow-hidden bg-background">
       <div className="absolute inset-0 bg-gradient-to-b from-amarillo/5 to-transparent" />
+
+      <div className="absolute right-8 top-6 z-10 md:right-12 md:top-8">
+        <ThemeToggle />
+      </div>
 
       <div className="relative max-w-7xl mx-auto px-8 py-24 lg:py-32">
         <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">

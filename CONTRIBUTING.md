@@ -22,16 +22,24 @@
 
 ## Estructura del Proyecto
 
-Para que te orientes rápidamente, aquí te explicamos cómo organizamos el código:
+Para orientarte rápido, así está organizado el código hoy:
 
-- `/app`: Rutas del [App Router](https://nextjs.org/docs/app) de Next.js (layout, rutas base de front).
-  - `/app/api/cuando/route.ts`: El **proxy** que se comunica con la API de la municipalidad.
-- `/components`: Todos los componentes de React (`HomeClient`, `SearchFlow`, `Map`, iconos, modales).
-- `/lib`: Lógica no visual (servicios API, tipos, utilidades, localStorage/caché).
-  - `cuandoLlega.ts`: Wrapper para toda la lógica de fetch.
-  - `localCache.ts`: Encargado de la caché persistente (24hs).
-- `/public`: Assets estáticos (iconos PWA, Service Worker `sw.js`).
-- `/public/*.geojson`: Archivos de rutas para líneas manuales.
+- **`/app`**: rutas del [App Router](https://nextjs.org/docs/app) de Next.js.
+  - `layout.tsx`, `page.tsx`: shell y página principal.
+  - `/consultar`, `/recorrido`, `/acerca`: flujos de consulta, mapa de recorrido y página institucional.
+  - `/app/api/cuando/route.ts`: **proxy** (runtime Edge) hacia la API municipal.
+  - `/app/api/telegram-webhook/route.ts`: webhook opcional del bot de Telegram (Supabase + token del bot).
+- **`/components`**: UI en React (`HomeClient`, `SearchFlow`, `RouteMap`, `Combobox`, carpeta `search/`, iconos, etc.).
+- **`/lib/api`**: cliente del proxy (`client.ts` con `post` / `swrFetcher`) y módulos por dominio (`lineas.ts`, `arribos.ts`, `recorrido.ts`, …).
+- **`/lib/hooks`**: hooks con SWR (`useLineas`, `useArribos`, `useCalles`, …).
+- **`/lib/storage`**: favoritos, historial y caché persistente (`localCache.ts`, TTL 24 h donde aplica).
+- **`/lib/types.ts`**: tipos compartidos (líneas, paradas, arribos, historial).
+- **`/lib/manualRoutes.ts`** y **`/public/*.geojson`**: líneas no expuestas por la API oficial.
+- **`/lib/liveSharePayload.ts`**: codificación del parámetro `start=` para deep links de Telegram.
+- **`/lib/supabaseClient.ts`**: cliente Supabase (solo necesario si probás ubicación en vivo / webhook).
+- **`/public`**: assets estáticos, PWA e **`sw.js`** (service worker).
+
+La guía Diátaxis del repo está en [`docs/DIATAXIS.md`](docs/DIATAXIS.md).
 
 ## 🚌 Cómo agregar una línea manual (GeoJSON)
 
@@ -53,34 +61,40 @@ Si una línea no está disponible en la API oficial de la Municipalidad, podés 
    ```
 3. **Validación:** Una vez agregado, la línea aparecerá automáticamente en el buscador principal y el mapa cargará el recorrido desde el archivo local sin consultar el proxy.
 
+## Variables de entorno (desarrollo avanzado)
+
+La consulta de arribos por la municipalidad **no requiere** `.env`. Para trabajar en integración con **Telegram** y **ubicación en vivo** (mapa + webhook), necesitás las variables listadas en el README (`NEXT_PUBLIC_TELEGRAM_BOT_USERNAME`, `TELEGRAM_BOT_TOKEN`, `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`).
+
 ## Convenciones de Código
 
-- **Tipado Fuerte:** Trata de evitar `any` tanto como sea posible. Si agregas o modificas una llamada a la API, tipa sus resultados en `lib/cuandoLlega.types.ts`.
-- **CSS Vanilla (Módulos Flexibles):** El styling primario se maneja a través de variables en `globals.css` y `style={{}}` inline para rapidez, aunque migraciones graduales a CSS Modules o Tailwind son bienvenidas en discusiones si escalan demasiado.
-- **Componentes Modulares:** Un componente debe hacer una sola cosa. Si tu componente excede las ~200 líneas, probablemente puedas extraer la lógica o UI hija en otro archivo pequeño.
+- **Tipado fuerte:** Evitá `any`. Tipos de dominio en `lib/types.ts`; si extendés respuestas de la API, mantené los contratos alineados con los módulos en `lib/api/`.
+- **Estilos:** **Tailwind CSS 4** para utilidades; tokens y variables globales en `app/globals.css` (`@import "tailwindcss"`, bloque `@theme inline`). Mantené coherencia con lo existente antes de introducir patrones nuevos.
+- **Componentes modulares:** Un componente debe hacer una sola cosa. Si supera ~200 líneas, valorá extraer UI o lógica a archivos más chicos.
 
 ## Enviar tus Cambios (Pull Request)
 
-1. Revisa tus cambios localmente y asegúrate de que **no rompen el build**:
+1. Revisá tus cambios localmente y asegurate de que **no rompen el build**:
    ```bash
    npm run build
+   npm run lint
    ```
-2. Realiza tus commits con **mensajes descriptivos y atómicos** (si usas [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/), aún mejor).
+2. Realizá tus commits con **mensajes descriptivos y atómicos** (si usás [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/), aún mejor).
 3. Push de tu rama a GitHub:
    ```bash
    git push origin feature/mi-nueva-funcionalidad
    ```
-4. Abre un **Pull Request (PR)** en el repositorio original.
-5. En la descripción del PR, explica brevemente:
+4. Abrí un **Pull Request (PR)** en el repositorio original.
+5. En la descripción del PR, explicá brevemente:
    - ¿Qué problema resuelve este código?
-   - ¿Por qué decidiste esta implementación concreta?
-   - Agrega screenshots (si hubo cambios visuales).
+   - ¿Por qué esta implementación concreta?
+   - Screenshots si hubo cambios visuales.
 
 ## Reportar Bugs e Issues
 
-Abre una issue en GitHub si encuentras un bug. Incluye, si es posible:
+Abrí una issue en GitHub si encontrás un bug. Incluí, si es posible:
+
 - Pasos para reproducirlo.
-- En qué navegador / dispositivo sucede.
+- Navegador / dispositivo.
 - Comportamiento esperado.
 
-¡Agradecemos mucho cualquier tipo de ayuda para mantener la aplicación rápida, moderna y sin errores!
+¡Agradecemos cualquier ayuda para mantener la aplicación rápida, moderna y sin errores!

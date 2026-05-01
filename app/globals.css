@@ -95,20 +95,18 @@
     --radius-2xl: calc(var(--radius) + 8px); /* 24px */
   }
 
-  @media (prefers-color-scheme: dark) {
-    :root {
-      /* Dark Mode Tokens */
-      --background: #0f2d4a;
-      --foreground: #f0f4f8;
-      --card: #122843;
-      --muted: #0a2038;
-      --muted-foreground: #8ba4bb;
-      --border: #1e3f5c;
-      --input: #0a2038;
-      --ring: #f9cd4a;
-      --secondary: #24908a;
-      --destructive: #e05588;
-    }
+  .dark {
+    /* Dark Mode Tokens */
+    --background: #0f2d4a;
+    --foreground: #f0f4f8;
+    --card: #122843;
+    --muted: #0a2038;
+    --muted-foreground: #8ba4bb;
+    --border: #1e3f5c;
+    --input: #0a2038;
+    --ring: #f9cd4a;
+    --secondary: #24908a;
+    --destructive: #e05588;
   }
 
   * {
@@ -173,10 +171,8 @@
   border-radius: 9999px;
 }
 
-@media (prefers-color-scheme: dark) {
-  ::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.2);
-  }
+html.dark *::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
 }
 
 /* Animations */
@@ -255,11 +251,9 @@
   box-shadow: 0 4px 24px rgba(0,0,0,0.12), 0 1px 4px rgba(0,0,0,0.08);
 }
 
-@media (prefers-color-scheme: dark) {
-  .card-floating {
-    background: rgba(10, 32, 56, 0.88);
-    border-color: rgba(255, 255, 255, 0.12);
-  }
+.dark .card-floating {
+  background: rgba(10, 32, 56, 0.88);
+  border-color: rgba(255, 255, 255, 0.12);
 }
 
 .arrival-card {
@@ -276,11 +270,9 @@
   box-shadow: 0 6px 20px rgba(0,0,0,0.1);
 }
 
-@media (prefers-color-scheme: dark) {
-  .arrival-card {
-    background: rgba(18, 40, 67, 0.6);
-    border-color: rgba(255, 255, 255, 0.06);
-  }
+.dark .arrival-card {
+  background: rgba(18, 40, 67, 0.6);
+  border-color: rgba(255, 255, 255, 0.06);
 }
 
 .input {
@@ -508,12 +500,10 @@
   border-radius: var(--radius-2xl) var(--radius-2xl) 0 0 !important;
 }
 
-@media (prefers-color-scheme: dark) {
-  .react-modal-sheet-container {
-    background: var(--background) !important;
-    border-top: 1px solid var(--border) !important;
-    box-shadow: 0 -18px 48px rgba(0, 0, 0, 0.5) !important;
-  }
+.dark .react-modal-sheet-container {
+  background: var(--background) !important;
+  border-top: 1px solid var(--border) !important;
+  box-shadow: 0 -18px 48px rgba(0, 0, 0, 0.5) !important;
 }
 
 .react-modal-sheet-header {
@@ -527,10 +517,8 @@
   border-radius: 9999px !important;
 }
 
-@media (prefers-color-scheme: dark) {
-  .react-modal-sheet-drag-indicator {
-    background: rgba(255,255,255,0.2) !important;
-  }
+.dark .react-modal-sheet-drag-indicator {
+  background: rgba(255,255,255,0.2) !important;
 }
 
 .react-modal-sheet-content {
