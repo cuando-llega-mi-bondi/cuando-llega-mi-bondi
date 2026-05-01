@@ -51,6 +51,14 @@ export const metadata: Metadata = {
             "ABFvUfmKFrDnQyejLLezkYWvZe7Vd8EuKO4mETRL8_A"
         ],
     },
+    icons: {
+        icon: [
+            { url: "/favicon.ico", sizes: "48x48", type: "image/x-icon" },
+            { url: "/icon.svg", type: "image/svg+xml", sizes: "any" },
+        ],
+        apple: "/apple-icon.png",
+        shortcut: "/favicon.ico",
+    },
 };
 
 export const viewport: Viewport = {

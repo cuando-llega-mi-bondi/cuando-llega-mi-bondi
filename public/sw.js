@@ -1,7 +1,7 @@
 // Bondi MDP — Service Worker
 // Strategy: Cache-first for static assets, Network-first for API calls
 
-const CACHE_VERSION = 'v2';
+const CACHE_VERSION = 'v3';
 const STATIC_CACHE = `bondimdp-static-${CACHE_VERSION}`;
 const API_CACHE = `bondimdp-api-${CACHE_VERSION}`;
 
@@ -9,8 +9,9 @@ const API_CACHE = `bondimdp-api-${CACHE_VERSION}`;
 const PRECACHE_URLS = [
   '/',
   '/manifest.json',
-  '/icon-192.png',
-  '/icon-512.png',
+  '/favicon.ico',
+  '/icon-192x192.png',
+  '/icon-512x512.png',
 ];
 
 // ── Install ──────────────────────────────────────────────────────────────────
