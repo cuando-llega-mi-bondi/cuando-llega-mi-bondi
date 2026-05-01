@@ -4,6 +4,8 @@ import "./globals.css";
 import { Analytics } from "@vercel/analytics/react";
 import { JsonLd } from "@/components/JsonLd";
 import { InstallPwaPrompt } from "@/components/InstallPwaPrompt";
+import { ThemeColorMeta } from "@/components/ThemeColorMeta";
+import { ThemeProvider } from "@/components/ThemeProvider";
 import Script from "next/script";
 
 const inter = Inter({
@@ -63,7 +65,7 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
     return (
-        <html lang="es">
+        <html lang="es" suppressHydrationWarning>
             <head>
                 <Script
                     id="sw-registration"
@@ -81,10 +83,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 />
             </head>
             <body className={`${inter.variable}`}>
-                <JsonLd />
-                <Analytics />
-                {children}
-                <InstallPwaPrompt />
+                <ThemeProvider>
+                    <ThemeColorMeta />
+                    <JsonLd />
+                    <Analytics />
+                    {children}
+                    <InstallPwaPrompt />
+                </ThemeProvider>
             </body>
         </html>
     );
