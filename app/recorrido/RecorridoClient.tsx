@@ -350,7 +350,7 @@ export default function RecorridoClient() {
   if (step === "selector") {
     return (
       <div className="flex min-h-dvh flex-col bg-bg">
-        <header className="z-50 flex shrink-0 items-center gap-3 border-b border-white/10 px-4 py-3.5">
+        <header className="z-50 flex shrink-0 items-center gap-3 border-b border-white/10 px-4 py-3.5 px-[calc(20px+env(safe-area-inset-left,0px))] pt-[calc(16px+env(safe-area-inset-top,0px))] pr-[calc(20px+env(safe-area-inset-right,0px))]">
           <Link
             href="/"
             className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-white/12 bg-white/5 text-text-dim no-underline transition hover:border-white/20 hover:text-text"

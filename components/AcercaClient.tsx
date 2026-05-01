@@ -53,7 +53,7 @@ export function AcercaClient() {
     };
 
     return (
-        <div className="flex min-h-dvh flex-col pb-24">
+        <div className="flex min-h-dvh flex-col pb-24 px-[calc(20px+env(safe-area-inset-left,0px))] pt-[calc(16px+env(safe-area-inset-top,0px))] pr-[calc(20px+env(safe-area-inset-right,0px))]">
 
             <PageShell className="space-y-10 pt-8">
                 {/* ── HERO ─────────────────────────────────── */}
