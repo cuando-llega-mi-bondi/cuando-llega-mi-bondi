@@ -47,7 +47,7 @@ export function BottomNav({ tab, setTab, favCount }: BottomNavProps) {
                     <IconSearch className="h-[22px] w-[22px]" />
                     <span className="font-sans text-[11px] font-medium tracking-tight">Consultar</span>
                     {!isRecorrido && !isAcerca && tab === "buscar" && (
-                        <div className="absolute bottom-1 h-1 w-1 rounded-full bg-secondary" />
+                        <div className="bottom-1 h-1 w-1 rounded-full bg-secondary" />
                     )}
                 </button>
 
@@ -61,7 +61,7 @@ export function BottomNav({ tab, setTab, favCount }: BottomNavProps) {
                     <IconMap className="h-[22px] w-[22px]" />
                     <span className="font-sans text-[11px] font-medium tracking-tight">Recorridos</span>
                     {isRecorrido && (
-                        <div className="absolute bottom-1 h-1 w-1 rounded-full bg-secondary" />
+                        <div className="bottom-1 h-1 w-1 rounded-full bg-secondary" />
                     )}
                 </button>
 
@@ -82,7 +82,7 @@ export function BottomNav({ tab, setTab, favCount }: BottomNavProps) {
                     </div>
                     <span className="font-sans text-[11px] font-medium tracking-tight">Favoritos</span>
                     {!isRecorrido && !isAcerca && tab === "favoritos" && (
-                        <div className="absolute bottom-1 h-1 w-1 rounded-full bg-secondary" />
+                        <div className="bottom-1 h-1 w-1 rounded-full bg-secondary" />
                     )}
                 </button>
 
@@ -96,7 +96,7 @@ export function BottomNav({ tab, setTab, favCount }: BottomNavProps) {
                     <IconInfo className="h-[22px] w-[22px]" />
                     <span className="font-sans text-[11px] font-medium tracking-tight">Acerca de</span>
                     {isAcerca && (
-                        <div className="absolute bottom-1 h-1 w-1 rounded-full bg-secondary" />
+                        <div className="bottom-1 h-1 w-1 rounded-full bg-secondary" />
                     )}
                 </button>
             </div>
