@@ -66,6 +66,15 @@
     --destructive: #c93679;
     --destructive-foreground: #ffffff;
 
+    /* Safe Area Variables */
+    --safe-top: env(safe-area-inset-top, 0px);
+    --safe-bottom: env(safe-area-inset-bottom, 0px);
+    --safe-left: env(safe-area-inset-left, 0px);
+    --safe-right: env(safe-area-inset-right, 0px);
+
+    /* UI Measurements */
+    --nav-height: 64px;
+
     /* Legacy aliases for Leaflet / RouteMap / ArrivalsPanel (use design tokens) */
     --accent: var(--secondary);
     --surface: var(--card);
@@ -145,6 +154,9 @@
 @layer utilities {
   .font-mono {
     font-variant-numeric: tabular-nums;
+  }
+  .pb-nav {
+    padding-bottom: calc(var(--nav-height) + var(--safe-bottom) + 1.25rem);
   }
 }
 

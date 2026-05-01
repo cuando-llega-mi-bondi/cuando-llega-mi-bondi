@@ -156,13 +156,8 @@ export function AcercaClient() {
     }, [handleShareWhatsApp]);
 
     return (
-        <div
-            className="flex min-h-dvh flex-col pb-24"
-            style={{
-                paddingTop: "calc(16px + env(safe-area-inset-top, 0px))",
-            }}
-        >
-            <PageShell className="space-y-10 pt-8">
+        <div className="flex min-h-dvh flex-col">
+            <PageShell className="space-y-10 pt-4">
                 {/* ── HERO ──────────────────────────────────────────── */}
                 <section className="flex flex-col items-center gap-5 text-center">
                     <div className="flex items-center justify-center text-secondary">

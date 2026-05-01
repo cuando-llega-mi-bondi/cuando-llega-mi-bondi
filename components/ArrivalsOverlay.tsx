@@ -112,7 +112,7 @@ export function ArrivalsOverlay({
                 <Sheet.Container>
                     <Sheet.Header />
                     <Sheet.Content>
-                        <div className="flex flex-col gap-3 px-5 pb-[calc(96px+env(safe-area-inset-bottom,0px))]">
+                        <div className="flex flex-col gap-3 px-5 pb-[calc(96px+var(--safe-bottom))]">
                             <TelegramShareCTA
                                 codLinea={codLinea}
                                 selectedRamal={selectedRamal}
@@ -152,7 +152,7 @@ export function ArrivalsOverlay({
             type="button"
             onClick={onClose}
             aria-label="Cerrar panel de arribos"
-            className="fixed right-4 top-[max(env(safe-area-inset-top),1rem)] z-10001 flex min-h-11 min-w-11 cursor-pointer items-center justify-center rounded-full border border-border bg-background/80 text-foreground shadow-sm backdrop-blur-md transition-colors hover:border-secondary hover:text-secondary"
+            className="fixed right-4 top-[max(var(--safe-top),1rem)] z-10001 flex min-h-11 min-w-11 cursor-pointer items-center justify-center rounded-full border border-border bg-background/80 text-foreground shadow-sm backdrop-blur-md transition-colors hover:border-secondary hover:text-secondary"
         >
             <IconClose />
         </button>

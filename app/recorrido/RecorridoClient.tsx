@@ -350,7 +350,7 @@ export default function RecorridoClient() {
   if (step === "selector") {
     return (
       <div className="flex min-h-dvh flex-col bg-bg">
-        <header className="z-50 flex shrink-0 items-center gap-3 border-b border-white/10 px-4 py-3.5 px-[calc(20px+env(safe-area-inset-left,0px))] pt-[calc(16px+env(safe-area-inset-top,0px))] pr-[calc(20px+env(safe-area-inset-right,0px))]">
+        <header className="z-50 flex shrink-0 items-center gap-3 border-b border-white/10 px-[calc(20px+var(--safe-left))] pt-[calc(16px+var(--safe-top))] pr-[calc(20px+var(--safe-right))] pb-3.5">
           <Link
             href="/"
             className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-white/12 bg-white/5 text-text-dim no-underline transition hover:border-white/20 hover:text-text"
@@ -409,8 +409,8 @@ export default function RecorridoClient() {
   // MAP SCREEN
   // ─────────────────────────────────────────────────────────────────────────────
   return (
-    <div className="flex h-dvh flex-col bg-background pb-[calc(5rem+env(safe-area-inset-bottom,0px))]">
-      <header className="z-50 flex shrink-0 items-center gap-3 border-b border-border bg-background/90 backdrop-blur-md px-[calc(16px+env(safe-area-inset-left,0px))] pr-[calc(16px+env(safe-area-inset-right,0px))] pt-[calc(10px+env(safe-area-inset-top,0px))] pb-3">
+    <div className="flex h-dvh flex-col bg-background pb-nav">
+      <header className="z-50 flex shrink-0 items-center gap-3 border-b border-border bg-background/90 backdrop-blur-md px-[calc(16px+var(--safe-left))] pr-[calc(16px+var(--safe-right))] pt-[calc(10px+var(--safe-top))] pb-3">
         <button
           type="button"
           onClick={goBack}
@@ -453,7 +453,7 @@ export default function RecorridoClient() {
 
       {ramales.length > 1 && !mapLoading && (
         <div className="shrink-0 overflow-x-auto border-b border-border bg-background/90 backdrop-blur-md [scrollbar-width:none]">
-          <div className="flex w-max gap-2 px-[calc(12px+env(safe-area-inset-left,0px))] py-2.5 pr-[calc(12px+env(safe-area-inset-right,0px))]">
+          <div className="flex w-max gap-2 px-[calc(12px+var(--safe-left))] py-2.5 pr-[calc(12px+var(--safe-right))]">
             {ramales.map((ramal) => {
               const isActive = ramal.key === selectedRamal?.key;
               return (
