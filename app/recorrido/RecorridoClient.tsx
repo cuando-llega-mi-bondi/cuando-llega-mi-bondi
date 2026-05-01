@@ -387,7 +387,7 @@ export default function RecorridoClient() {
           </div>
         </div>
 
-        <div className="flex-1 overflow-y-auto px-3 pb-6 pt-2">
+        <div className="flex-1 overflow-y-auto px-3 pb-45 pt-2">
           {linesLoading ? (
             <LineSkeletons />
           ) : filteredLines.length === 0 ? (
