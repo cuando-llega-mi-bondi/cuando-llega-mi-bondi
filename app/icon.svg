@@ -3,57 +3,24 @@
   viewBox="0 0 1024 1024">
   <defs>
   <style>
-    /* ── Light mode (default) → AHORA USA LOS COLORES OSCUROS ── */
-    .bg-primary    { fill: #182a45; }
-    .bg-panel-left { fill: #182a45; }
-    .bg-panel-right{ fill: #192a46; }
-    .bg-tab        { fill: #1a2b46; }
-    .detail-dark1  { fill: #1c2c46; }
-    .detail-dark2  { fill: #1e2e47; }
-    .fg-main       { fill: #fcfcfc; }
-  
-    /* ── Dark mode → AHORA USA LOS COLORES CLAROS ── */
-    :global(.dark) .bg-primary,
-    .dark .bg-primary    { fill: #f0f4f8; }
-  
-    :global(.dark) .bg-panel-left,
-    .dark .bg-panel-left { fill: #e8edf3; }
-  
-    :global(.dark) .bg-panel-right,
-    .dark .bg-panel-right{ fill: #dde4ed; }
-  
-    :global(.dark) .bg-tab,
-    .dark .bg-tab        { fill: #d8e0ea; }
-  
-    :global(.dark) .detail-dark1,
-    .dark .detail-dark1  { fill: #c8d5e3; }
-  
-    :global(.dark) .detail-dark2,
-    .dark .detail-dark2  { fill: #bfcedd; }
-  
-    :global(.dark) .fg-main,
-    .dark .fg-main       { fill: #182a45; }
-  
-    /* ── Fallback sistema (también invertido) ── */
+    /* ── Modo claro (default) ── */
+    .bg-primary     { fill: #182a45; }
+    .bg-panel-left  { fill: #182a45; }
+    .bg-panel-right { fill: #192a46; }
+    .bg-tab         { fill: #1a2b46; }
+    .detail-dark1   { fill: #1c2c46; }
+    .detail-dark2   { fill: #1e2e47; }
+    .fg-main        { fill: #fcfcfc; }
+
+    /* ── Modo oscuro via preferencia del sistema ── */
     @media (prefers-color-scheme: dark) {
-      .bg-primary    { fill: #f0f4f8; }
-      .bg-panel-left { fill: #e8edf3; }
-      .bg-panel-right{ fill: #dde4ed; }
-      .bg-tab        { fill: #d8e0ea; }
-      .detail-dark1  { fill: #c8d5e3; }
-      .detail-dark2  { fill: #bfcedd; }
-      .fg-main       { fill: #182a45; }
-    }
-  
-    /* Si forzás .light en sistema dark → vuelve al oscuro */
-    @media (prefers-color-scheme: dark) {
-      .light .bg-primary    { fill: #182a45; }
-      .light .bg-panel-left { fill: #182a45; }
-      .light .bg-panel-right{ fill: #192a46; }
-      .light .bg-tab        { fill: #1a2b46; }
-      .light .detail-dark1  { fill: #1c2c46; }
-      .light .detail-dark2  { fill: #1e2e47; }
-      .light .fg-main       { fill: #fcfcfc; }
+      .bg-primary     { fill: #f0f4f8; }
+      .bg-panel-left  { fill: #e8edf3; }
+      .bg-panel-right { fill: #dde4ed; }
+      .bg-tab         { fill: #d8e0ea; }
+      .detail-dark1   { fill: #c8d5e3; }
+      .detail-dark2   { fill: #bfcedd; }
+      .fg-main        { fill: #182a45; }
     }
   </style>
   </defs>

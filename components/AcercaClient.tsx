@@ -161,7 +161,7 @@ export function AcercaClient() {
                 {/* ── HERO ──────────────────────────────────────────── */}
                 <section className="flex flex-col items-center gap-5 text-center">
                     <div className="flex items-center justify-center text-secondary">
-                        <IconBus />
+                        <IconBus size={64} />
                     </div>
                     <div>
                         <h1 className="sr-only">BONDI MDP</h1>
