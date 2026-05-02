@@ -1,4 +1,5 @@
 function resolveCuandoApiBase(): string {
+    /** Optional absolute URL to offload proxy traffic from Vercel Edge Requests (own Worker/VPS). */
     const raw =
         typeof process !== "undefined"
             ? process.env.NEXT_PUBLIC_CUANDO_API_URL?.trim()

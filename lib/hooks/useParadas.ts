@@ -17,6 +17,10 @@ export function useParadas(
               ]
             : null,
         swrFetcher,
+        {
+            revalidateOnFocus: false,
+            dedupingInterval: 60_000,
+        },
     );
 
     return {

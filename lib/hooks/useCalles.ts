@@ -13,6 +13,8 @@ export function useCalles(codLinea: string) {
         codLinea ? [CALLES_ACTION, { codLinea }] : null,
         swrFetcher,
         {
+            revalidateOnFocus: false,
+            dedupingInterval: 60_000,
             fallbackData: callesParams
                 ? (getCache(CALLES_ACTION, callesParams) ?? undefined)
                 : undefined,

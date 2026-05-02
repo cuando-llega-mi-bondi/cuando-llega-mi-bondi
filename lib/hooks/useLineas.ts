@@ -18,6 +18,8 @@ export function useLineas(options: UseLineasOptions = {}) {
         [LINEAS_ACTION, {}],
         swrFetcher,
         {
+            revalidateOnFocus: false,
+            dedupingInterval: 60_000,
             fallbackData: cachedLineas ? { lineas: cachedLineas } : undefined,
             onSuccess: (res) => setCache(LINEAS_ACTION, res.lineas ?? []),
             onError: (err) =>

@@ -10,6 +10,10 @@ export function useIntersecciones(codLinea: string, codCalle: string) {
             ? ["RecuperarInterseccionPorLineaYCalle", { codLinea, codCalle }]
             : null,
         swrFetcher,
+        {
+            revalidateOnFocus: false,
+            dedupingInterval: 60_000,
+        },
     );
 
     return {

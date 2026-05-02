@@ -31,7 +31,10 @@ export function useArribos({
             : null,
         swrFetcher,
         {
-            refreshInterval: 30000,
+            refreshInterval: 60_000,
+            refreshWhenHidden: false,
+            revalidateOnFocus: true,
+            focusThrottleInterval: 60_000,
             onSuccess: () => {
                 setLastUpdate(new Date());
                 onSuccess?.();
