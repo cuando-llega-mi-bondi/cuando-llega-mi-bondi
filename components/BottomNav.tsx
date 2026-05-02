@@ -84,8 +84,7 @@ export function BottomNav({ tab, setTab, favCount }: BottomNavProps) {
 
     return (
         <nav
-            className="fixed bottom-0 left-0 z-[100] w-full border-t border-border bg-background/90 backdrop-blur-xl"
-            style={{ paddingBottom: "var(--safe-bottom)" }}
+            className="fixed bottom-0 left-0 z-[100] w-full border-t border-border bg-background/90 backdrop-blur-xl pb-safe-area-bottom"
         >
             <div className="mx-auto flex max-w-[520px] items-stretch justify-around">
                 {items.map(({ id, label, icon, onClick }) => {

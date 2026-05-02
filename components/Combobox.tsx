@@ -331,7 +331,7 @@ export function Combobox({
                                   onKeyDown={onFilterKeyDown}
                                   placeholder="Buscar..."
                                   aria-label="Filtrar opciones"
-                                  className="min-h-10 w-full rounded-xl border border-border bg-input px-3 py-2 font-sans text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground focus:border-secondary"
+                                  className="min-h-11 w-full rounded-xl border border-border bg-input px-3 py-2 font-sans text-[16px] leading-normal text-foreground outline-none transition-colors placeholder:text-muted-foreground focus:border-secondary"
                               />
                           </div>
                       ) : null}

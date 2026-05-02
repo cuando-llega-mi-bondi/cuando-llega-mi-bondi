@@ -107,12 +107,13 @@ export function ArrivalsOverlay({
                 onClose={onClose}
                 snapPoints={[0, 0.12, 0.5, 1]}
                 initialSnap={2}
+                disableDismiss
                 disableScrollLocking
             >
                 <Sheet.Container>
                     <Sheet.Header />
                     <Sheet.Content>
-                        <div className="flex flex-col gap-3 px-5 pb-[calc(96px+var(--safe-bottom))]">
+                        <div className="flex flex-col gap-3 px-5 pb-sheet-over-nav">
                             <TelegramShareCTA
                                 codLinea={codLinea}
                                 selectedRamal={selectedRamal}

@@ -68,7 +68,6 @@
 
     /* Safe Area Variables */
     --safe-top: env(safe-area-inset-top, 0px);
-    --safe-bottom: env(safe-area-inset-bottom, 0px);
     --safe-left: env(safe-area-inset-left, 0px);
     --safe-right: env(safe-area-inset-right, 0px);
 
@@ -153,8 +152,24 @@
   .font-mono {
     font-variant-numeric: tabular-nums;
   }
+
+  /*
+   * env() dentro de custom props (:root --safe-*) a veces no resuelve bien en la
+   * primera pintura de WKWebView / PWA iOS. Usar env() directo en el tab bar y
+   * en el padding del scroll evita el hueco bajo la barra fija.
+   */
+  .pb-safe-area-bottom {
+    padding-bottom: constant(safe-area-inset-bottom);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+
+  /* Scroll interno del sheet sobre la bottom nav + home indicator */
+  .pb-sheet-over-nav {
+    padding-bottom: calc(96px + env(safe-area-inset-bottom, 0px));
+  }
+
   .pb-nav {
-    padding-bottom: calc(var(--nav-height) + var(--safe-bottom) + 1.25rem);
+    padding-bottom: calc(var(--nav-height) + env(safe-area-inset-bottom, 0px) + 1.25rem);
   }
 }
 
