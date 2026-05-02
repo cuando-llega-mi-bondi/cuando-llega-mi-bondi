@@ -1,0 +1,19 @@
+name = "cuando-proxy"
+main = "cuando-proxy-worker.js"
+compatibility_date = "2025-01-01"
+
+# Para deployar:
+#   1. npm i -g wrangler  (o npx wrangler)
+#   2. wrangler login
+#   3. wrangler deploy
+#
+# Después de deployar, copiá la URL que imprime wrangler
+# (algo tipo https://cuando-proxy.<tu-subdominio>.workers.dev)
+# y seteala en Vercel como variable de entorno:
+#
+#   NEXT_PUBLIC_CUANDO_API_URL=https://cuando-proxy.<tu-subdominio>.workers.dev
+#
+# Redeploy de Vercel y la app empieza a usar el Worker.
+
+[observability]
+enabled = true

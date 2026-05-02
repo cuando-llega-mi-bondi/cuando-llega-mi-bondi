@@ -59,11 +59,23 @@ La aplicación está diseñada pensando en la performance y la facilidad de exte
 graph TD
   UI[UI Components] --> SWR[SWR Hooks]
   SWR --> Storage[(LocalStorage / Cache 24h)]
-  SWR --> Proxy[Route Handler /api/cuando]
+  SWR --> Proxy[Route Handler /api/cuando o Cloudflare Worker]
   Proxy --> MGP[API Municipalidad]
   UI --> Manual[lib/manualRoutes.ts]
   Manual --> GeoJSON[public/*.geojson]
 ```
+
+### Offload de tráfico al edge (Cloudflare Worker)
+
+Toda llamada al WS de la Municipalidad pasa por el proxy `app/api/cuando/route.ts`, que corre en Vercel y consume **Edge Requests** de la cuota mensual. Para no depender de esa cuota cuando hay picos de tráfico, el proyecto incluye una versión espejo del proxy como Cloudflare Worker en [`cloudflare/`](cloudflare/README.md), con caché de respuestas y rate limiting.
+
+Activarlo es solo:
+
+```bash
+cd cloudflare && wrangler deploy
+```
+
+Y setear la URL resultante como `NEXT_PUBLIC_CUANDO_API_URL` en Vercel. El cliente (`lib/api/client.ts`) la toma automáticamente y deja de pasar por la API route. Mientras la variable no esté seteada (por ejemplo en `dev` o en preview deploys), el flujo sigue siendo el original. Más detalles en [cloudflare/README.md](cloudflare/README.md).
 
 
 ## 🚀 Empezar (Getting Started)
