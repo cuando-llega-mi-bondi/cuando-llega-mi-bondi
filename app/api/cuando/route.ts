@@ -25,9 +25,34 @@ function getAccionFromBody(body: string): string | null {
   return new URLSearchParams(body).get("accion");
 }
 
+/** MGP site Cloudflare WAF block page (same pattern as cloudflare Worker). */
+function isLikelyOriginCloudflareBlock(html: string): boolean {
+  const t = html.slice(0, 8000);
+  return (
+    t.includes("cf-error-details") ||
+    t.includes("Sorry, you have been blocked") ||
+    (t.includes("Attention Required!") && t.includes("Cloudflare"))
+  );
+}
+
+class MgpHttpError extends Error {
+  constructor(
+    public readonly status: number,
+    public readonly originCfBlock?: boolean,
+  ) {
+    super(`MGP error: ${status}`);
+    this.name = "MgpHttpError";
+  }
+}
+
 type MgpResult =
   | { ok: true; data: unknown }
-  | { ok: false; status: number; errorText: string };
+  | {
+      ok: false;
+      status: number;
+      errorText: string;
+      originCfBlock?: boolean;
+    };
 
 async function fetchMgpJson(
   body: string,
@@ -49,14 +74,55 @@ async function fetchMgpJson(
     body,
   });
 
+  const text = await response.text();
+
   if (!response.ok) {
-    const errorBody = await response.text();
-    console.error("MGP response error:", response.status, errorBody);
-    return { ok: false, status: response.status, errorText: errorBody };
+    const originCfBlock = isLikelyOriginCloudflareBlock(text);
+    console.error(
+      JSON.stringify({
+        event: originCfBlock ? "mgp_origin_cf_block" : "mgp_http_error",
+        status: response.status,
+        bodyPreview: text.replace(/\s+/g, " ").trim().slice(0, 240),
+      }),
+    );
+    return {
+      ok: false,
+      status: response.status,
+      errorText: text,
+      originCfBlock,
+    };
   }
 
-  const data = await response.json();
-  return { ok: true, data };
+  try {
+    const data = JSON.parse(text) as unknown;
+    return { ok: true, data };
+  } catch {
+    const originCfBlock = isLikelyOriginCloudflareBlock(text);
+    console.error(
+      JSON.stringify({
+        event: originCfBlock ? "mgp_origin_cf_block" : "mgp_invalid_json",
+        status: response.status,
+        bodyPreview: text.replace(/\s+/g, " ").trim().slice(0, 240),
+      }),
+    );
+    return {
+      ok: false,
+      status: 502,
+      errorText: "non-json response from MGP",
+      originCfBlock,
+    };
+  }
+}
+
+function mgpErrorPayload(status: number, originCfBlock?: boolean) {
+  const base = { error: `MGP error: ${status}` };
+  if (originCfBlock) {
+    return {
+      ...base,
+      hint: "El servidor municipal devolvió una página de bloqueo (Cloudflare). Probá más tarde o desde otra red; si persiste, el origen está restringiendo el acceso.",
+    };
+  }
+  return base;
 }
 
 export async function POST(req: NextRequest) {
@@ -78,7 +144,7 @@ export async function POST(req: NextRequest) {
             DEFAULT_ACCEPT_LANGUAGE,
           );
           if (!result.ok) {
-            throw new Error(`MGP error: ${result.status}`);
+            throw new MgpHttpError(result.status, result.originCfBlock);
           }
           return result.data;
         },
@@ -86,14 +152,23 @@ export async function POST(req: NextRequest) {
         { revalidate: REFERENCE_DATA_REVALIDATE_S },
       );
 
-      const data = await getCached();
-      return NextResponse.json(data);
+      try {
+        const data = await getCached();
+        return NextResponse.json(data);
+      } catch (e) {
+        if (e instanceof MgpHttpError) {
+          return NextResponse.json(mgpErrorPayload(e.status, e.originCfBlock), {
+            status: e.status,
+          });
+        }
+        throw e;
+      }
     }
 
     const result = await fetchMgpJson(body, userAgent, acceptLanguage);
     if (!result.ok) {
       return NextResponse.json(
-        { error: `MGP error: ${result.status}` },
+        mgpErrorPayload(result.status, result.originCfBlock),
         { status: result.status },
       );
     }

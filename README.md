@@ -75,7 +75,7 @@ Activarlo es solo:
 cd cloudflare && wrangler deploy
 ```
 
-Y setear la URL resultante como `NEXT_PUBLIC_CUANDO_API_URL` en Vercel. El cliente (`lib/api/client.ts`) la toma automáticamente y deja de pasar por la API route. Mientras la variable no esté seteada (por ejemplo en `dev` o en preview deploys), el flujo sigue siendo el original. Más detalles en [cloudflare/README.md](cloudflare/README.md).
+Y setear la URL resultante como `NEXT_PUBLIC_CUANDO_API_URL` en Vercel. El cliente (`lib/api/client.ts`) la toma automáticamente y deja de pasar por la API route. Mientras la variable no esté seteada (por ejemplo en `dev` o en preview deploys), el flujo sigue siendo el original. Más detalles en [cloudflare/README.md](cloudflare/README.md). Si el Worker falla en producción pero el proxy en Vercel funciona, el origen municipal puede estar bloqueando el tráfico desde Cloudflare: en ese README están los pasos de **diagnóstico** (`wrangler tail`, logs) y la **mitigación** (quitar la variable y redeploy).
 
 
 ## 🚀 Empezar (Getting Started)

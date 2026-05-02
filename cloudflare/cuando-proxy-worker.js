@@ -12,6 +12,9 @@ const MGP_URL =
 const DEFAULT_USER_AGENT =
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36";
 
+/** Same default as `app/api/cuando/route.ts` for cacheable actions. */
+const DEFAULT_ACCEPT_LANGUAGE = "es-AR,es;q=0.9,en;q=0.8";
+
 const REFERENCE_TTL_S = 300;
 
 const CACHEABLE_ACCIONES = new Set([
@@ -75,6 +78,21 @@ async function buildCacheKey(request, body) {
     return new Request(url.toString(), { method: "GET" });
 }
 
+function bodyPreview(text, maxLen = 240) {
+    const s = text.replace(/\s+/g, " ").trim();
+    return s.length <= maxLen ? s : `${s.slice(0, maxLen)}…`;
+}
+
+/** HTML from mardelplata.gob.ar's Cloudflare WAF blocking our subrequest (Worker egress). */
+function isLikelyOriginCloudflareBlock(html) {
+    const t = html.slice(0, 8000);
+    return (
+        t.includes("cf-error-details") ||
+        t.includes("Sorry, you have been blocked") ||
+        (t.includes("Attention Required!") && t.includes("Cloudflare"))
+    );
+}
+
 async function fetchMgpJson(body, userAgent, acceptLanguage) {
     const response = await fetch(MGP_URL, {
         method: "POST",
@@ -91,14 +109,62 @@ async function fetchMgpJson(body, userAgent, acceptLanguage) {
         body,
     });
 
+    const contentType = response.headers.get("content-type") || "";
+    const text = await response.text();
+
     if (!response.ok) {
-        const errorBody = await response.text();
-        console.error("MGP response error:", response.status, errorBody);
-        return { ok: false, status: response.status, errorText: errorBody };
+        const originCfBlock = isLikelyOriginCloudflareBlock(text);
+        console.error(
+            JSON.stringify({
+                event: originCfBlock
+                    ? "mgp_origin_cf_block"
+                    : "mgp_http_error",
+                status: response.status,
+                contentType,
+                bodyPreview: bodyPreview(text),
+                ...(originCfBlock
+                    ? {
+                          hint: "El sitio MGP usa Cloudflare y suele bloquear el egress de Workers; usá el proxy en Vercel (/api/cuando).",
+                      }
+                    : {}),
+            }),
+        );
+        return {
+            ok: false,
+            status: response.status,
+            errorText: text,
+            originCfBlock,
+        };
     }
 
-    const data = await response.json();
-    return { ok: true, data };
+    try {
+        const data = JSON.parse(text);
+        return { ok: true, data };
+    } catch (parseErr) {
+        const originCfBlock = isLikelyOriginCloudflareBlock(text);
+        console.error(
+            JSON.stringify({
+                event: originCfBlock
+                    ? "mgp_origin_cf_block"
+                    : "mgp_invalid_json",
+                status: response.status,
+                contentType,
+                bodyPreview: bodyPreview(text),
+                parseError: String(parseErr),
+                ...(originCfBlock
+                    ? {
+                          hint: "El sitio MGP usa Cloudflare y suele bloquear el egress de Workers; usá el proxy en Vercel (/api/cuando).",
+                      }
+                    : {}),
+            }),
+        );
+        return {
+            ok: false,
+            status: 502,
+            errorText: "non-json response from MGP",
+            originCfBlock,
+        };
+    }
 }
 
 export default {
@@ -141,13 +207,16 @@ export default {
         try {
             const body = await request.text();
             const accion = getAccionFromBody(body);
-            const userAgent =
-                request.headers.get("user-agent") ?? DEFAULT_USER_AGENT;
-            const acceptLanguage =
-                request.headers.get("accept-language") ??
-                "es-AR,es;q=0.9,en;q=0.8";
-
             const cacheable = accion && CACHEABLE_ACCIONES.has(accion);
+            /** Match Next `unstable_cache` path: fixed UA for reference data. */
+            const mgpUserAgent = cacheable
+                ? DEFAULT_USER_AGENT
+                : (request.headers.get("user-agent") ?? DEFAULT_USER_AGENT);
+            const mgpAcceptLanguage = cacheable
+                ? DEFAULT_ACCEPT_LANGUAGE
+                : (request.headers.get("accept-language") ??
+                  DEFAULT_ACCEPT_LANGUAGE);
+
             const cache = caches.default;
             const cacheKey = cacheable ? await buildCacheKey(request, body) : null;
 
@@ -166,16 +235,27 @@ export default {
                 }
             }
 
-            const result = await fetchMgpJson(body, userAgent, acceptLanguage);
+            const result = await fetchMgpJson(
+                body,
+                mgpUserAgent,
+                mgpAcceptLanguage,
+            );
 
             const outHeaders = corsHeaders();
             outHeaders.set("Content-Type", "application/json; charset=utf-8");
 
             if (!result.ok) {
-                return new Response(
-                    JSON.stringify({ error: `MGP error: ${result.status}` }),
-                    { status: result.status, headers: outHeaders },
-                );
+                const body =
+                    result.originCfBlock === true
+                        ? {
+                              error: `MGP error: ${result.status}`,
+                              hint: "El servidor municipal (Cloudflare del origen) rechaza solicitudes desde este Worker. Quitá NEXT_PUBLIC_CUANDO_API_URL en Vercel para usar /api/cuando.",
+                          }
+                        : { error: `MGP error: ${result.status}` };
+                return new Response(JSON.stringify(body), {
+                    status: result.status,
+                    headers: outHeaders,
+                });
             }
 
             const payload = JSON.stringify(result.data);
@@ -196,7 +276,13 @@ export default {
 
             return new Response(payload, { status: 200, headers: outHeaders });
         } catch (err) {
-            console.error("Proxy error:", err);
+            console.error(
+                JSON.stringify({
+                    event: "proxy_unhandled",
+                    message: String(err?.message ?? err),
+                    name: err?.name,
+                }),
+            );
             const outHeaders = corsHeaders();
             outHeaders.set("Content-Type", "application/json; charset=utf-8");
             return new Response(
