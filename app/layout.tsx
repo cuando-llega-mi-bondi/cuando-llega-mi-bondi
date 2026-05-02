@@ -1,7 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
-import { Analytics } from "@vercel/analytics/react";
+import { VercelAnalyticsDeferred } from "@/components/VercelAnalyticsDeferred";
 import { JsonLd } from "@/components/JsonLd";
 import { InstallPwaPrompt } from "@/components/InstallPwaPrompt";
 import { ThemeColorMeta } from "@/components/ThemeColorMeta";
@@ -11,9 +11,9 @@ import Script from "next/script";
 
 const inter = Inter({
     subsets: ["latin"],
-    weight: ["400", "500", "600", "700", "800", "900"],
     display: "swap",
     variable: "--font-inter",
+    weight: "variable",
 });
 
 export const metadata: Metadata = {
@@ -155,7 +155,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                     <PwaViewportSync />
                     <ThemeColorMeta />
                     <JsonLd />
-                    <Analytics />
+                    <VercelAnalyticsDeferred />
                     {children}
                     <InstallPwaPrompt />
                 </ThemeProvider>

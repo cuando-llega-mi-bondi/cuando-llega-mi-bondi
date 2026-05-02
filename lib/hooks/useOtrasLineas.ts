@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useMemo } from "react";
+import useSWR from "swr";
 import { findLineasEnInterseccion } from "@/lib/api/otrasLineas";
 import type { Linea } from "@/lib/types";
 
@@ -23,8 +24,15 @@ export function useOtrasLineas({
     calleLabel,
     interseccionLabel,
 }: UseOtrasLineasParams) {
-    const [otrasLineas, setOtrasLineas] = useState<Linea[]>([]);
-    const [loadingOtras, setLoadingOtras] = useState(false);
+    const lineasFingerprint = useMemo(
+        () =>
+            lineas
+                .map((l) => `${l.CodigoLineaParada}:${l.isManual ? 1 : 0}`)
+                .sort()
+                .join(","),
+        [lineas],
+    );
+
     const shouldLookup =
         isConsulting &&
         Boolean(codLinea) &&
@@ -34,45 +42,35 @@ export function useOtrasLineas({
         Boolean(calleLabel) &&
         Boolean(interseccionLabel);
 
-    useEffect(() => {
-        if (!shouldLookup || !calleLabel || !interseccionLabel) {
-            return;
-        }
+    const swrKey = shouldLookup
+        ? ([
+              "otrasLineasEnInterseccion",
+              codLinea,
+              codCalle,
+              codInterseccion,
+              calleLabel,
+              interseccionLabel,
+              lineasFingerprint,
+          ] as const)
+        : null;
 
-        let active = true;
-        Promise.resolve().then(() => {
-            if (active) setLoadingOtras(true);
-        });
-
-        findLineasEnInterseccion(
-            calleLabel,
-            interseccionLabel,
-            codLinea,
-            lineas,
-        )
-            .then((res) => {
-                if (!active) return;
-                setOtrasLineas(res);
-                setLoadingOtras(false);
-            })
-            .catch(() => {
-                if (!active) return;
-                setLoadingOtras(false);
-            });
-
-        return () => {
-            active = false;
-        };
-    }, [
-        shouldLookup,
-        calleLabel,
-        interseccionLabel,
-        codLinea,
-        lineas,
-    ]);
+    const { data, isLoading } = useSWR(
+        swrKey,
+        ([, codLineaArg, , , calleLb, interLb]) =>
+            findLineasEnInterseccion(
+                calleLb as string,
+                interLb as string,
+                codLineaArg,
+                lineas,
+            ),
+        {
+            revalidateOnFocus: false,
+            dedupingInterval: 60_000,
+        },
+    );
 
     return {
-        otrasLineas: shouldLookup ? otrasLineas : [],
-        loadingOtras: shouldLookup ? loadingOtras : false,
+        otrasLineas: shouldLookup ? (data ?? []) : [],
+        loadingOtras: shouldLookup ? isLoading : false,
     };
 }

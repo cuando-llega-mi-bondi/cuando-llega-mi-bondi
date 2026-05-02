@@ -206,14 +206,21 @@ export default function RecorridoClient() {
           throw new Error("Configuración manual incompleta (sin ramales ni geoJsonPath)");
         }
 
+        type RamalDef = (typeof ramalDefs)[number];
+
+        const parsed = await Promise.all(
+          ramalDefs.map(async (def: RamalDef) => {
+            const res = await fetch(def.geoJsonPath);
+            if (!res.ok) throw new Error(`No se pudo cargar el recorrido (${def.label})`);
+            const geojson = (await res.json()) as GeoJsonCollection;
+            return { def, geojson };
+          }),
+        );
+
         const builtRamales: RamalData[] = [];
         const allStops: ParadaMapa[] = [];
 
-        for (const def of ramalDefs) {
-          const res = await fetch(def.geoJsonPath);
-          if (!res.ok) throw new Error(`No se pudo cargar el recorrido (${def.label})`);
-          const geojson = (await res.json()) as GeoJsonCollection;
-
+        for (const { def, geojson } of parsed) {
           const lineFeature = geojson.features.find(
             (f) => f.geometry.type === "LineString",
           );

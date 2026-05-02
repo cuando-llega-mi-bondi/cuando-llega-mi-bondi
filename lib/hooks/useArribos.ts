@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import useSWR from "swr";
 import type { Arribo } from "@/lib/types";
 import { swrFetcher } from "@/lib/api/client";
@@ -21,6 +21,33 @@ export function useArribos({
     onError,
 }: UseArribosParams) {
     const [lastUpdate, setLastUpdate] = useState<Date | null>(null);
+    const onSuccessRef = useRef(onSuccess);
+    const onErrorRef = useRef(onError);
+    useEffect(() => {
+        onSuccessRef.current = onSuccess;
+        onErrorRef.current = onError;
+    }, [onSuccess, onError]);
+
+    const swrOptions = useMemo(
+        () => ({
+            refreshInterval: 60_000,
+            refreshWhenHidden: false,
+            revalidateOnFocus: true,
+            focusThrottleInterval: 60_000,
+            onSuccess: () => {
+                setLastUpdate(new Date());
+                onSuccessRef.current?.();
+            },
+            onError: (err: unknown) => {
+                const message =
+                    err instanceof Error
+                        ? err.message
+                        : "El servidor de la Municipalidad no responde.";
+                onErrorRef.current?.(message);
+            },
+        }),
+        [],
+    );
 
     const { data, isLoading, mutate } = useSWR(
         isConsulting && paradaId && codLinea
@@ -30,21 +57,7 @@ export function useArribos({
               ]
             : null,
         swrFetcher,
-        {
-            refreshInterval: 60_000,
-            refreshWhenHidden: false,
-            revalidateOnFocus: true,
-            focusThrottleInterval: 60_000,
-            onSuccess: () => {
-                setLastUpdate(new Date());
-                onSuccess?.();
-            },
-            onError: (err) => {
-                onError?.(
-                    err?.message ?? "El servidor de la Municipalidad no responde.",
-                );
-            },
-        },
+        swrOptions,
     );
 
     return {

@@ -3,18 +3,16 @@
 import type { ReactNode } from "react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { post } from "@/lib/api/client";
-import {
-    useArribos,
-    useCalles,
-    useFavoritos,
-    useHistorial,
-    useIntersecciones,
-    useLineas,
-    useLiveBuses,
-    useOtrasLineas,
-    useParadas,
-    useUrlSync,
-} from "@/lib/hooks";
+import { useArribos } from "@/lib/hooks/useArribos";
+import { useCalles } from "@/lib/hooks/useCalles";
+import { useFavoritos } from "@/lib/hooks/useFavoritos";
+import { useHistorial } from "@/lib/hooks/useHistorial";
+import { useIntersecciones } from "@/lib/hooks/useIntersecciones";
+import { useLineas } from "@/lib/hooks/useLineas";
+import { useLiveBuses } from "@/lib/hooks/useLiveBuses";
+import { useOtrasLineas } from "@/lib/hooks/useOtrasLineas";
+import { useParadas } from "@/lib/hooks/useParadas";
+import { useUrlSync } from "@/lib/hooks/useUrlSync";
 import { getCache } from "@/lib/storage/localCache";
 import type { Arribo, Favorito, HistorialEntry, Linea } from "@/lib/types";
 import { cleanLabel } from "@/lib/utils";
