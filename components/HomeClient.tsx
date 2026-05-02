@@ -404,7 +404,7 @@ export function HomeClient({ children }: { children?: ReactNode }) {
 
 
     return (
-        <div className="flex min-h-dvh flex-col">
+        <div className="flex min-h-pwa-shell flex-col">
             <Header />
 
             <PageShell>

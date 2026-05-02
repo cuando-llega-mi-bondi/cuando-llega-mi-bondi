@@ -156,7 +156,7 @@ export function AcercaClient() {
     }, [handleShareWhatsApp]);
 
     return (
-        <div className="flex min-h-dvh flex-col">
+        <div className="flex min-h-pwa-shell flex-col">
             <PageShell className="space-y-10 pt-4">
                 {/* ── HERO ──────────────────────────────────────────── */}
                 <section className="flex flex-col items-center gap-5 text-center">

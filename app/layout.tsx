@@ -75,6 +75,35 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     return (
         <html lang="es" suppressHydrationWarning>
             <head>
+                {/*
+                  iOS PWA: 100dvh puede quedar ~un safe-area más corto que la pantalla real,
+                  dejando una franja bajo la barra fija. Sincronizamos altura con inner/visualViewport.
+                */}
+                <Script
+                    id="standalone-app-height"
+                    strategy="beforeInteractive"
+                    dangerouslySetInnerHTML={{
+                        __html: `
+(function(){
+  try {
+    var standalone = (window.matchMedia && window.matchMedia("(display-mode: standalone)").matches)
+      || window.navigator.standalone === true;
+    if (!standalone) return;
+    function setAppHeight() {
+      var h = (window.visualViewport && window.visualViewport.height) || window.innerHeight;
+      document.documentElement.style.setProperty("--app-height", h + "px");
+    }
+    setAppHeight();
+    window.addEventListener("resize", setAppHeight);
+    if (window.visualViewport) {
+      window.visualViewport.addEventListener("resize", setAppHeight);
+      window.visualViewport.addEventListener("scroll", setAppHeight);
+    }
+  } catch (e) {}
+})();
+                        `.trim(),
+                    }}
+                />
                 <Script
                     id="sw-registration"
                     strategy="afterInteractive"

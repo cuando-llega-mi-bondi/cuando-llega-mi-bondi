@@ -117,6 +117,10 @@ export function Combobox({
         if (!open) return;
         const onScroll = (e: Event) => {
             if (portalRef.current?.contains(e.target as Node)) return;
+            // iOS scrolls the document when the keyboard opens; the scroll target is
+            // usually not inside the fixed portal, which would call close() and dismiss the keyboard.
+            const ae = document.activeElement;
+            if (showFilter && ae && portalRef.current?.contains(ae)) return;
             close();
         };
         const onResize = () => computeRect();
@@ -126,7 +130,7 @@ export function Combobox({
             window.removeEventListener("scroll", onScroll, true);
             window.removeEventListener("resize", onResize);
         };
-    }, [open, close, computeRect]);
+    }, [open, close, computeRect, showFilter]);
 
     useEffect(() => {
         if (!open) return;
@@ -317,7 +321,7 @@ export function Combobox({
                           width: dropdownRect.width,
                           zIndex: 9999,
                       }}
-                      className="overflow-hidden rounded-2xl border border-border bg-background/95 shadow-lg backdrop-blur-md"
+                      className="touch-manipulation overflow-hidden rounded-2xl border border-border bg-background/95 shadow-lg backdrop-blur-md"
                   >
                       {showFilter ? (
                           <div className="border-b border-border px-2.5 py-2">

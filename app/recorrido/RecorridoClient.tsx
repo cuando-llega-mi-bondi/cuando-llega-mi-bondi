@@ -349,7 +349,7 @@ export default function RecorridoClient() {
   // ─────────────────────────────────────────────────────────────────────────────
   if (step === "selector") {
     return (
-      <div className="flex min-h-dvh flex-col bg-bg">
+      <div className="flex min-h-pwa-shell flex-col bg-bg">
         <header className="z-50 flex shrink-0 items-center gap-3 border-b border-white/10 px-[calc(20px+var(--safe-left))] pt-[calc(16px+var(--safe-top))] pr-[calc(20px+var(--safe-right))] pb-3.5">
           <Link
             href="/"
