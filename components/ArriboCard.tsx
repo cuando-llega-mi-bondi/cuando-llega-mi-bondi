@@ -5,7 +5,6 @@ import type { Arribo } from "@/lib/types";
 import { getArriboColor, formatDesvio } from "@/lib/utils";
 import { IconStar } from "./icons/IconStar";
 import { IconWheelchair } from "./icons/IconWheelchair";
-import { IconUser } from "./icons/IconUser";
 import { IconClock } from "./icons/IconClock";
 import { cn } from "@/lib/utils";
 
@@ -69,11 +68,6 @@ export function ArriboCard({ arribo, onFav, favId }: { arribo: Arribo; onFav: ()
                             </div>
                         )}
                     </div>
-                    {arribo.IdentificadorChofer && (
-                        <div className="flex items-center gap-1.5 font-mono text-[11px] text-muted-foreground">
-                            <IconUser /> {arribo.IdentificadorChofer}
-                        </div>
-                    )}
                 </div>
 
                 <div className="flex flex-col items-end gap-1 text-right">
