@@ -240,13 +240,13 @@ export function AcercaClient() {
                     <div className="space-y-3">
                         {[
                             {
-                                href: "https://github.com/dotfn/cuando-llega-mi-bondi",
+                                href: "https://github.com/cuando-llega-mi-bondi/cuando-llega-mi-bondi",
                                 icon: <IconGithub className="h-5 w-5 text-secondary" />,
                                 title: "Repositorio en GitHub",
                                 subtitle: "Código fuente y decisiones técnicas",
                             },
                             {
-                                href: "https://github.com/dotfn/cuando-llega-mi-bondi/issues",
+                                href: "https://github.com/cuando-llega-mi-bondi/cuando-llega-mi-bondi/issues",
                                 icon: <IconMessage className="h-5 w-5 text-secondary" />,
                                 title: "Reportar bugs o proponer mejoras",
                                 subtitle: "El proyecto crece con la comunidad",
