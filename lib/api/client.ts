@@ -1,4 +1,17 @@
-export const BASE_URL = "/api/cuando";
+function resolveCuandoApiBase(): string {
+    const raw =
+        typeof process !== "undefined"
+            ? process.env.NEXT_PUBLIC_CUANDO_API_URL?.trim()
+            : undefined;
+    if (!raw) return "/api/cuando";
+    let base = raw.replace(/\/$/, "");
+    if (!/^https?:\/\//i.test(base)) {
+        base = `https://${base.replace(/^\/+/, "")}`;
+    }
+    return base;
+}
+
+export const BASE_URL = resolveCuandoApiBase();
 
 export type ActionParams = Record<string, string>;
 export type SwrActionKey = [string, ActionParams];
