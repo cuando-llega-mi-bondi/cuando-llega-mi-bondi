@@ -141,14 +141,19 @@
     font-family: var(--font-inter), system-ui, sans-serif;
   }
 
-  /* Altura real en PWA standalone (evita hueco bajo bottom nav; ver --app-height en layout) */
+  /*
+   * PWA standalone: la 1.ª pintura puede usar 100dvh más bajo que la pantalla física.
+   * Fallback max(100vh, 100lvh) cubre antes de que exista --app-height; luego manda JS.
+   */
   @media (display-mode: standalone) {
     html {
-      min-height: var(--app-height, 100vh);
+      min-height: max(100vh, 100lvh);
+      min-height: var(--app-height, max(100vh, 100lvh));
     }
 
     body {
-      min-height: var(--app-height, 100vh);
+      min-height: max(100vh, 100lvh);
+      min-height: var(--app-height, max(100vh, 100lvh));
     }
   }
 
@@ -176,16 +181,22 @@
    */
   .pb-safe-area-bottom {
     padding-bottom: constant(safe-area-inset-bottom);
-    padding-bottom: env(safe-area-inset-bottom, 0px);
+    /* --safe-bottom-live lo fija PwaViewportSync tras el 1.er frame (WKWebView) */
+    padding-bottom: max(env(safe-area-inset-bottom, 0px), var(--safe-bottom-live, 0px));
   }
 
-  /* Scroll interno del sheet sobre la bottom nav + home indicator */
+  /* Sheet: mismo inset inferior que el tab bar cuando WKWebView retrasa env() */
   .pb-sheet-over-nav {
-    padding-bottom: calc(96px + env(safe-area-inset-bottom, 0px));
+    padding-bottom: calc(
+      96px + max(env(safe-area-inset-bottom, 0px), var(--safe-bottom-live, 0px))
+    );
   }
 
   .pb-nav {
-    padding-bottom: calc(var(--nav-height) + env(safe-area-inset-bottom, 0px) + 1.25rem);
+    padding-bottom: calc(
+      var(--nav-height) + max(env(safe-area-inset-bottom, 0px), var(--safe-bottom-live, 0px)) +
+        1.25rem
+    );
   }
 
   /*
@@ -198,7 +209,8 @@
 
   @media (display-mode: standalone) {
     .min-h-pwa-shell {
-      min-height: var(--app-height, 100vh);
+      min-height: max(100dvh, 100vh, 100lvh);
+      min-height: var(--app-height, max(100vh, 100lvh));
     }
   }
 }

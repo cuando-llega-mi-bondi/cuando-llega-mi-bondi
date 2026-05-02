@@ -6,6 +6,7 @@ import { JsonLd } from "@/components/JsonLd";
 import { InstallPwaPrompt } from "@/components/InstallPwaPrompt";
 import { ThemeColorMeta } from "@/components/ThemeColorMeta";
 import { ThemeProvider } from "@/components/ThemeProvider";
+import { PwaViewportSync } from "@/components/PwaViewportSync";
 import Script from "next/script";
 
 const inter = Inter({
@@ -90,14 +91,34 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       || window.navigator.standalone === true;
     if (!standalone) return;
     function setAppHeight() {
-      var h = (window.visualViewport && window.visualViewport.height) || window.innerHeight;
+      var ih = window.innerHeight || 0;
+      var vvh = (window.visualViewport && window.visualViewport.height) || 0;
+      var ch = document.documentElement.clientHeight || 0;
+      var h = Math.max(ih, vvh, ch);
       document.documentElement.style.setProperty("--app-height", h + "px");
     }
-    setAppHeight();
-    window.addEventListener("resize", setAppHeight);
+    function setSafeBottomProbe() {
+      var el = document.createElement("div");
+      el.setAttribute("style", "position:fixed;bottom:0;left:0;width:0;height:0;visibility:hidden;pointer-events:none;z-index:-1;padding-bottom:env(safe-area-inset-bottom,0px);");
+      document.body.appendChild(el);
+      var pb = parseFloat(window.getComputedStyle(el).paddingBottom) || 0;
+      document.body.removeChild(el);
+      document.documentElement.style.setProperty("--safe-bottom-live", pb + "px");
+    }
+    function bump() {
+      setAppHeight();
+      if (document.body) setSafeBottomProbe();
+    }
+    bump();
+    requestAnimationFrame(bump);
+    setTimeout(bump, 0);
+    setTimeout(bump, 50);
+    setTimeout(bump, 120);
+    window.addEventListener("load", bump);
+    window.addEventListener("resize", bump);
     if (window.visualViewport) {
-      window.visualViewport.addEventListener("resize", setAppHeight);
-      window.visualViewport.addEventListener("scroll", setAppHeight);
+      window.visualViewport.addEventListener("resize", bump);
+      window.visualViewport.addEventListener("scroll", bump);
     }
   } catch (e) {}
 })();
@@ -121,6 +142,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             </head>
             <body className={`${inter.variable}`}>
                 <ThemeProvider>
+                    <PwaViewportSync />
                     <ThemeColorMeta />
                     <JsonLd />
                     <Analytics />
