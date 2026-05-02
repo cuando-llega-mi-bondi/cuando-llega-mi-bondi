@@ -16,6 +16,11 @@ function syncAppHeight(): void {
     const vvh = window.visualViewport?.height ?? 0;
     const clientH = document.documentElement.clientHeight;
     const h = Math.max(ih, vvh, clientH);
+    // screen.height is stable from the very first frame on iOS.
+    // If h is suspiciously small (< 70% of screen), iOS hasn't settled yet —
+    // skip so the CSS `100%` fallback handles this frame.
+    const sh = window.screen?.height ?? 0;
+    if (sh && h < sh * 0.7) return;
     document.documentElement.style.setProperty("--app-height", `${h}px`);
     void document.documentElement.offsetHeight;
 }

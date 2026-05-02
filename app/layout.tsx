@@ -90,11 +90,23 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     var standalone = (window.matchMedia && window.matchMedia("(display-mode: standalone)").matches)
       || window.navigator.standalone === true;
     if (!standalone) return;
+    var lastH = 0;
     function setAppHeight() {
       var ih = window.innerHeight || 0;
       var vvh = (window.visualViewport && window.visualViewport.height) || 0;
       var ch = document.documentElement.clientHeight || 0;
+      /*
+       * screen.height is stable from the very first frame on iOS, even when
+       * innerHeight hasn't settled yet. Use it as a ceiling: the real usable
+       * height can never exceed screen.height.
+       */
+      var sh = window.screen && window.screen.height ? window.screen.height : 0;
       var h = Math.max(ih, vvh, ch);
+      /* If innerHeight is suspiciously small (< 70% of screen), iOS hasn't
+         settled yet — skip this measurement so the CSS 100% fallback stays. */
+      if (sh && h < sh * 0.7) return;
+      if (h === lastH) return;
+      lastH = h;
       document.documentElement.style.setProperty("--app-height", h + "px");
     }
     function setSafeBottomProbe() {
@@ -110,10 +122,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       if (document.body) setSafeBottomProbe();
     }
     bump();
-    requestAnimationFrame(bump);
-    setTimeout(bump, 0);
-    setTimeout(bump, 50);
-    setTimeout(bump, 120);
+    requestAnimationFrame(function(){bump();requestAnimationFrame(bump);});
+    [0,16,50,120,280,500].forEach(function(ms){setTimeout(bump,ms);});
     window.addEventListener("load", bump);
     window.addEventListener("resize", bump);
     if (window.visualViewport) {

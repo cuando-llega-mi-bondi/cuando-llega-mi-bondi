@@ -115,9 +115,13 @@
   }
 
   html {
-    /* Cadena para iOS: ayuda a que el área útil coincida con el borde físico en PWA */
-    min-height: 100%;
-    min-height: -webkit-fill-available;
+    /*
+     * iOS PWA: percentage heights resolve correctly on the very first frame,
+     * unlike 100dvh / 100vh / 100lvh which can be wrong for ~300 ms on cold launch.
+     * height:100% here + on body ensures the shell fills the real screen immediately.
+     */
+    height: 100%;
+    height: -webkit-fill-available;
     background: var(--background);
     color: var(--foreground);
     font-family: var(--font-inter), system-ui, sans-serif;
@@ -135,25 +139,25 @@
   body {
     min-height: 100%;
     min-height: -webkit-fill-available;
-    min-height: 100dvh;
     background-color: var(--background);
     color: var(--foreground);
     font-family: var(--font-inter), system-ui, sans-serif;
   }
 
   /*
-   * PWA standalone: la 1.ª pintura puede usar 100dvh más bajo que la pantalla física.
-   * Fallback max(100vh, 100lvh) cubre antes de que exista --app-height; luego manda JS.
+   * PWA standalone: use 100% height (resolved correctly on first frame by iOS)
+   * with --app-height as a JS-driven override once measured.
    */
   @media (display-mode: standalone) {
     html {
-      min-height: max(100vh, 100lvh);
-      min-height: var(--app-height, max(100vh, 100lvh));
+      height: 100%;
+      height: -webkit-fill-available;
+      height: var(--app-height, 100%);
     }
 
     body {
-      min-height: max(100vh, 100lvh);
-      min-height: var(--app-height, max(100vh, 100lvh));
+      min-height: 100%;
+      min-height: var(--app-height, 100%);
     }
   }
 
@@ -209,8 +213,9 @@
 
   @media (display-mode: standalone) {
     .min-h-pwa-shell {
-      min-height: max(100dvh, 100vh, 100lvh);
-      min-height: var(--app-height, max(100vh, 100lvh));
+      /* 100% inherits from body→html→viewport, which iOS resolves correctly on first paint */
+      min-height: 100%;
+      min-height: var(--app-height, 100%);
     }
   }
 }
