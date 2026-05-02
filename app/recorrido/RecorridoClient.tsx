@@ -189,52 +189,74 @@ export default function RecorridoClient() {
         const config = MANUAL_ROUTES.find(r => r.line.CodigoLineaParada === line.CodigoLineaParada);
         if (!config) throw new Error("Configuración manual no encontrada");
 
-        const res = await fetch(config.geoJsonPath);
-        if (!res.ok) throw new Error("No se pudo cargar el archivo de recorrido");
-        const geojson = (await res.json()) as GeoJsonCollection;
+        const ramalDefs =
+          config.ramales && config.ramales.length > 0
+            ? config.ramales
+            : config.geoJsonPath
+              ? [
+                  {
+                    key: "principal",
+                    label: "Recorrido Completo",
+                    geoJsonPath: config.geoJsonPath,
+                  },
+                ]
+              : null;
 
-        // Parse GeoJSON to our format
-        const lineFeature = geojson.features.find(
-          (f) => f.geometry.type === "LineString",
-        );
-        const stopFeatures = geojson.features.filter(
-          (f) => f.geometry.type === "Point",
-        );
+        if (!ramalDefs?.length) {
+          throw new Error("Configuración manual incompleta (sin ramales ni geoJsonPath)");
+        }
 
-        if (!lineFeature) throw new Error("Trazado no encontrado en el archivo");
-        const lineCoordinates = lineFeature.geometry
-          .coordinates as [number, number][];
+        const builtRamales: RamalData[] = [];
+        const allStops: ParadaMapa[] = [];
 
-        const points: PuntoRecorrido[] = lineCoordinates.map((coord) => ({
-          Latitud: coord[1],
-          Longitud: coord[0],
-          Descripcion: line.Descripcion,
-          IsPuntoPaso: true,
-          AbreviaturaBanderaSMP: "",
-          AbreviaturaLineaSMP: line.CodigoLineaParada
-        }));
+        for (const def of ramalDefs) {
+          const res = await fetch(def.geoJsonPath);
+          if (!res.ok) throw new Error(`No se pudo cargar el recorrido (${def.label})`);
+          const geojson = (await res.json()) as GeoJsonCollection;
 
-        const manualRamal: RamalData = {
-          key: "principal",
-          label: "Recorrido Completo",
-          puntos: points
-        };
+          const lineFeature = geojson.features.find(
+            (f) => f.geometry.type === "LineString",
+          );
+          const stopFeatures = geojson.features.filter(
+            (f) => f.geometry.type === "Point",
+          );
 
-        const manualStops: ParadaMapa[] = stopFeatures.map((f, i) => {
-          const [lng, lat] = f.geometry.coordinates as [number, number];
-          return {
-            id: `m_${i}`,
-            codigo: `m_${i}`,
-            label: `Parada ${i + 1}`,
-            lat,
-            lng,
-            ramales: [manualRamal.label],
-          };
-        });
+          if (!lineFeature) throw new Error(`Trazado no encontrado (${def.label})`);
+          const lineCoordinates = lineFeature.geometry
+            .coordinates as [number, number][];
 
-        setRamales([manualRamal]);
-        setSelectedRamal(manualRamal);
-        setParadas(manualStops);
+          const points: PuntoRecorrido[] = lineCoordinates.map((coord) => ({
+            Latitud: coord[1],
+            Longitud: coord[0],
+            Descripcion: line.Descripcion,
+            IsPuntoPaso: true,
+            AbreviaturaBanderaSMP: "",
+            AbreviaturaLineaSMP: line.CodigoLineaParada,
+          }));
+
+          builtRamales.push({
+            key: def.key,
+            label: def.label,
+            puntos: points,
+          });
+
+          for (let i = 0; i < stopFeatures.length; i++) {
+            const f = stopFeatures[i];
+            const [lng, lat] = f.geometry.coordinates as [number, number];
+            allStops.push({
+              id: `m_${def.key}_${i}`,
+              codigo: `m_${def.key}_${i}`,
+              label: `Parada ${i + 1}`,
+              lat,
+              lng,
+              ramales: [def.label],
+            });
+          }
+        }
+
+        setRamales(builtRamales);
+        setSelectedRamal(builtRamales[0] ?? null);
+        setParadas(allStops);
       } else {
         const [ramalData, paradaData] = await Promise.all([
           getRecorridoRamales(line.CodigoLineaParada),
