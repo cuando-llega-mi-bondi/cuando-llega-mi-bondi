@@ -63,7 +63,7 @@ const socialTestimonials = [
     platform: "Star",
 
     quote:
-      "La función de guardar las paradas favoritas es todo lo que está bien en esta vida. Entro y en 2 segundos ya sé si tengo que correr o no 🚌💨",
+      "Era muy necesaria! Una idea muy inteligente para los que padecemos tener que utilizar los colectivos de Mar del Plata.",
 
     Icon: Star,
   },
