@@ -3,7 +3,7 @@
 import { useState, useEffect, useMemo, useRef } from "react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
-import { getLineas, getParadasParaMapa, getRecorridoRamales } from "@/lib/api";
+import { getLineas, getRecorridoMapaCliente } from "@/lib/api";
 import { getCache, setCache } from "@/lib/storage/localCache";
 import type { Linea, ParadaMapa, PuntoRecorrido, RamalData } from "@/lib/types";
 import { MANUAL_LINES, MANUAL_ROUTES } from "@/lib/manualRoutes";
@@ -265,10 +265,8 @@ export default function RecorridoClient() {
         setSelectedRamal(builtRamales[0] ?? null);
         setParadas(allStops);
       } else {
-        const [ramalData, paradaData] = await Promise.all([
-          getRecorridoRamales(line.CodigoLineaParada),
-          getParadasParaMapa(line.CodigoLineaParada),
-        ]);
+        const { ramales: ramalData, paradas: paradaData } =
+          await getRecorridoMapaCliente(line.CodigoLineaParada);
         setRamales(ramalData);
         setSelectedRamal(ramalData[0] ?? null);
         setParadas(paradaData);

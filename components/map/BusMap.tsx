@@ -5,7 +5,7 @@ import { MapContainer, TileLayer, Marker, useMap, Popup, Polyline } from "react-
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import "@/components/map/leaflet.css";
-import { getRecorrido } from "@/lib/api/recorrido";
+import { getRecorridoPuntosParaMapa } from "@/lib/api/recorrido";
 import type { Arribo, PuntoRecorrido } from "@/lib/types";
 import {
     createArrowIcon,
@@ -16,6 +16,47 @@ import {
 const IconMaximize = () => <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>;
 const IconMinimize = () => <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M8 3v3a2 2 0 0 1-2 2H3m18 0h-3a2 2 0 0 1-2-2V3m0 18v-3a2 2 0 0 1 2-2h3M3 16h3a2 2 0 0 1 2 2v3"/></svg>;
 const IconTarget = () => <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/></svg>;
+
+function firstBusCoords(arribos: Arribo[]): [number, number] | null {
+    for (const a of arribos) {
+        const lat = parseFloat(a.Latitud);
+        const lng = parseFloat(a.Longitud);
+        if (!Number.isNaN(lat) && !Number.isNaN(lng) && lat !== 0) return [lat, lng];
+    }
+    return null;
+}
+
+/**
+ * Si el vértice más cercano al colectivo está después del más cercano a la parada,
+ * el orden del GDS suele ir en sentido contrario al movimiento hacia la parada: invertimos.
+ */
+function orientPolylineTowardParada(
+    points: [number, number][],
+    parada: [number, number],
+    bus: [number, number],
+): [number, number][] {
+    if (points.length < 2) return points;
+    let iBus = 0;
+    let iParada = 0;
+    let dBus = Infinity;
+    let dParada = Infinity;
+    for (let i = 0; i < points.length; i++) {
+        const [lat, lng] = points[i];
+        const db = (lat - bus[0]) ** 2 + (lng - bus[1]) ** 2;
+        const dp = (lat - parada[0]) ** 2 + (lng - parada[1]) ** 2;
+        if (db < dBus) {
+            dBus = db;
+            iBus = i;
+        }
+        if (dp < dParada) {
+            dParada = dp;
+            iParada = i;
+        }
+    }
+    if (iBus === iParada) return points;
+    if (iBus > iParada) return [...points].reverse();
+    return points;
+}
 
 function MapController({
     arribos,
@@ -110,7 +151,7 @@ const BusMap = React.memo(function BusMap({
     useEffect(() => {
         if (!lineaCod) return;
         let active = true;
-        getRecorrido(lineaCod)
+        getRecorridoPuntosParaMapa(lineaCod)
             .then((data) => {
                 if (active) setRoutePoints(data);
             })
@@ -228,6 +269,23 @@ const BusMap = React.memo(function BusMap({
         return new Set<string>();
     }, [groupedRoutes, arribos, ramalHints, paradaCoords]);
 
+    const busCoordsForOrient = useMemo(() => firstBusCoords(arribos), [arribos]);
+
+    const routesForMap = useMemo(() => {
+        return groupedRoutes.map(({ descripcion, points }) => {
+            let pts = points;
+            if (
+                activeDescripcionKeys.has(descripcion) &&
+                busCoordsForOrient &&
+                paradaCoords &&
+                points.length >= 2
+            ) {
+                pts = orientPolylineTowardParada(points, paradaCoords, busCoordsForOrient);
+            }
+            return { descripcion, points: pts };
+        });
+    }, [groupedRoutes, activeDescripcionKeys, paradaCoords, busCoordsForOrient]);
+
     if (!paradaCoords) return null;
 
     const stopIcon = L.divIcon({
@@ -315,7 +373,7 @@ const BusMap = React.memo(function BusMap({
                     attribution="&copy; Google Maps"
                 />
 
-                {groupedRoutes.map(({ descripcion, points }) => {
+                {routesForMap.map(({ descripcion, points }) => {
                     const isActive = activeDescripcionKeys.has(descripcion);
 
                     const arrowMarkers = [];
