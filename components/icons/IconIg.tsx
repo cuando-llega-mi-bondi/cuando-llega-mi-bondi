@@ -1,11 +1,18 @@
 import React from "react";
 
-export const IconIg = (props: React.SVGProps<SVGSVGElement>) => {
+export const IconIg = ({
+  size = 14,
+  ...props
+}: {
+  size?: number;
+} & React.SVGProps<SVGSVGElement>) => {
   return (
     <svg
       role="img"
       viewBox="0 0 24 24"
-      xmlns="http://www.w3.org/2000/svg"
+      width={size}
+      height={size}
+      fill="currentColor"
       {...props}
     >
       <title>Instagram</title>
