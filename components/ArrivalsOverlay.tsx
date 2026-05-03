@@ -20,7 +20,7 @@ type LiveSharing = { lat: number; lng: number; ramal: string | null };
 
 interface ArrivalsOverlayProps {
   // ... tus props se mantienen igual ...
-  lineaLabel: string;
+  lineaLabel: string | undefined;
   isOpen: boolean;
   onClose: () => void;
   codLinea: string;

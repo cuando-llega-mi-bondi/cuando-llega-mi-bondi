@@ -205,9 +205,8 @@ export function HomeClient({ children }: { children?: ReactNode }) {
     (i) => i.value === codInterseccion,
   )?.label;
 
-  const lineaLabel = lineas.find(
-    (l) => l.CodigoLineaParada === codLinea,
-  )?.Descripcion;
+  const lineaLabel =
+    lineas.find((l) => l.CodigoLineaParada === codLinea)?.Descripcion ?? "";
 
   const { otrasLineas, loadingOtras } = useOtrasLineas({
     isConsulting,
