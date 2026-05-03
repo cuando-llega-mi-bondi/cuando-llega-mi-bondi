@@ -7,7 +7,7 @@
 1. **Haz un Fork** del repositorio a tu propia cuenta de GitHub.
 2. **Clona tu Fork** a tu máquina local:
    ```bash
-   git clone https://github.com/TU_USUARIO/cuandollega.git
+   git clone https://github.com/TU_USUARIO/cuando-llega-mi-bondi.git
    ```
 3. **Crea una nueva rama (branch)** para tu funcionalidad o corrección:
    ```bash
@@ -27,7 +27,7 @@ Para orientarte rápido, así está organizado el código hoy:
 - **`/app`**: rutas del [App Router](https://nextjs.org/docs/app) de Next.js.
   - `layout.tsx`, `page.tsx`: shell y página principal.
   - `/consultar`, `/recorrido`, `/acerca`: flujos de consulta, mapa de recorrido y página institucional.
-  - `/app/api/cuando/route.ts`: **proxy** (runtime Edge) hacia la API municipal.
+  - `/app/api/cuando/route.ts`: **proxy** hacia uno o más hosts intermedios (`MGP_PROXY_*`, `MGP_ORACLE_*`) y desde ahí a la API municipal.
   - `/app/api/telegram-webhook/route.ts`: webhook opcional del bot de Telegram (Supabase + token del bot).
 - **`/components`**: UI en React (`HomeClient`, `SearchFlow`, `RouteMap`, `Combobox`, carpeta `search/`, iconos, etc.).
 - **`/lib/api`**: cliente del proxy (`client.ts` con `post` / `swrFetcher`) y módulos por dominio (`lineas.ts`, `arribos.ts`, `recorrido.ts`, …).
@@ -63,7 +63,9 @@ Si una línea no está disponible en la API oficial de la Municipalidad, podés 
 
 ## Variables de entorno (desarrollo avanzado)
 
-La consulta de arribos por la municipalidad **no requiere** `.env`. Para trabajar en integración con **Telegram** y **ubicación en vivo** (mapa + webhook), necesitás las variables listadas en el README (`NEXT_PUBLIC_TELEGRAM_BOT_USERNAME`, `TELEGRAM_BOT_TOKEN`, `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`).
+Para que **`/api/cuando`** responda en tu máquina o en el deploy, hace falta al menos **`MGP_PROXY_URL`** o **`MGP_ORACLE_URL`** (y tokens si tu proxy los exige). Otra opción es definir **`NEXT_PUBLIC_CUANDO_API_URL`** apuntando a un endpoint HTTPS ya desplegado compatible, y así el cliente no usa la ruta interna. El detalle de cada variable está en el README.
+
+Para **Telegram** y **ubicación en vivo** (mapa + webhook), además necesitás `NEXT_PUBLIC_TELEGRAM_BOT_USERNAME`, `TELEGRAM_BOT_TOKEN`, `NEXT_PUBLIC_SUPABASE_URL` y `NEXT_PUBLIC_SUPABASE_ANON_KEY`.
 
 ## Convenciones de Código
 

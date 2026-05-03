@@ -3,7 +3,7 @@ import { post } from "./client";
 
 const COORD_EPS = 1e-6;
 
-function ramalesFromPuntos(puntos: PuntoRecorrido[]): RamalData[] {
+export function ramalesFromPuntos(puntos: PuntoRecorrido[]): RamalData[] {
     const byDesc = new Map<string, PuntoRecorrido[]>();
 
     for (const p of puntos) {

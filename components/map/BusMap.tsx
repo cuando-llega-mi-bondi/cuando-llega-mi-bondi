@@ -5,7 +5,7 @@ import { MapContainer, TileLayer, Marker, useMap, Popup, Polyline } from "react-
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import "@/components/map/leaflet.css";
-import { getRecorridoPuntosParaMapa } from "@/lib/api/recorrido";
+import { getRecorridoPuntosParaMapa, ramalesFromPuntos } from "@/lib/api/recorrido";
 import type { Arribo, PuntoRecorrido } from "@/lib/types";
 import {
     createArrowIcon,
@@ -170,21 +170,22 @@ const BusMap = React.memo(function BusMap({
     }, [selectedRamal, paradaBanderaAbrevs]);
 
     const groupedRoutes = useMemo(() => {
-        const byDesc = new Map<string, { points: [number, number][]; smp: string }>();
-        for (const p of routePoints) {
-            let g = byDesc.get(p.Descripcion);
-            if (!g) {
-                g = { points: [], smp: (p.AbreviaturaBanderaSMP ?? "").trim() };
-                byDesc.set(p.Descripcion, g);
-            }
-            g.points.push([p.Latitud, p.Longitud] as [number, number]);
-        }
-        return Array.from(byDesc.entries()).map(([descripcion, { points, smp }]) => ({
-            descripcion,
-            points,
-            destinoMedio: (descripcion.split(";")[1] ?? "").trim().toUpperCase(),
-            abrevSMP: smp.toUpperCase(),
-        }));
+        const ramales = ramalesFromPuntos(routePoints);
+        return ramales.map((ramal) => {
+            const points = ramal.puntos.map(
+                (p) => [p.Latitud, p.Longitud] as [number, number],
+            );
+            const firstPunto = ramal.puntos[0];
+            const smp = (firstPunto?.AbreviaturaBanderaSMP ?? "").trim();
+            // Build a synthetic Descripcion key that matches the original format
+            const descripcion = `${ramal.key};${ramal.label}`;
+            return {
+                descripcion,
+                points,
+                destinoMedio: ramal.label.trim().toUpperCase(),
+                abrevSMP: smp.toUpperCase(),
+            };
+        });
     }, [routePoints]);
 
     const paradaCoords = useMemo((): [number, number] | null => {
@@ -219,21 +220,41 @@ const BusMap = React.memo(function BusMap({
 
         const ramalesUpper = new Set(
             arribos
-                .map((a) =>
-                    (a.DescripcionCartelBandera ?? a.DescripcionBandera ?? "").trim().toUpperCase(),
-                )
+                .map((a) => {
+                    const txt = (
+                        a.DescripcionCartelBandera ??
+                        a.DescripcionBandera ??
+                        a.DescripcionCortaBandera ??
+                        ""
+                    );
+                    return String(txt).trim().toUpperCase();
+                })
                 .filter(Boolean),
         );
 
         const scored = groupedRoutes.map((g) => {
             let matchesArribo = false;
             for (const r of ramalesUpper) {
-                if (r === g.destinoMedio || r === g.abrevSMP) {
+                if (
+                    r === g.destinoMedio ||
+                    r === g.abrevSMP ||
+                    (g.destinoMedio && r.includes(g.destinoMedio)) ||
+                    (g.destinoMedio && g.destinoMedio.includes(r)) ||
+                    (g.abrevSMP && r.includes(g.abrevSMP) && g.abrevSMP.length > 1)
+                ) {
                     matchesArribo = true;
                     break;
                 }
             }
-            const matchesHint = ramalHints.length > 0 && ramalHints.includes(g.abrevSMP);
+            const matchesHint =
+                ramalHints.length > 0 &&
+                (ramalHints.includes(g.abrevSMP) ||
+                    ramalHints.includes(g.destinoMedio) ||
+                    ramalHints.some(
+                        (h) =>
+                            (g.destinoMedio && h.includes(g.destinoMedio)) ||
+                            (g.destinoMedio && g.destinoMedio.includes(h)),
+                    ));
 
             let distSq = Infinity;
             if (hasParada) {

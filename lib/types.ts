@@ -24,6 +24,8 @@ export interface Arribo {
     DescripcionBandera: string;
     /** Destino en cartel; a veces viene vacío/omitido en la API. */
     DescripcionCartelBandera?: string;
+    /** Descripción corta de bandera; a veces viene en la API. */
+    DescripcionCortaBandera?: string;
     Arribo: string;
     CodigoLineaParada: string;
     DesvioHorario: string;
