@@ -24,7 +24,7 @@ function buildShareText(
 
     const lines = arribos.slice(0, 3).map((a) => {
         const linea = a.DescripcionLinea;
-        const destino = a.DescripcionCartelBandera;
+        const destino = a.DescripcionCartelBandera ?? a.DescripcionBandera ?? "";
         const arribo = a.Arribo; // e.g. "8 min" or "Llegando"
         return `• Línea ${linea} (${destino}): ${arribo}`;
     });

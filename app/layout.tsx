@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
+import { MicrosoftClarity } from "@/components/MicrosoftClarity";
 import { VercelAnalyticsDeferred } from "@/components/VercelAnalyticsDeferred";
 import { JsonLd } from "@/components/JsonLd";
 import { InstallPwaPrompt } from "@/components/InstallPwaPrompt";
@@ -8,6 +9,7 @@ import { ThemeColorMeta } from "@/components/ThemeColorMeta";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { PwaViewportSync } from "@/components/PwaViewportSync";
 import Script from "next/script";
+import { GoogleAnalytics } from "@next/third-parties/google";
 
 const inter = Inter({
     subsets: ["latin"],
@@ -155,7 +157,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                     <PwaViewportSync />
                     <ThemeColorMeta />
                     <JsonLd />
+                    <MicrosoftClarity />
                     <VercelAnalyticsDeferred />
+                    {process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID ? (
+                        <GoogleAnalytics gaId={process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID} />
+                    ) : null}
                     {children}
                     <InstallPwaPrompt />
                 </ThemeProvider>

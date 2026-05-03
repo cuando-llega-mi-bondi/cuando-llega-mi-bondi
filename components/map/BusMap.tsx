@@ -89,6 +89,8 @@ const BusMap = React.memo(function BusMap({
     lineaCod,
     liveBuses = [],
     fillParent = false,
+    selectedRamal = "TODOS",
+    paradaBanderaAbrevs = [],
 }: {
     arribos: Arribo[];
     paradaLat: string;
@@ -96,6 +98,10 @@ const BusMap = React.memo(function BusMap({
     lineaCod?: string;
     liveBuses?: { lat: number; lng: number; ramal: string | null }[];
     fillParent?: boolean;
+    /** Filtro de ramal en UI; si no es TODOS, prioriza esa abreviatura para el trazo. */
+    selectedRamal?: string;
+    /** Abreviaturas de bandera asociadas a la parada elegida (RecuperarParadas…). */
+    paradaBanderaAbrevs?: string[];
 }) {
     const [isFullscreen, setIsFullscreen] = useState(false);
     const [fitTrigger, setFitTrigger] = useState(0);
@@ -114,23 +120,31 @@ const BusMap = React.memo(function BusMap({
         };
     }, [lineaCod]);
 
-    const activeRamales = useMemo(
-        () => new Set(arribos.map((a) => a.DescripcionCartelBandera?.toUpperCase() || "")),
-        [arribos],
-    );
+    const ramalHints = useMemo(() => {
+        const sr = (selectedRamal ?? "TODOS").trim();
+        if (sr && sr !== "TODOS") {
+            return [sr.toUpperCase()].filter(Boolean);
+        }
+        return paradaBanderaAbrevs.map((x) => x.trim().toUpperCase()).filter(Boolean);
+    }, [selectedRamal, paradaBanderaAbrevs]);
 
-    const groupedPoints = useMemo(
-        () =>
-            routePoints.reduce(
-                (acc, p) => {
-                    if (!acc[p.Descripcion]) acc[p.Descripcion] = [];
-                    acc[p.Descripcion].push([p.Latitud, p.Longitud] as [number, number]);
-                    return acc;
-                },
-                {} as Record<string, [number, number][]>,
-            ),
-        [routePoints],
-    );
+    const groupedRoutes = useMemo(() => {
+        const byDesc = new Map<string, { points: [number, number][]; smp: string }>();
+        for (const p of routePoints) {
+            let g = byDesc.get(p.Descripcion);
+            if (!g) {
+                g = { points: [], smp: (p.AbreviaturaBanderaSMP ?? "").trim() };
+                byDesc.set(p.Descripcion, g);
+            }
+            g.points.push([p.Latitud, p.Longitud] as [number, number]);
+        }
+        return Array.from(byDesc.entries()).map(([descripcion, { points, smp }]) => ({
+            descripcion,
+            points,
+            destinoMedio: (descripcion.split(";")[1] ?? "").trim().toUpperCase(),
+            abrevSMP: smp.toUpperCase(),
+        }));
+    }, [routePoints]);
 
     const paradaCoords = useMemo((): [number, number] | null => {
         let pLat = parseFloat(paradaLat);
@@ -149,6 +163,70 @@ const BusMap = React.memo(function BusMap({
         if (Number.isNaN(pLat) || Number.isNaN(pLon) || pLat === 0) return null;
         return [pLat, pLon];
     }, [paradaLat, paradaLon, arribos, liveBuses]);
+
+    /** Qué trazos del GeoJSON van en azul: arribos exactos, bandera de parada, o el más cercano a la parada. */
+    const activeDescripcionKeys = useMemo(() => {
+        if (groupedRoutes.length === 0) return new Set<string>();
+
+        if (arribos.length === 0) {
+            return new Set(groupedRoutes.map((g) => g.descripcion));
+        }
+
+        const plat = paradaCoords?.[0];
+        const plng = paradaCoords?.[1];
+        const hasParada = plat != null && plng != null && !Number.isNaN(plat) && !Number.isNaN(plng);
+
+        const ramalesUpper = new Set(
+            arribos
+                .map((a) =>
+                    (a.DescripcionCartelBandera ?? a.DescripcionBandera ?? "").trim().toUpperCase(),
+                )
+                .filter(Boolean),
+        );
+
+        const scored = groupedRoutes.map((g) => {
+            let matchesArribo = false;
+            for (const r of ramalesUpper) {
+                if (r === g.destinoMedio || r === g.abrevSMP) {
+                    matchesArribo = true;
+                    break;
+                }
+            }
+            const matchesHint = ramalHints.length > 0 && ramalHints.includes(g.abrevSMP);
+
+            let distSq = Infinity;
+            if (hasParada) {
+                for (const [lat, lng] of g.points) {
+                    const d = (lat - plat) * (lat - plat) + (lng - plng) * (lng - plng);
+                    if (d < distSq) distSq = d;
+                }
+            }
+
+            return { descripcion: g.descripcion, matchesArribo, matchesHint, distSq };
+        });
+
+        const arriboHits = scored.filter((s) => s.matchesArribo);
+        if (arriboHits.length > 0) {
+            return new Set(arriboHits.map((s) => s.descripcion));
+        }
+
+        const hintHits = scored.filter((s) => s.matchesHint);
+        if (hintHits.length === 1) {
+            return new Set([hintHits[0].descripcion]);
+        }
+        if (hintHits.length > 1) {
+            hintHits.sort((a, b) => a.distSq - b.distSq);
+            return new Set([hintHits[0].descripcion]);
+        }
+
+        if (hasParada && scored.length > 0) {
+            const sorted = [...scored].sort((a, b) => a.distSq - b.distSq);
+            const best = sorted[0];
+            if (best) return new Set([best.descripcion]);
+        }
+
+        return new Set<string>();
+    }, [groupedRoutes, arribos, ramalHints, paradaCoords]);
 
     if (!paradaCoords) return null;
 
@@ -237,15 +315,8 @@ const BusMap = React.memo(function BusMap({
                     attribution="&copy; Google Maps"
                 />
 
-                {Object.entries(groupedPoints).map(([desc, points], i) => {
-                    const descUpper = desc.toUpperCase();
-                    const isActive =
-                        arribos.length === 0 ||
-                        Array.from(activeRamales).some(
-                            (ramal) =>
-                                descUpper.includes(ramal as string) ||
-                                (ramal as string).includes((descUpper.split(";")[1] || "").trim()),
-                        );
+                {groupedRoutes.map(({ descripcion, points }) => {
+                    const isActive = activeDescripcionKeys.has(descripcion);
 
                     const arrowMarkers = [];
                     if (isActive && points.length > 5) {
@@ -263,7 +334,7 @@ const BusMap = React.memo(function BusMap({
                     }
 
                     return (
-                        <Fragment key={i}>
+                        <Fragment key={descripcion}>
                             <Polyline positions={points} color={isActive ? "#0099ff" : "#777777"} weight={isActive ? 8 : 4} opacity={isActive ? 1 : 0.4} lineCap="round" lineJoin="round" />
                             {arrowMarkers.map((arr, idx) => (
                                 <Marker key={`arr-${idx}`} position={arr.pos} icon={createArrowIcon(arr.bearing)} interactive={false} />
@@ -360,7 +431,7 @@ const BusMap = React.memo(function BusMap({
                                         Línea {a.DescripcionLinea}
                                     </div>
                                     <div style={{ fontFamily: "var(--font-mono)", fontSize: 11.5, color: "#6b6b7a", marginTop: 2 }}>
-                                        {a.DescripcionCartelBandera.toUpperCase()}
+                                        {(a.DescripcionCartelBandera ?? a.DescripcionBandera ?? "").toUpperCase()}
                                     </div>
                                     <div style={{ fontFamily: "var(--font-mono)", fontSize: 16, fontWeight: 800, color: getEtaClass(a.Arribo) === "warn" ? "#0099ff" : "#22c55e", marginTop: 4 }}>
                                         {a.Arribo}
@@ -379,7 +450,7 @@ const BusMap = React.memo(function BusMap({
                     </div>
                     <div style={{ flex: 1, minWidth: 0 }}>
                         <div style={{ fontFamily: "var(--font-display)", fontSize: 13, fontWeight: 700, color: "var(--color-text-dim)", letterSpacing: 0.5 }}>
-                            {arribos[0].DescripcionCartelBandera.toUpperCase()}
+                            {(arribos[0].DescripcionCartelBandera ?? arribos[0].DescripcionBandera ?? "").toUpperCase()}
                         </div>
                         <div style={{ fontFamily: "var(--font-mono)", fontSize: 20, fontWeight: 800, color: getEtaClass(arribos[0].Arribo) === "warn" ? "var(--color-accent)" : "var(--color-success)" }}>
                             {arribos[0].Arribo}

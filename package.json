@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@khmyznikov/pwa-install": "^0.6.3",
+    "@next/third-parties": "16.2.2",
     "@supabase/supabase-js": "^2.103.3",
     "@vercel/analytics": "^2.0.1",
     "leaflet": "^1.9.4",

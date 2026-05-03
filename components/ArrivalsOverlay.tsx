@@ -24,6 +24,8 @@ interface ArrivalsOverlayProps {
     isConsulting: boolean;
     loadingArribos: boolean;
     displayArribos: Arribo[];
+    /** Abreviaturas de bandera en la parada elegida (misma línea que AbreviaturaBanderaSMP del recorrido). */
+    paradaBanderaAbrevs: string[];
     selectedParada?: Parada;
     lastUpdate: Date | null;
     fetchArribos: () => void;
@@ -66,6 +68,7 @@ export function ArrivalsOverlay({
     isConsulting,
     loadingArribos,
     displayArribos,
+    paradaBanderaAbrevs,
     selectedParada,
     lastUpdate,
     fetchArribos,
@@ -86,6 +89,8 @@ export function ArrivalsOverlay({
             <div className="absolute inset-0">
                 <BusMap
                     arribos={displayArribos}
+                    selectedRamal={selectedRamal}
+                    paradaBanderaAbrevs={paradaBanderaAbrevs}
                     paradaLat={
                         selectedParada?.LatitudParada ||
                         displayArribos[0]?.LatitudParada ||

@@ -30,7 +30,7 @@ export function ArriboCard({ arribo, onFav, favId }: { arribo: Arribo; onFav: ()
 
                 <div className="min-w-0 flex-1">
                     <div className="mb-0.5 font-sans text-[12px] font-medium tracking-[0.02em] text-muted-foreground">
-                        {arribo.DescripcionCartelBandera.toUpperCase()}
+                        {(arribo.DescripcionCartelBandera ?? arribo.DescripcionBandera ?? "").toUpperCase()}
                     </div>
                     <div
                         className={cn(
@@ -83,9 +83,9 @@ export function ArriboCard({ arribo, onFav, favId }: { arribo: Arribo; onFav: ()
                             {desvio.label} {desvio.isEarly ? "ADELANTADO" : "ATRASADO"}
                         </div>
                     )}
-                    <div className="flex items-center gap-1.5 font-mono text-[10px] text-muted-foreground">
+                    {/* <div className="flex items-center gap-1.5 font-mono text-[10px] text-muted-foreground">
                         <IconClock /> GPS: {arribo.UltimaFechaHoraGPS.split(" ")[1]}
-                    </div>
+                    </div> */}
                 </div>
             </div>
         </div>

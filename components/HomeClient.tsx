@@ -131,9 +131,20 @@ export function HomeClient({ children }: { children?: ReactNode }) {
         ];
     }, [paradas, paradaId]);
 
+    /** Abreviaturas de bandera en esta parada (lado / ramal físico); alineadas con AbreviaturaBanderaSMP del recorrido. */
+    const paradaBanderaAbrevs = useMemo(() => {
+        const matched = paradas.filter((p) => p.Identificador === paradaId);
+        const set = new Set<string>();
+        for (const p of matched) {
+            const v = (p.AbreviaturaBandera ?? "").trim();
+            if (v) set.add(v.toUpperCase());
+        }
+        return Array.from(set);
+    }, [paradas, paradaId]);
+
     const displayArribos = useMemo(() => {
         if (selectedRamal === "TODOS") return arribos;
-        return arribos.filter(a => a.DescripcionBandera === selectedRamal);
+        return arribos.filter((a) => a.DescripcionBandera === selectedRamal);
     }, [arribos, selectedRamal]);
 
     const selectedParada = useMemo(() =>
@@ -265,11 +276,11 @@ export function HomeClient({ children }: { children?: ReactNode }) {
         } else {
             setPendingFav({
                 id,
-                nombre: `${arribo.DescripcionLinea} — ${arribo.DescripcionCartelBandera}`,
+                nombre: `${arribo.DescripcionLinea} — ${arribo.DescripcionCartelBandera ?? arribo.DescripcionBandera}`,
                 identificadorParada: paradaId,
                 codigoLineaParada: arribo.CodigoLineaParada,
                 descripcionLinea: arribo.DescripcionLinea,
-                descripcionBandera: arribo.DescripcionCartelBandera,
+                descripcionBandera: arribo.DescripcionCartelBandera ?? arribo.DescripcionBandera,
             });
             setIsNamingOpen(true);
         }
@@ -454,6 +465,7 @@ export function HomeClient({ children }: { children?: ReactNode }) {
                     isConsulting={isConsulting}
                     loadingArribos={loadingArribos}
                     displayArribos={displayArribos}
+                    paradaBanderaAbrevs={paradaBanderaAbrevs}
                     selectedParada={selectedParada}
                     lastUpdate={lastUpdate}
                     fetchArribos={handleFetchArribos}

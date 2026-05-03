@@ -83,13 +83,17 @@ function bodyPreview(text, maxLen = 240) {
     return s.length <= maxLen ? s : `${s.slice(0, maxLen)}…`;
 }
 
-/** HTML from mardelplata.gob.ar's Cloudflare WAF blocking our subrequest (Worker egress). */
+/** HTML from mardelplata.gob.ar's Cloudflare WAF / challenge blocking our subrequest. */
 function isLikelyOriginCloudflareBlock(html) {
-    const t = html.slice(0, 8000);
+    const t = html.slice(0, 12000);
     return (
         t.includes("cf-error-details") ||
         t.includes("Sorry, you have been blocked") ||
-        (t.includes("Attention Required!") && t.includes("Cloudflare"))
+        (t.includes("Attention Required!") && t.includes("Cloudflare")) ||
+        t.includes("cdn-cgi/challenge-platform") ||
+        t.includes("window._cf_chl_opt") ||
+        t.includes("Verificación de seguridad") ||
+        (t.includes("Cloudflare") && t.includes("bots maliciosos"))
     );
 }
 

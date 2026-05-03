@@ -22,7 +22,8 @@ export interface Parada {
 export interface Arribo {
     DescripcionLinea: string;
     DescripcionBandera: string;
-    DescripcionCartelBandera: string;
+    /** Destino en cartel; a veces viene vacío/omitido en la API. */
+    DescripcionCartelBandera?: string;
     Arribo: string;
     CodigoLineaParada: string;
     DesvioHorario: string;
