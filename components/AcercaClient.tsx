@@ -63,7 +63,7 @@ const DEVELOPERS: Developer[] = [
       {
         icon: <IconExternalLink className="h-4 w-4" />,
         label: "Portfolio",
-        href: "https://dotfn.github.io/dotfn/",
+        href: "https://dotfn.dev",
       },
       {
         icon: <IconXBrand className="h-4 w-4" />,
