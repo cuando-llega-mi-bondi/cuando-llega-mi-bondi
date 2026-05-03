@@ -20,6 +20,7 @@ type LiveSharing = { lat: number; lng: number; ramal: string | null };
 
 interface ArrivalsOverlayProps {
   // ... tus props se mantienen igual ...
+  lineaLabel: string;
   isOpen: boolean;
   onClose: () => void;
   codLinea: string;
@@ -63,6 +64,7 @@ const IconClose = () => (
 );
 
 export function ArrivalsOverlay({
+  lineaLabel,
   isOpen,
   onClose,
   codLinea,
@@ -121,7 +123,7 @@ export function ArrivalsOverlay({
           ref={sheetRef}
           isOpen={isOpen}
           onClose={onClose}
-          snapPoints={[0, 0.12, 0.5, 1]}
+          snapPoints={[0, 0.18, 0.5, 1]}
           initialSnap={2}
           disableDismiss
           disableScrollLocking
@@ -131,6 +133,26 @@ export function ArrivalsOverlay({
             <Sheet.Header>
               <div className="flex h-10 w-full items-center justify-center pt-2 pb-4">
                 <Sheet.DragIndicator />
+              </div>
+
+              <div className="flex items-start gap-3 mb-4">
+                {lineaLabel && (
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary text-sm font-bold text-primary-foreground">
+                    {lineaLabel}
+                  </div>
+                )}
+                <div className="min-w-0">
+                  {calleLabel && (
+                    <h2 className="font-display text-lg font-bold leading-tight tracking-tight">
+                      {calleLabel}
+                    </h2>
+                  )}
+                  {interseccionLabel && (
+                    <p className="truncate text-sm text-muted-foreground">
+                      y {interseccionLabel}
+                    </p>
+                  )}
+                </div>
               </div>
               <TelegramShareCTA
                 codLinea={codLinea}
