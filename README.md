@@ -22,7 +22,7 @@
 > Una Progressive Web App (PWA) rápida, moderna y responsiva. Consultá cuándo llega el colectivo a tu parada sin publicidades, sin descargar apps nativas y con posibilidad de funcionar sin conexión (caché).
 
 <div align="center">
-  <img src="public/screenshots/results.png" alt="Screenshot de la aplicación" width="400" style="border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.2);" />
+  <img src="public/screenshots/results.jpg" alt="Screenshot de la aplicación" width="400" style="border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.2);" />
 </div>
 
 ## ✨ Funcionalidades
@@ -31,10 +31,10 @@
 - **Rutas Manuales (GeoJSON):** Soporte para líneas que no están en la API oficial (ej. Mar Chiquita 221) mediante archivos GeoJSON.
 - **Favoritos:** Guardá tus paradas de uso diario con nombres personalizados (ej. "Casa", "Trabajo").
 - **Historial inteligente:** Historial automático de las últimas paradas consultadas.
-- **Mapa Interactivo Avanzado:** 
-    - Visualización de colectivos acercándose en tiempo real.
-    - Marcado de paradas con **navegación rápida** (vía Google Maps).
-    - Trazado de recorridos completos sobre el mapa.
+- **Mapa Interactivo Avanzado:**
+  - Visualización de colectivos acercándose en tiempo real.
+  - Marcado de paradas con **navegación rápida** (vía Google Maps).
+  - Trazado de recorridos completos sobre el mapa.
 - **Modo PWA & Caché:** Instalación nativa en móviles e información estática (calles, recorridos) persistida localmente por 24hs.
 - **Compartir:** Mensajes rápidos por WhatsApp con tiempos de arribo y ubicación; enlaces al bot de Telegram para seguir un recorrido y (con backend configurado) ubicación en vivo en el mapa.
 - **Status de API:** Detección y alerta visual si el servidor de la Municipalidad está fuera de servicio.
@@ -43,15 +43,15 @@
 
 La aplicación está diseñada pensando en la performance y la facilidad de extensión.
 
-| Tecnología        | Propósito                                                            |
-|-------------------|----------------------------------------------------------------------|
-| **Next.js 16 (App Router)** | Framework base, optimización de bundles, y proxy `/api/cuando`. |
-| **React 19**      | UI responsiva y gestión de estado mediante hooks.                   |
-| **Tailwind CSS 4** | Utilidades de estilo; tokens y tema en `app/globals.css`.      |
-| **SWR**           | Fetching de datos con revalidación automática y caché en memoria.   |
-| **Leaflet**       | Motor de mapas liviano para visualización de GPS y GeoJSON.          |
-| **LocalStorage**  | Persistencia de favoritos, historial y caché de calles (24hs TTL).    |
-| **Supabase** (opcional) | Backend para ubicación en vivo vinculada al bot de Telegram y el mapa. |
+| Tecnología                  | Propósito                                                              |
+| --------------------------- | ---------------------------------------------------------------------- |
+| **Next.js 16 (App Router)** | Framework base, optimización de bundles, y proxy `/api/cuando`.        |
+| **React 19**                | UI responsiva y gestión de estado mediante hooks.                      |
+| **Tailwind CSS 4**          | Utilidades de estilo; tokens y tema en `app/globals.css`.              |
+| **SWR**                     | Fetching de datos con revalidación automática y caché en memoria.      |
+| **Leaflet**                 | Motor de mapas liviano para visualización de GPS y GeoJSON.            |
+| **LocalStorage**            | Persistencia de favoritos, historial y caché de calles (24hs TTL).     |
+| **Supabase** (opcional)     | Backend para ubicación en vivo vinculada al bot de Telegram y el mapa. |
 
 ### Flujo de Datos
 
@@ -77,7 +77,6 @@ cd cloudflare && wrangler deploy
 
 Y setear la URL resultante como `NEXT_PUBLIC_CUANDO_API_URL` en Vercel. El cliente (`lib/api/client.ts`) la toma automáticamente y deja de pasar por la API route. Mientras la variable no esté seteada (por ejemplo en `dev` o en preview deploys), el flujo sigue siendo el original. Más detalles en [cloudflare/README.md](cloudflare/README.md). Si el Worker falla en producción pero el proxy en Vercel funciona, el origen municipal puede estar bloqueando el tráfico desde Cloudflare: en ese README están los pasos de **diagnóstico** (`wrangler tail`, logs) y la **mitigación** (quitar la variable y redeploy).
 
-
 ## 🚀 Empezar (Getting Started)
 
 Estas instrucciones te permitirán obtener una copia del proyecto y ejecutarlo en tu máquina local para desarrollo y pruebas.
@@ -91,29 +90,32 @@ Estas instrucciones te permitirán obtener una copia del proyecto y ejecutarlo e
 
 Para la app básica de consulta de arribos no hace falta configurar nada. Para probar **Telegram** (webhook, mensajes del bot) y **ubicación en vivo** en el mapa necesitás:
 
-| Variable | Uso |
-|----------|-----|
-| `NEXT_PUBLIC_TELEGRAM_BOT_USERNAME` | Usuario del bot (sin `@`) para enlaces `t.me/...`. |
-| `TELEGRAM_BOT_TOKEN` | Token del bot; el webhook responde con `sendMessage`. |
-| `NEXT_PUBLIC_SUPABASE_URL` | URL del proyecto Supabase. |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Clave anónima (el webhook y el cliente leen/actualizan ubicaciones). |
+| Variable                            | Uso                                                                  |
+| ----------------------------------- | -------------------------------------------------------------------- |
+| `NEXT_PUBLIC_TELEGRAM_BOT_USERNAME` | Usuario del bot (sin `@`) para enlaces `t.me/...`.                   |
+| `TELEGRAM_BOT_TOKEN`                | Token del bot; el webhook responde con `sendMessage`.                |
+| `NEXT_PUBLIC_SUPABASE_URL`          | URL del proyecto Supabase.                                           |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY`     | Clave anónima (el webhook y el cliente leen/actualizan ubicaciones). |
 
 Los detalles de rutas y tablas están orientados a quien despliega el backend; si no configurás estas variables, la consulta municipal y el mapa estándar siguen funcionando.
 
 ### Instalación
 
 1. **Clonar el repositorio:**
+
    ```bash
-   git clone https://github.com/Celiz/cuandollega.git
+   git clone https://github.com/cuando-llega-mi-bondi/cuandollega.git
    cd cuandollega
    ```
 
 2. **Instalar dependencias:**
+
    ```bash
    npm install
    ```
 
 3. **Ejecutar en entorno de desarrollo:**
+
    ```bash
    npm run dev
    ```
@@ -136,7 +138,7 @@ El body asume codificación `application/x-www-form-urlencoded`.
 - `RecuperarParadasConBanderaPorLineaCalleEInterseccion`: Retorna las banderas y el identificador de la parada.
 - `RecuperarProximosArribosW`: Recibe `identificadorParada` y `codigoLineaParada`. Retorna la información de tiempo real GPS de arribos.
 
-*(El cliente del proxy está en `lib/api/client.ts` (`post`, `swrFetcher`); las acciones concretas viven en `lib/api/` y los tipos en `lib/types.ts`.)*
+_(El cliente del proxy está en `lib/api/client.ts` (`post`, `swrFetcher`); las acciones concretas viven en `lib/api/` y los tipos en `lib/types.ts`.)_
 
 ## 🤝 Contribuir
 
@@ -151,4 +153,4 @@ Este proyecto se distribuye bajo la licencia **MIT**. Consultá el archivo [LICE
 ---
 
 > [!TIP]
-> Si la app te es útil, apreciamos una estrella ⭐ en el [repositorio de GitHub](https://github.com/Celiz/cuandollega).
+> Si la app te es útil, apreciamos una estrella ⭐ en el [repositorio de GitHub](https://github.com/cuando-llega-mi-bondi/cuando-llega-mi-bondi).
