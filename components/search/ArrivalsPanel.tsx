@@ -44,6 +44,9 @@ export function ArrivalsPanel({
 }: ArrivalsPanelProps) {
     const hasArribos = displayArribos.length > 0;
     const hasLiveSharings = liveSharings.length > 0;
+    const showOtrasLineas =
+        Boolean(onSelectOtraLinea) &&
+        (otrasLineas.length > 0 || loadingOtras);
 
     return (
         <div className="mt-3">
@@ -106,15 +109,18 @@ export function ArrivalsPanel({
                             ubicaciones compartidas en tiempo real en el mapa.
                         </div>
                     )}
-                    {onSelectOtraLinea && (otrasLineas.length > 0 || loadingOtras) ? (
-                        <OtrasLineasSuggestion
-                            lineas={otrasLineas}
-                            loading={loadingOtras}
-                            onSelect={onSelectOtraLinea}
-                        />
-                    ) : null}
                 </div>
             )}
+
+            {showOtrasLineas && onSelectOtraLinea ? (
+                <div className="mt-3">
+                    <OtrasLineasSuggestion
+                        lineas={otrasLineas}
+                        loading={loadingOtras}
+                        onSelect={onSelectOtraLinea}
+                    />
+                </div>
+            ) : null}
 
             {isConsulting && !loadingArribos ? (
                 <div className="mt-2 text-center font-mono text-[10px] text-muted-foreground">

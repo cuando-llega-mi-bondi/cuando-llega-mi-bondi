@@ -2,27 +2,21 @@
 
 import { useMemo } from "react";
 import useSWR from "swr";
-import { findLineasEnInterseccion } from "@/lib/api/otrasLineas";
+import { findOtrasLineasEnParada } from "@/lib/api/otrasLineas";
 import type { Linea } from "@/lib/types";
 
 interface UseOtrasLineasParams {
     isConsulting: boolean;
+    paradaId: string;
     codLinea: string;
-    codCalle: string;
-    codInterseccion: string;
     lineas: Linea[];
-    calleLabel?: string;
-    interseccionLabel?: string;
 }
 
 export function useOtrasLineas({
     isConsulting,
+    paradaId,
     codLinea,
-    codCalle,
-    codInterseccion,
     lineas,
-    calleLabel,
-    interseccionLabel,
 }: UseOtrasLineasParams) {
     const lineasFingerprint = useMemo(
         () =>
@@ -35,31 +29,24 @@ export function useOtrasLineas({
 
     const shouldLookup =
         isConsulting &&
+        Boolean(paradaId) &&
         Boolean(codLinea) &&
-        Boolean(codCalle) &&
-        Boolean(codInterseccion) &&
-        lineas.length > 0 &&
-        Boolean(calleLabel) &&
-        Boolean(interseccionLabel);
+        lineas.length > 0;
 
     const swrKey = shouldLookup
         ? ([
-              "otrasLineasEnInterseccion",
+              "otrasLineasPorParada",
+              paradaId,
               codLinea,
-              codCalle,
-              codInterseccion,
-              calleLabel,
-              interseccionLabel,
               lineasFingerprint,
           ] as const)
         : null;
 
     const { data, isLoading } = useSWR(
         swrKey,
-        ([, codLineaArg, , , calleLb, interLb]) =>
-            findLineasEnInterseccion(
-                calleLb as string,
-                interLb as string,
+        ([, parada, codLineaArg]) =>
+            findOtrasLineasEnParada(
+                parada as string,
                 codLineaArg,
                 lineas,
             ),

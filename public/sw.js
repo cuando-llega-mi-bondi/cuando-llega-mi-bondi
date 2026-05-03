@@ -26,6 +26,7 @@ const REFERENCE_ACTIONS = new Set([
   'RecuperarParadasConBanderaPorLineaCalleEInterseccion',
   'RecuperarRecorridoParaMapaAbrevYAmpliPorEntidadYLinea',
   'RecuperarParadasConBanderaYDestinoPorLinea',
+  'RecuperarBanderasAsociadasAParada',
 ]);
 
 // ── Install ──────────────────────────────────────────────────────────────────

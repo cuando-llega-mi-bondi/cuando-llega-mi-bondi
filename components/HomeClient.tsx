@@ -159,12 +159,9 @@ export function HomeClient({ children }: { children?: ReactNode }) {
 
     const { otrasLineas, loadingOtras } = useOtrasLineas({
         isConsulting,
+        paradaId,
         codLinea,
-        codCalle,
-        codInterseccion,
         lineas,
-        calleLabel,
-        interseccionLabel,
     });
 
     // Auto-save historial on first successful fetch after consulting

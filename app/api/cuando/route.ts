@@ -16,6 +16,7 @@ const CACHEABLE_ACCIONES = new Set<string>([
   "RecuperarParadasConBanderaPorLineaCalleEInterseccion",
   "RecuperarRecorridoParaMapaAbrevYAmpliPorEntidadYLinea",
   "RecuperarParadasConBanderaYDestinoPorLinea",
+  "RecuperarBanderasAsociadasAParada",
 ]);
 
 // Helper para forzar el init en Termux
