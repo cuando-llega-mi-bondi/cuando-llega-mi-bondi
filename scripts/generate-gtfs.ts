@@ -136,6 +136,23 @@ function slugify(s: string): string {
         .replace(/^-+|-+$/g, "");
 }
 
+/** Convierte "EMPRESA EL LIBERTADOR S.R.L." → "Empresa El Libertador S.R.L."
+ *  Las MGP las publica en MAYÚSCULAS pero el GTFS validator pide Mixed Case
+ *  para `agency_name`. Mantenemos siglas (todas las letras de un token <=4)
+ *  como están. */
+function titleCase(s: string): string {
+    return s
+        .toLowerCase()
+        .split(/\s+/)
+        .map((w) => {
+            if (w.length === 0) return w;
+            // Siglas tipo "S.R.L.", "S.A." mantienen mayúsculas
+            if (/^[a-z](\.[a-z])+\.?$/.test(w)) return w.toUpperCase();
+            return w[0]!.toUpperCase() + w.slice(1);
+        })
+        .join(" ");
+}
+
 async function readLineas(): Promise<Linea[]> {
     const raw = await fs.readFile(
         path.join(RAW, "lineas-transporte-urbano.csv"),
@@ -164,14 +181,19 @@ async function readFrecuencias(): Promise<
     for (const row of lines.slice(1)) {
         const cols = row.split(";");
         const franja = cols[0]!.trim();
-        const [from, to] = franja.split(/\s*a\s*/);
+        const [fromRaw, toRaw] = franja.split(/\s*a\s*/);
+        const from = fromRaw!.trim();
+        let to = toRaw!.trim();
+        // GTFS exige end_time > start_time. Si la franja cierra a las 00:00
+        // (última franja del día), debe expresarse como 24:00:00 según spec.
+        if (to === "00:00") to = "24:00";
         for (let i = 0; i < lineNames.length; i++) {
             const servicios = Number(cols[i + 1]!.trim());
             if (!Number.isFinite(servicios) || servicios <= 0) continue;
             out.push({
                 linea: lineNames[i]!,
-                from: `${from!.trim()}:00`,
-                to: `${to!.trim()}:00`,
+                from: `${from}:00`,
+                to: `${to}:00`,
                 servicios,
             });
         }
@@ -328,7 +350,7 @@ async function main() {
         [
             "agency_id,agency_name,agency_url,agency_timezone,agency_lang",
             ...Array.from(empresas).map(([name, id]) =>
-                csvLine([id, name, AGENCY_URL, TIMEZONE, "es-AR"]),
+                csvLine([id, titleCase(name), AGENCY_URL, TIMEZONE, "es-AR"]),
             ),
         ].join("\n") + "\n",
     );
@@ -394,12 +416,35 @@ everyday,1,1,1,1,1,1,1,${today},${oneYearLater}
 `,
     );
 
+    // Pre-calcula stop_times de cada recorrido y descarta aquellos que
+    // no tengan ninguna parada matcheada (sea porque su `col1` no aparece
+    // en paradas.geojson, o porque ninguna parada de esa línea cae dentro
+    // de los MAX_DIST_M del shape). Sin esto, los descartados quedarían
+    // en trips.txt como `unusable_trip` para el validator.
+    const stopTimesByTrip = new Map<
+        number,
+        ReturnType<typeof buildStopTimesForTrip>
+    >();
+    for (const r of recorridos) {
+        const rows = buildStopTimesForTrip(r, stops, linesByStop);
+        if (rows.length > 0) stopTimesByTrip.set(r.properties.cartodb_id, rows);
+    }
+    const usableRecorridos = recorridos.filter((r) =>
+        stopTimesByTrip.has(r.properties.cartodb_id),
+    );
+    const skippedRecorridos = recorridos.length - usableRecorridos.length;
+    if (skippedRecorridos > 0) {
+        console.log(
+            `  ℹ ${skippedRecorridos} recorridos descartados (sin paradas matcheadas)`,
+        );
+    }
+
     // ── shapes.txt ───────────────────────────────────────────────────────
     // Cada feature de recorridos.geojson genera un shape con el mismo id
     // que su trip. MultiLineString se aplana a un solo shape (con jumps los
     // puntos quedarían discontinuos, asumimos que son trazas continuas).
     const shapeRows = ["shape_id,shape_pt_lat,shape_pt_lon,shape_pt_sequence"];
-    for (const r of recorridos) {
+    for (const r of usableRecorridos) {
         const id = `s${r.properties.cartodb_id}`;
         const lines =
             r.geometry.type === "MultiLineString"
@@ -415,19 +460,19 @@ everyday,1,1,1,1,1,1,1,${today},${oneYearLater}
     await writeFile("shapes.txt", shapeRows.join("\n") + "\n");
 
     // ── trips.txt ────────────────────────────────────────────────────────
-    // Un trip por feature. trip_headsign = parte después del ";" en col2.
+    // Un trip por feature usable. trip_headsign = parte después del ";" en col2.
     const tripRows = [
         "route_id,service_id,trip_id,trip_headsign,shape_id",
     ];
-    for (const r of recorridos) {
+    for (const r of usableRecorridos) {
         const linea = r.properties.col1;
-        const headsign = r.properties.col2?.split(";").pop()?.trim() ?? linea;
+        const headsignRaw = r.properties.col2?.split(";").pop()?.trim() ?? linea;
         tripRows.push(
             csvLine([
                 `r${slugify(linea)}`,
                 "everyday",
                 `t${r.properties.cartodb_id}`,
-                headsign,
+                titleCase(headsignRaw),
                 `s${r.properties.cartodb_id}`,
             ]),
         );
@@ -439,7 +484,7 @@ everyday,1,1,1,1,1,1,1,${today},${oneYearLater}
     // trip de esa línea. No es perfecto (lo correcto sería distribuir entre
     // ramales), pero da una primera aproximación válida.
     const firstTripByLinea = new Map<string, string>();
-    for (const r of recorridos) {
+    for (const r of usableRecorridos) {
         if (!firstTripByLinea.has(r.properties.col1)) {
             firstTripByLinea.set(r.properties.col1, `t${r.properties.cartodb_id}`);
         }
@@ -466,14 +511,13 @@ everyday,1,1,1,1,1,1,1,${today},${oneYearLater}
     }
 
     // ── stop_times.txt ───────────────────────────────────────────────────
+    // Reutilizamos stopTimesByTrip ya calculado al filtrar usableRecorridos.
     const stopTimesRows = [
         "trip_id,arrival_time,departure_time,stop_id,stop_sequence",
     ];
-    let tripsWithStops = 0;
     let totalStops = 0;
-    for (const r of recorridos) {
-        const rows = buildStopTimesForTrip(r, stops, linesByStop);
-        if (rows.length > 0) tripsWithStops++;
+    for (const r of usableRecorridos) {
+        const rows = stopTimesByTrip.get(r.properties.cartodb_id)!;
         totalStops += rows.length;
         for (const row of rows) {
             stopTimesRows.push(
@@ -483,7 +527,27 @@ everyday,1,1,1,1,1,1,1,${today},${oneYearLater}
     }
     await writeFile("stop_times.txt", stopTimesRows.join("\n") + "\n");
     console.log(
-        `  ℹ stop_times: ${tripsWithStops}/${recorridos.length} trips con paradas, total ${totalStops} stop-times (avg ${(totalStops / Math.max(1, tripsWithStops)).toFixed(1)} por trip)`,
+        `  ℹ stop_times: ${usableRecorridos.length} trips, total ${totalStops} stop-times (avg ${(totalStops / Math.max(1, usableRecorridos.length)).toFixed(1)} por trip)`,
+    );
+
+    // ── feed_info.txt ────────────────────────────────────────────────────
+    // Identifica el origen del feed para apps consumidoras (validators y
+    // agregadores tipo MobilityData lo piden).
+    const feedVersion = today; // YYYYMMDD
+    await writeFile(
+        "feed_info.txt",
+        [
+            "feed_publisher_name,feed_publisher_url,feed_lang,feed_start_date,feed_end_date,feed_version,feed_contact_url",
+            csvLine([
+                "Bondi MDP",
+                "https://www.bondimdp.com.ar",
+                "es-AR",
+                today,
+                oneYearLater,
+                feedVersion,
+                "https://github.com/cuando-llega-mi-bondi/cuando-llega-mi-bondi",
+            ]),
+        ].join("\n") + "\n",
     );
 
     console.log("\nGenerado en", OUT);
