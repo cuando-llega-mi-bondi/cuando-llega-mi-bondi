@@ -45,12 +45,25 @@ async function fetchEta(paradaId: string, lineaId: string): Promise<number | nul
         codigoParada: paradaId,
         codigoLineaParada: lineaId,
     }).toString();
-    const r = await fetch(MGP_PROXY, { method: "POST", body, headers: { "content-type": "application/x-www-form-urlencoded" } });
-    if (!r.ok) return null;
-    const j = await r.json().catch(() => null) as { arribos?: Arribo[] } | null;
-    if (!j?.arribos?.length) return null;
-    const etas = j.arribos.map((a) => parseEtaMin(a.Arribo)).filter((x): x is number => x !== null);
-    return etas.length ? Math.min(...etas) : null;
+    const ctrl = new AbortController();
+    const tid = setTimeout(() => ctrl.abort(), 5000);
+    try {
+        const r = await fetch(MGP_PROXY, {
+            method: "POST",
+            body,
+            headers: { "content-type": "application/x-www-form-urlencoded" },
+            signal: ctrl.signal,
+        });
+        if (!r.ok) return null;
+        const j = await r.json().catch(() => null) as { arribos?: Arribo[] } | null;
+        if (!j?.arribos?.length) return null;
+        const etas = j.arribos.map((a) => parseEtaMin(a.Arribo)).filter((x): x is number => x !== null);
+        return etas.length ? Math.min(...etas) : null;
+    } catch {
+        return null;
+    } finally {
+        clearTimeout(tid);
+    }
 }
 
 Deno.serve(async (req: Request) => {
