@@ -6,7 +6,12 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "db:start": "supabase start",
+    "db:stop": "supabase stop",
+    "db:reset": "supabase db reset",
+    "db:psql": "docker exec -it supabase_db_bondi-mdp psql -U postgres -d postgres",
+    "db:status": "supabase status"
   },
   "dependencies": {
     "@khmyznikov/pwa-install": "^0.6.3",
@@ -32,7 +37,15 @@
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "16.2.2",
+    "supabase": "^2.98.1",
     "tailwindcss": "^4",
     "typescript": "^5"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "supabase",
+      "sharp",
+      "unrs-resolver"
+    ]
   }
 }
