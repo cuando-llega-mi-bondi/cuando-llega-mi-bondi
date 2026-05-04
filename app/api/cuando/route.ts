@@ -61,12 +61,15 @@ async function forceProxyInit(initUrl: string) {
 
 /**
  * Hasta 2 intentos por proxy (normal + post-`/init`).
- * Si `isLastInChain`, el último intento replica el comportamiento monoproxy (devolver JSON de error o lanzar).
+ * Devuelve `{ok: false}` cuando la sesión se rompe en todos los reintentos —
+ * antes este caso devolvía `{ok: true, data: <json-de-error>}`, lo que hacía
+ * que el route handler respondiera 200 OK con `{error: ...}` en el body. El SW
+ * cacheaba ese error y se quedaba pegado hasta que el usuario limpiara cache
+ * (issue #3).
  */
 async function fetchMgpJsonFromProxy(
     body: string,
     proxy: MgpProxyEndpoint,
-    isLastInChain: boolean,
 ): Promise<{ ok: true; data: unknown } | { ok: false }> {
     const proxyUrl = `${proxy.baseUrl}/proxy`;
     const initUrl = `${proxy.baseUrl}/init`;
@@ -83,12 +86,11 @@ async function fetchMgpJsonFromProxy(
                 body,
                 cache: "no-store",
             });
-        } catch (e) {
+        } catch {
             if (attempt === 0) {
                 await forceProxyInit(initUrl);
                 continue;
             }
-            if (isLastInChain) throw e;
             return { ok: false };
         }
 
@@ -101,9 +103,6 @@ async function fetchMgpJsonFromProxy(
             if (attempt === 0) {
                 await forceProxyInit(initUrl);
                 continue;
-            }
-            if (isLastInChain) {
-                throw new Error("Respuesta no válida de MGP");
             }
             return { ok: false };
         }
@@ -119,16 +118,13 @@ async function fetchMgpJsonFromProxy(
                 await forceProxyInit(initUrl);
                 continue;
             }
-            if (isLastInChain) {
-                return { ok: true, data };
-            }
             return { ok: false };
         }
 
         return { ok: true, data };
     }
 
-    throw new Error("fetchMgpJsonFromProxy: unreachable");
+    return { ok: false };
 }
 
 async function fetchMgpJson(body: string): Promise<any> {
@@ -141,10 +137,10 @@ async function fetchMgpJson(body: string): Promise<any> {
 
     for (let i = 0; i < proxies.length; i++) {
         const proxy = proxies[i]!;
-        const isLast = i === proxies.length - 1;
-        const result = await fetchMgpJsonFromProxy(body, proxy, isLast);
+        const result = await fetchMgpJsonFromProxy(body, proxy);
         if (result.ok) return result.data;
 
+        const isLast = i === proxies.length - 1;
         if (!isLast) {
             console.warn(
                 `[cuando] Proxy ${proxy.baseUrl} no respondió bien; probando siguiente…`,
