@@ -11,7 +11,8 @@
     "db:stop": "supabase stop",
     "db:reset": "supabase db reset",
     "db:psql": "docker exec -it supabase_db_bondi-mdp psql -U postgres -d postgres",
-    "db:status": "supabase status"
+    "db:status": "supabase status",
+    "seed": "tsx scripts/seed.ts"
   },
   "dependencies": {
     "@khmyznikov/pwa-install": "^0.6.3",
@@ -39,6 +40,7 @@
     "eslint-config-next": "16.2.2",
     "supabase": "^2.98.1",
     "tailwindcss": "^4",
+    "tsx": "^4.21.0",
     "typescript": "^5"
   },
   "pnpm": {
