@@ -2,7 +2,9 @@ import { promises as fs } from "node:fs";
 import * as path from "node:path";
 import { createHash } from "node:crypto";
 
-const FIXTURES_DIR = path.join(process.cwd(), "fixtures");
+function fixturesDir(): string {
+    return process.env.FIXTURES_DIR ?? path.join(process.cwd(), "fixtures");
+}
 
 export type FixtureMode = "record" | "replay" | null;
 
@@ -17,7 +19,7 @@ function fixturePath(body: string): { dir: string; file: string; accion: string 
     const params = new URLSearchParams(body);
     const accion = params.get("accion") ?? "_unknown";
     const hash = createHash("sha256").update(body).digest("hex").slice(0, 16);
-    const dir = path.join(FIXTURES_DIR, accion);
+    const dir = path.join(fixturesDir(), accion);
     return { dir, file: path.join(dir, `${hash}.json`), accion };
 }
 
