@@ -33,8 +33,9 @@ node --experimental-strip-types scripts/generate-gtfs.ts
 | `trips.txt` | 128 | Un trip por feature de recorridos.geojson, con headsign real ("AL PUERTO", "A BATAN", etc) |
 | `frequencies.txt` | 558 | Del CSV 2024. Mapeadas a primer trip de cada línea (aproximación). |
 | `calendar.txt` | 1 | service_id "everyday", todos los días, ventana de 1 año |
+| `stop_times.txt` | 15124 | Matching geométrico parada↔shape. 124/128 trips con paradas (avg 122). Tiempos asumiendo 25 km/h constante. |
 
-**Pendiente**: `stop_times.txt`. Requiere matching geométrico parada↔recorrido (proyectar cada parada al shape más cercano y ordenarla por progreso a lo largo del shape). Es trabajo geo no trivial — sin esto el feed sirve para mostrar líneas/paradas en mapas pero **no** para path-finding "A → B" (uso típico de Google Maps Transit). Iteración futura.
+**Cómo se generan los stop_times**: para cada `trip` (= recorrido del geojson) se filtran las paradas asociadas a esa línea, se proyecta cada una sobre cada segmento del shape (equirectangular local), se descartan las que quedan a >80 m y se ordenan por progreso acumulado a lo largo del shape. La velocidad media (25 km/h) es una aproximación urbana; cuando tengamos GPS real conviene calcular dwell + travel time por segmento. Los 4 trips sin paradas son recorridos cuya `col1` no matchea con ninguna `linea` en `paradas.geojson` (ej. variantes "BATAN", "COSTA AZUL").
 
 ## ¿Por qué nos importa el GTFS?
 

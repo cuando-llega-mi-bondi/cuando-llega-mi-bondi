@@ -18,10 +18,7 @@
  *   - shapes.txt        ✅ geometría real de cada recorrido
  *   - trips.txt         ✅ un trip por feature de recorridos.geojson
  *   - frequencies.txt   ✅ del CSV 2024
- *
- * Pendiente: stop_times.txt requiere matching geométrico parada↔recorrido
- * (proyectar cada parada al recorrido más cercano y ordenarla por progreso
- * sobre el shape). Trabajo geo no trivial; queda para una iteración futura.
+ *   - stop_times.txt    ✅ matching geométrico parada↔shape (ver buildStopTimes)
  *
  * Uso:
  *   node --experimental-strip-types scripts/generate-gtfs.ts
@@ -45,12 +42,79 @@ type StopRow = {
     stop_name: string;
     stop_lat: number;
     stop_lon: number;
+    linea: string; // sin slugify, tal cual viene del geojson
 };
 type RecorridoFeature = {
     geometry: { type: "MultiLineString"; coordinates: [number, number][][] }
         | { type: "LineString"; coordinates: [number, number][] };
     properties: { cartodb_id: number; col1: string; col2?: string };
 };
+
+// ── Geo helpers ──────────────────────────────────────────────────────────
+const EARTH_R = 6_371_000;
+
+function toRad(deg: number): number {
+    return (deg * Math.PI) / 180;
+}
+
+/** Distancia en metros entre dos puntos lat/lng (haversine). */
+function haversine(
+    a: { lat: number; lon: number },
+    b: { lat: number; lon: number },
+): number {
+    const dLat = toRad(b.lat - a.lat);
+    const dLon = toRad(b.lon - a.lon);
+    const s =
+        Math.sin(dLat / 2) ** 2 +
+        Math.cos(toRad(a.lat)) * Math.cos(toRad(b.lat)) * Math.sin(dLon / 2) ** 2;
+    return 2 * EARTH_R * Math.asin(Math.sqrt(s));
+}
+
+/** Proyecta `p` sobre el segmento `a→b` y devuelve {distance, t}.
+ *  `t` ∈ [0,1] indica progreso a lo largo del segmento. */
+function projectOnSegment(
+    p: { lat: number; lon: number },
+    a: { lat: number; lon: number },
+    b: { lat: number; lon: number },
+): { distance: number; t: number } {
+    // Aproximación equirectangular local — para distancias cortas (~km) es
+    // suficiente y mucho más rápido que proyectar correctamente al elipsoide.
+    const cosLat = Math.cos(toRad((a.lat + b.lat) / 2));
+    const ax = a.lon * cosLat, ay = a.lat;
+    const bx = b.lon * cosLat, by = b.lat;
+    const px = p.lon * cosLat, py = p.lat;
+    const dx = bx - ax, dy = by - ay;
+    const len2 = dx * dx + dy * dy;
+    if (len2 === 0) {
+        return { distance: haversine(p, a), t: 0 };
+    }
+    let t = ((px - ax) * dx + (py - ay) * dy) / len2;
+    t = Math.max(0, Math.min(1, t));
+    const projLat = a.lat + t * (b.lat - a.lat);
+    const projLon = a.lon + t * (b.lon - a.lon);
+    return { distance: haversine(p, { lat: projLat, lon: projLon }), t };
+}
+
+/** Aplana un MultiLineString concatenando las sub-líneas. */
+function flattenShape(
+    geom: RecorridoFeature["geometry"],
+): { lat: number; lon: number }[] {
+    const lines =
+        geom.type === "MultiLineString" ? geom.coordinates : [geom.coordinates];
+    return lines.flat().map(([lon, lat]) => ({ lat, lon }));
+}
+
+/** Largo total acumulado de una polilínea, y largos por segmento. */
+function shapeLengths(pts: { lat: number; lon: number }[]): {
+    cumulative: number[]; // [0, len(0→1), len(0→2), ...]
+    total: number;
+} {
+    const cumulative = [0];
+    for (let i = 1; i < pts.length; i++) {
+        cumulative.push(cumulative[i - 1]! + haversine(pts[i - 1]!, pts[i]!));
+    }
+    return { cumulative, total: cumulative[cumulative.length - 1]! };
+}
 
 function escape(s: string): string {
     if (s.includes(",") || s.includes('"') || s.includes("\n")) {
@@ -115,7 +179,9 @@ async function readFrecuencias(): Promise<
     return out;
 }
 
-async function readParadas(): Promise<StopRow[]> {
+type RawParada = { lat: number; lon: number; linea: string };
+
+async function readRawParadas(): Promise<RawParada[]> {
     const raw = await fs.readFile(path.join(RAW, "paradas.geojson"), "utf-8");
     const fc = JSON.parse(raw) as {
         features: Array<{
@@ -123,20 +189,110 @@ async function readParadas(): Promise<StopRow[]> {
             properties: { cartodb_id: number; linea: string };
         }>;
     };
-    // Dedup por coord redondeada a 5 decimales (~1m).
-    const seen = new Map<string, StopRow>();
-    for (const f of fc.features) {
-        const [lon, lat] = f.geometry.coordinates;
-        const key = `${lat.toFixed(5)},${lon.toFixed(5)}`;
-        if (seen.has(key)) continue;
-        seen.set(key, {
-            stop_id: `s${seen.size + 1}`,
-            stop_name: `Parada ${f.properties.linea}`,
-            stop_lat: lat,
-            stop_lon: lon,
-        });
+    return fc.features.map((f) => ({
+        lon: f.geometry.coordinates[0],
+        lat: f.geometry.coordinates[1],
+        linea: f.properties.linea,
+    }));
+}
+
+/** Dedup por coord (~1m). Mantiene la línea de la primera ocurrencia para
+ *  el nombre, pero stop_times necesita revisar todas las líneas asociadas;
+ *  por eso `stopByCoord` mapea coord → stop_id y `linesByStop` a qué líneas
+ *  pertenece (varias líneas pueden compartir físicamente la parada). */
+function dedupParadas(raw: RawParada[]): {
+    stops: StopRow[];
+    linesByStop: Map<string, Set<string>>;
+} {
+    const byCoord = new Map<string, StopRow>();
+    const linesByStop = new Map<string, Set<string>>();
+    for (const p of raw) {
+        const key = `${p.lat.toFixed(5)},${p.lon.toFixed(5)}`;
+        let stop = byCoord.get(key);
+        if (!stop) {
+            stop = {
+                stop_id: `s${byCoord.size + 1}`,
+                stop_name: `Parada ${p.linea}`,
+                stop_lat: p.lat,
+                stop_lon: p.lon,
+                linea: p.linea,
+            };
+            byCoord.set(key, stop);
+            linesByStop.set(stop.stop_id, new Set());
+        }
+        linesByStop.get(stop.stop_id)!.add(p.linea);
     }
-    return Array.from(seen.values());
+    return { stops: Array.from(byCoord.values()), linesByStop };
+}
+
+/** Calcula stop_times.txt rows haciendo matching geométrico parada↔shape.
+ *  - Solo considera paradas cuya `linea` matchee con `col1` del recorrido
+ *  - Proyecta cada parada sobre cada segmento del shape; se queda con la más cercana
+ *  - Filtra paradas a más de `MAX_DIST_M` del shape (no son de ese ramal)
+ *  - Ordena por progreso a lo largo del shape
+ *  - Asigna tiempo asumiendo velocidad media constante */
+const MAX_DIST_M = 80;
+const AVG_SPEED_MPS = 6.94; // 25 km/h, razonable urbano con paradas
+
+function secondsToHHMMSS(seconds: number): string {
+    const h = Math.floor(seconds / 3600);
+    const m = Math.floor((seconds % 3600) / 60);
+    const s = Math.floor(seconds % 60);
+    const pad = (n: number) => n.toString().padStart(2, "0");
+    return `${pad(h)}:${pad(m)}:${pad(s)}`;
+}
+
+function buildStopTimesForTrip(
+    trip: RecorridoFeature,
+    stops: StopRow[],
+    linesByStop: Map<string, Set<string>>,
+): { trip_id: string; stop_id: string; arrival: string; sequence: number }[] {
+    const linea = trip.properties.col1;
+    const shape = flattenShape(trip.geometry);
+    if (shape.length < 2) return [];
+    const { cumulative } = shapeLengths(shape);
+
+    const candidates = stops.filter((s) =>
+        linesByStop.get(s.stop_id)?.has(linea),
+    );
+
+    type Match = { stop_id: string; progress: number; distance: number };
+    const matched: Match[] = [];
+
+    for (const stop of candidates) {
+        const p = { lat: stop.stop_lat, lon: stop.stop_lon };
+        let best: { distance: number; progress: number } = {
+            distance: Infinity,
+            progress: 0,
+        };
+        for (let i = 0; i < shape.length - 1; i++) {
+            const a = shape[i]!, b = shape[i + 1]!;
+            const { distance, t } = projectOnSegment(p, a, b);
+            if (distance < best.distance) {
+                const segLen = cumulative[i + 1]! - cumulative[i]!;
+                best = {
+                    distance,
+                    progress: cumulative[i]! + t * segLen,
+                };
+            }
+        }
+        if (best.distance <= MAX_DIST_M) {
+            matched.push({
+                stop_id: stop.stop_id,
+                progress: best.progress,
+                distance: best.distance,
+            });
+        }
+    }
+
+    matched.sort((x, y) => x.progress - y.progress);
+
+    return matched.map((m, i) => ({
+        trip_id: `t${trip.properties.cartodb_id}`,
+        stop_id: m.stop_id,
+        arrival: secondsToHHMMSS(m.progress / AVG_SPEED_MPS),
+        sequence: i + 1,
+    }));
 }
 
 async function readRecorridos(): Promise<RecorridoFeature[]> {
@@ -157,7 +313,8 @@ async function main() {
     await fs.mkdir(OUT, { recursive: true });
 
     const lineas = await readLineas();
-    const stops = await readParadas();
+    const rawParadas = await readRawParadas();
+    const { stops, linesByStop } = dedupParadas(rawParadas);
     const frecuencias = await readFrecuencias();
     const recorridos = await readRecorridos();
 
@@ -308,11 +465,29 @@ everyday,1,1,1,1,1,1,1,${today},${oneYearLater}
         );
     }
 
+    // ── stop_times.txt ───────────────────────────────────────────────────
+    const stopTimesRows = [
+        "trip_id,arrival_time,departure_time,stop_id,stop_sequence",
+    ];
+    let tripsWithStops = 0;
+    let totalStops = 0;
+    for (const r of recorridos) {
+        const rows = buildStopTimesForTrip(r, stops, linesByStop);
+        if (rows.length > 0) tripsWithStops++;
+        totalStops += rows.length;
+        for (const row of rows) {
+            stopTimesRows.push(
+                csvLine([row.trip_id, row.arrival, row.arrival, row.stop_id, row.sequence]),
+            );
+        }
+    }
+    await writeFile("stop_times.txt", stopTimesRows.join("\n") + "\n");
+    console.log(
+        `  ℹ stop_times: ${tripsWithStops}/${recorridos.length} trips con paradas, total ${totalStops} stop-times (avg ${(totalStops / Math.max(1, tripsWithStops)).toFixed(1)} por trip)`,
+    );
+
     console.log("\nGenerado en", OUT);
     console.log("Empaquetar con: (cd public/gtfs && zip ../gtfs.zip *.txt)");
-    console.log(
-        "\nFalta solo stop_times.txt (matching geométrico parada↔recorrido).",
-    );
 }
 
 main().catch((e) => {
