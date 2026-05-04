@@ -21,8 +21,8 @@ create table if not exists private.cron_settings (
 --       base_url     = 'http://kong:8000'                       -- or 'https://<project-ref>.supabase.co'
 --       , service_role = '<service_role_key from `supabase status -o env`>'
 --       , enabled    = true;
--- For local dev, run `pnpm cron:enable` after `pnpm db:start` to populate this
--- automatically (see scripts/cron-enable.ts on a follow-up commit).
+-- A `supabase/seed.sql` populates it for local dev so the cron pipeline is
+-- testable end-to-end without manual setup.
 insert into private.cron_settings (id, base_url, service_role, enabled)
 values (1, '', '', false)
 on conflict (id) do nothing;

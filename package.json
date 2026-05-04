@@ -12,7 +12,8 @@
     "db:reset": "supabase db reset",
     "db:psql": "docker exec -it supabase_db_bondi-mdp psql -U postgres -d postgres",
     "db:status": "supabase status",
-    "seed": "tsx scripts/seed.ts"
+    "seed": "tsx scripts/seed.ts",
+    "cron:enable": "tsx scripts/cron-enable.ts"
   },
   "dependencies": {
     "@khmyznikov/pwa-install": "^0.6.3",
