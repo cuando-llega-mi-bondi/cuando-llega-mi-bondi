@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { unstable_cache } from "next/cache";
+import { fixtureMode, readFixture, writeFixture } from "@/lib/api/fixtures";
 
 const DEFAULT_PROXY_TOKEN = "bondimdp2024";
 
@@ -160,9 +161,24 @@ export async function POST(req: NextRequest) {
     const body = await req.text();
     const params = new URLSearchParams(body);
     const accion = params.get("accion");
-    
+
+    // Modo replay: leer fixture del disco, sin tocar el proxy. Pensado para dev local.
+    const mode = fixtureMode();
+    if (mode === "replay") {
+      const fixture = await readFixture(body);
+      if (fixture !== null) return NextResponse.json(fixture);
+      return NextResponse.json(
+        {
+          error: `No fixture para acción "${accion}".`,
+          hint: "Ejecutar una vez con MGP_USE_FIXTURES=record contra la API real para grabarla.",
+        },
+        { status: 404 },
+      );
+    }
+
     const useReferenceCache = accion && CACHEABLE_ACCIONES.has(accion);
 
+    let data: unknown;
     if (useReferenceCache) {
       // Nota: unstable_cache requiere que la función devuelva la data directamente
       const getCached = unstable_cache(
@@ -170,13 +186,18 @@ export async function POST(req: NextRequest) {
         ["cuando-mgp"],
         { revalidate: REFERENCE_DATA_REVALIDATE_S, tags: [body] }
       );
-
-      const data = await getCached(body);
-      return NextResponse.json(data);
+      data = await getCached(body);
+    } else {
+      // Para arribos en tiempo real (221, 511, 581), no usamos cache
+      data = await fetchMgpJson(body);
     }
 
-    // Para arribos en tiempo real (221, 511, 581), no usamos cache
-    const data = await fetchMgpJson(body);
+    if (mode === "record") {
+      void writeFixture(body, data).catch((e) => {
+        console.warn("[fixtures] No pude grabar:", e);
+      });
+    }
+
     return NextResponse.json(data);
 
   } catch (err: any) {
