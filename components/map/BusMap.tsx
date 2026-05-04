@@ -7,6 +7,7 @@ import "leaflet/dist/leaflet.css";
 import "@/components/map/leaflet.css";
 import { getRecorridoPuntosParaMapa, ramalesFromPuntos } from "@/lib/api/recorrido";
 import type { Arribo, PuntoRecorrido } from "@/lib/types";
+import { arriboBanderaLabel } from "@/lib/utils";
 import {
     createArrowIcon,
     envLocalSafeAreaBottom,
@@ -24,6 +25,28 @@ function firstBusCoords(arribos: Arribo[]): [number, number] | null {
         if (!Number.isNaN(lat) && !Number.isNaN(lng) && lat !== 0) return [lat, lng];
     }
     return null;
+}
+
+/** Menor = más próximo en tiempo (para priorizar un ramal cuando hay varios arribos). */
+function etaMinutes(arriboStr: string): number {
+    const s = arriboStr.trim().toLowerCase();
+    if (s.includes("llegando")) return 0;
+    const m = s.match(/(\d+)\s*min\b/);
+    if (m) return parseInt(m[1], 10);
+    return 9999;
+}
+
+type RouteShape = { destinoMedio: string; abrevSMP: string; descripcion: string; points: [number, number][] };
+
+function banderaMatchesRoute(r: string, g: RouteShape): boolean {
+    if (!r) return false;
+    return (
+        r === g.destinoMedio ||
+        r === g.abrevSMP ||
+        (Boolean(g.destinoMedio) && r.includes(g.destinoMedio)) ||
+        (Boolean(g.destinoMedio) && g.destinoMedio.includes(r)) ||
+        (Boolean(g.abrevSMP) && g.abrevSMP.length > 1 && r.includes(g.abrevSMP))
+    );
 }
 
 /**
@@ -206,17 +229,60 @@ const BusMap = React.memo(function BusMap({
         return [pLat, pLon];
     }, [paradaLat, paradaLon, arribos, liveBuses]);
 
-    /** Qué trazos del GeoJSON van en azul: arribos exactos, bandera de parada, o el más cercano a la parada. */
+    /** Qué trazos del GeoJSON van en azul: un solo ramal preferido (ETA + bandera), pistas de parada, o el más cercano a la parada. */
     const activeDescripcionKeys = useMemo(() => {
         if (groupedRoutes.length === 0) return new Set<string>();
 
-        if (arribos.length === 0) {
-            return new Set(groupedRoutes.map((g) => g.descripcion));
-        }
-
         const plat = paradaCoords?.[0];
         const plng = paradaCoords?.[1];
-        const hasParada = plat != null && plng != null && !Number.isNaN(plat) && !Number.isNaN(plng);
+        const hasParada =
+            plat != null && plng != null && !Number.isNaN(plat) && !Number.isNaN(plng);
+
+        const distSqToParada = (g: RouteShape): number => {
+            if (!hasParada) return Infinity;
+            let distSq = Infinity;
+            for (const [lat, lng] of g.points) {
+                const d = (lat - plat) * (lat - plat) + (lng - plng) * (lng - plng);
+                if (d < distSq) distSq = d;
+            }
+            return distSq;
+        };
+
+        if (arribos.length === 0) {
+            const scoredEmpty = groupedRoutes.map((g) => {
+                const matchesHint =
+                    ramalHints.length > 0 &&
+                    (ramalHints.includes(g.abrevSMP) ||
+                        ramalHints.includes(g.destinoMedio) ||
+                        ramalHints.some(
+                            (h) =>
+                                (g.destinoMedio && h.includes(g.destinoMedio)) ||
+                                (g.destinoMedio && g.destinoMedio.includes(h)),
+                        ));
+                return {
+                    descripcion: g.descripcion,
+                    matchesHint,
+                    distSq: distSqToParada(g),
+                };
+            });
+
+            const hintHitsEmpty = scoredEmpty.filter((s) => s.matchesHint);
+            if (hintHitsEmpty.length === 1) {
+                return new Set([hintHitsEmpty[0].descripcion]);
+            }
+            if (hintHitsEmpty.length > 1) {
+                hintHitsEmpty.sort((a, b) => a.distSq - b.distSq);
+                return new Set([hintHitsEmpty[0].descripcion]);
+            }
+
+            if (hasParada && scoredEmpty.length > 0) {
+                const sorted = [...scoredEmpty].sort((a, b) => a.distSq - b.distSq);
+                const best = sorted[0];
+                if (best) return new Set([best.descripcion]);
+            }
+
+            return new Set<string>();
+        }
 
         const ramalesUpper = new Set(
             arribos
@@ -232,16 +298,24 @@ const BusMap = React.memo(function BusMap({
                 .filter(Boolean),
         );
 
+        const byEta = [...arribos].sort((a, b) => etaMinutes(a.Arribo) - etaMinutes(b.Arribo));
+        for (const a of byEta) {
+            const txt = arriboBanderaLabel(a).trim().toUpperCase();
+            if (!txt) continue;
+            const hits = groupedRoutes.filter((g) => banderaMatchesRoute(txt, g));
+            if (hits.length === 1) {
+                return new Set([hits[0].descripcion]);
+            }
+            if (hits.length > 1) {
+                const ranked = [...hits].sort((x, y) => distSqToParada(x) - distSqToParada(y));
+                return new Set([ranked[0].descripcion]);
+            }
+        }
+
         const scored = groupedRoutes.map((g) => {
             let matchesArribo = false;
             for (const r of ramalesUpper) {
-                if (
-                    r === g.destinoMedio ||
-                    r === g.abrevSMP ||
-                    (g.destinoMedio && r.includes(g.destinoMedio)) ||
-                    (g.destinoMedio && g.destinoMedio.includes(r)) ||
-                    (g.abrevSMP && r.includes(g.abrevSMP) && g.abrevSMP.length > 1)
-                ) {
+                if (banderaMatchesRoute(r, g)) {
                     matchesArribo = true;
                     break;
                 }
@@ -256,20 +330,18 @@ const BusMap = React.memo(function BusMap({
                             (g.destinoMedio && g.destinoMedio.includes(h)),
                     ));
 
-            let distSq = Infinity;
-            if (hasParada) {
-                for (const [lat, lng] of g.points) {
-                    const d = (lat - plat) * (lat - plat) + (lng - plng) * (lng - plng);
-                    if (d < distSq) distSq = d;
-                }
-            }
-
-            return { descripcion: g.descripcion, matchesArribo, matchesHint, distSq };
+            return {
+                descripcion: g.descripcion,
+                matchesArribo,
+                matchesHint,
+                distSq: distSqToParada(g),
+            };
         });
 
         const arriboHits = scored.filter((s) => s.matchesArribo);
         if (arriboHits.length > 0) {
-            return new Set(arriboHits.map((s) => s.descripcion));
+            arriboHits.sort((a, b) => a.distSq - b.distSq);
+            return new Set([arriboHits[0].descripcion]);
         }
 
         const hintHits = scored.filter((s) => s.matchesHint);

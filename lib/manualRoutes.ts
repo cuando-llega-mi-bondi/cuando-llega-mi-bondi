@@ -19,7 +19,7 @@ export const MANUAL_ROUTES: ManualRouteConfig[] = [
   {
     line: {
       CodigoLineaParada: "221",
-      Descripcion: "COSTA AZUL",
+      Descripcion: "221 COSTA AZUL",
       CodigoEntidad: "MANUAL",
       CodigoEmpresa: 0,
       isManual: true,
@@ -40,3 +40,12 @@ export const MANUAL_ROUTES: ManualRouteConfig[] = [
 ];
 
 export const MANUAL_LINES: Linea[] = MANUAL_ROUTES.map(r => r.line);
+
+/** Evita duplicados si la API lista el mismo código que una línea manual (la manual gana). */
+export function mergeLineasWithManual(apiLineas: Linea[]): Linea[] {
+  const manualCodes = new Set(MANUAL_LINES.map((m) => m.CodigoLineaParada));
+  return [
+    ...apiLineas.filter((l) => !manualCodes.has(l.CodigoLineaParada)),
+    ...MANUAL_LINES,
+  ];
+}

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { unstable_cache } from "next/cache";
+import { fetchMgpDirect, isDirectEnabled } from "@/lib/api/mgpDirect";
 
 const DEFAULT_PROXY_TOKEN = "bondimdp2024";
 
@@ -7,7 +8,7 @@ type MgpProxyEndpoint = { baseUrl: string; token: string };
 
 /**
  * Lista fija: Termux (`MGP_PROXY_*`) y Oracle (`MGP_ORACLE_*`) si están definidos y son distintos.
- * El orden de intentos en cada request se baraja en `fetchMgpJson` para no cargar siempre el mismo.
+ * El orden de intentos en cada request se baraja en `fetchFromProxies` para no cargar siempre el mismo.
  */
 function mgpProxyEndpoints(): MgpProxyEndpoint[] {
     const seen = new Set<string>();
@@ -39,13 +40,13 @@ function shuffleMgpProxies(proxies: MgpProxyEndpoint[]): MgpProxyEndpoint[] {
 const REFERENCE_DATA_REVALIDATE_S = 300;
 
 const CACHEABLE_ACCIONES = new Set<string>([
-  "RecuperarLineaPorCuandoLlega",
-  "RecuperarCallesPrincipalPorLinea",
-  "RecuperarInterseccionPorLineaYCalle",
-  "RecuperarParadasConBanderaPorLineaCalleEInterseccion",
-  "RecuperarRecorridoParaMapaAbrevYAmpliPorEntidadYLinea",
-  "RecuperarParadasConBanderaYDestinoPorLinea",
-  "RecuperarBanderasAsociadasAParada",
+    "RecuperarLineaPorCuandoLlega",
+    "RecuperarCallesPrincipalPorLinea",
+    "RecuperarInterseccionPorLineaYCalle",
+    "RecuperarParadasConBanderaPorLineaCalleEInterseccion",
+    "RecuperarRecorridoParaMapaAbrevYAmpliPorEntidadYLinea",
+    "RecuperarParadasConBanderaYDestinoPorLinea",
+    "RecuperarBanderasAsociadasAParada",
 ]);
 
 /** Lee `cookies` del JSON de `/init` para enviarlas en `Cookie` en POST `/proxy`. */
@@ -62,10 +63,6 @@ async function mgpProxyInitCookies(initUrl: string): Promise<string | null> {
     }
 }
 
-/**
- * Hasta 2 intentos por proxy (normal + post-`/init`).
- * Si `isLastInChain`, el último intento replica el comportamiento monoproxy (devolver JSON de error o lanzar).
- */
 async function fetchMgpJsonFromProxy(
     body: string,
     proxy: MgpProxyEndpoint,
@@ -143,12 +140,10 @@ async function fetchMgpJsonFromProxy(
     throw new Error("fetchMgpJsonFromProxy: unreachable");
 }
 
-async function fetchMgpJson(body: string): Promise<any> {
+async function fetchFromProxies(body: string): Promise<unknown> {
     const proxies = shuffleMgpProxies(mgpProxyEndpoints());
     if (!proxies.length) {
-        throw new Error(
-            "Falta al menos una URL de proxy: MGP_PROXY_URL o MGP_ORACLE_URL.",
-        );
+        throw new Error("No hay proxies configurados (MGP_PROXY_URL o MGP_ORACLE_URL).");
     }
 
     for (let i = 0; i < proxies.length; i++) {
@@ -158,44 +153,53 @@ async function fetchMgpJson(body: string): Promise<any> {
         if (result.ok) return result.data;
 
         if (!isLast) {
-            console.warn(
-                `[cuando] Proxy ${proxy.baseUrl} no respondió bien; probando siguiente…`,
-            );
+            console.warn(`[cuando] proxy ${proxy.baseUrl} no respondió bien; siguiente…`);
         }
     }
 
     throw new Error("Todos los proxies fallaron.");
 }
 
-export async function POST(req: NextRequest) {
-  try {
-    const body = await req.text();
-    const params = new URLSearchParams(body);
-    const accion = params.get("accion");
-    
-    const useReferenceCache = accion && CACHEABLE_ACCIONES.has(accion);
-
-    if (useReferenceCache) {
-      // Nota: unstable_cache requiere que la función devuelva la data directamente
-      const getCached = unstable_cache(
-        async (bodyPayload: string) => fetchMgpJson(bodyPayload),
-        ["cuando-mgp"],
-        { revalidate: REFERENCE_DATA_REVALIDATE_S, tags: [body] }
-      );
-
-      const data = await getCached(body);
-      return NextResponse.json(data);
+async function fetchMgpJson(body: string): Promise<unknown> {
+    if (isDirectEnabled()) {
+        try {
+            return await fetchMgpDirect(body);
+        } catch (e) {
+            console.warn(
+                "[cuando] direct auth falló, intentando con proxies:",
+                e instanceof Error ? e.message : e,
+            );
+        }
     }
+    return fetchFromProxies(body);
+}
 
-    // Para arribos en tiempo real (221, 511, 581), no usamos cache
-    const data = await fetchMgpJson(body);
-    return NextResponse.json(data);
+export async function POST(req: NextRequest) {
+    try {
+        const body = await req.text();
+        const params = new URLSearchParams(body);
+        const accion = params.get("accion");
 
-  } catch (err: any) {
-    console.error("Proxy route error:", err);
-    return NextResponse.json(
-      { error: "Error de conexión", details: err.message },
-      { status: 502 }
-    );
-  }
+        const useReferenceCache = accion && CACHEABLE_ACCIONES.has(accion);
+
+        if (useReferenceCache) {
+            const getCached = unstable_cache(
+                async (bodyPayload: string) => fetchMgpJson(bodyPayload),
+                ["cuando-mgp"],
+                { revalidate: REFERENCE_DATA_REVALIDATE_S, tags: [body] },
+            );
+            const data = await getCached(body);
+            return NextResponse.json(data);
+        }
+
+        const data = await fetchMgpJson(body);
+        return NextResponse.json(data);
+    } catch (err) {
+        const e = err as { message?: string };
+        console.error("Proxy route error:", err);
+        return NextResponse.json(
+            { error: "Error de conexión", details: e.message ?? "unknown" },
+            { status: 502 },
+        );
+    }
 }

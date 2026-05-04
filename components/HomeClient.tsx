@@ -2,6 +2,7 @@
 
 import type { ReactNode } from "react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import { post } from "@/lib/api/client";
 import { useArribos } from "@/lib/hooks/useArribos";
 import { useCalles } from "@/lib/hooks/useCalles";
@@ -63,6 +64,7 @@ const NAMING_CLOSED: NamingState = { open: false };
 // ─────────────────────────────────────────────────────────────────────────────
 
 export function HomeClient({ children }: { children?: ReactNode }) {
+  const router = useRouter();
   const [tab, setTab] = useState<"buscar" | "favoritos">("buscar");
   const [showServiceDownModal, setShowServiceDownModal] = useState(true);
   const [sel, setSel] = useState<Selection>(EMPTY_SELECTION);
@@ -137,7 +139,11 @@ export function HomeClient({ children }: { children?: ReactNode }) {
   // ─── Opciones derivadas ───────────────────────────────────────────────────
   const lineaOptions = useMemo(
     () =>
-      lineas.map((l) => ({ value: l.CodigoLineaParada, label: l.Descripcion })),
+      lineas.map((l) => ({
+        value: l.CodigoLineaParada,
+        // Incluye el número en el label: el Combobox filtra solo por label, no por value.
+        label: l.Descripcion,
+      })),
     [lineas],
   );
 
@@ -296,10 +302,18 @@ export function HomeClient({ children }: { children?: ReactNode }) {
   }, [codInterseccion, paradaId, loadingParadas, destinoOptions]);
 
   // ─── Handlers de selección ────────────────────────────────────────────────
-  const handleLineaChange = useCallback((v: string) => {
-    setSel({ ...EMPTY_SELECTION, codLinea: v });
-    setIsConsulting(false);
-  }, []);
+  const handleLineaChange = useCallback(
+    (v: string) => {
+      const line = lineas.find((l) => l.CodigoLineaParada === v);
+      if (line?.isManual) {
+        router.push(`/recorrido?linea=${encodeURIComponent(v)}`);
+        return;
+      }
+      setSel({ ...EMPTY_SELECTION, codLinea: v });
+      setIsConsulting(false);
+    },
+    [lineas, router],
+  );
 
   const handleCalleChange = useCallback((v: string) => {
     setSel((p) => ({ ...EMPTY_SELECTION, codLinea: p.codLinea, codCalle: v }));

@@ -3,10 +3,11 @@
 import { useState, useEffect, useMemo, useRef } from "react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
 import { getLineas, getRecorridoMapaCliente } from "@/lib/api";
 import { getCache, setCache } from "@/lib/storage/localCache";
 import type { Linea, ParadaMapa, PuntoRecorrido, RamalData } from "@/lib/types";
-import { MANUAL_LINES, MANUAL_ROUTES } from "@/lib/manualRoutes";
+import { MANUAL_LINES, MANUAL_ROUTES, mergeLineasWithManual } from "@/lib/manualRoutes";
 import { supabase } from "@/lib/supabaseClient";
 import { cn } from "@/lib/utils";
 import {
@@ -62,6 +63,9 @@ function normalizeRamal(value: string | null | undefined) {
 type Step = "selector" | "map";
 
 export default function RecorridoClient() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const deepLinkHandledRef = useRef(false);
   const { favoritos } = useFavoritos();
   // ── Line selector state ──────────────────────────────────────────────────────
   const [step, setStep] = useState<Step>("selector");
@@ -134,10 +138,7 @@ export default function RecorridoClient() {
     const rawCache = getCache<CachedLineas>("RecuperarLineaPorCuandoLlega");
     if (rawCache) {
       const data = Array.isArray(rawCache) ? rawCache : (rawCache.lineas ?? []);
-      // Ensure manual lines are present and not duplicated
-      const manualCodes = new Set(MANUAL_LINES.map(m => m.CodigoLineaParada));
-      const filteredCache = data.filter((l) => !manualCodes.has(l.CodigoLineaParada));
-      const merged = [...filteredCache, ...MANUAL_LINES];
+      const merged = mergeLineasWithManual(data);
 
       setLines(merged);
       setLinesLoading(false);
@@ -145,7 +146,7 @@ export default function RecorridoClient() {
     }
     getLineas()
       .then((data) => {
-        const merged = [...data, ...MANUAL_LINES];
+        const merged = mergeLineasWithManual(data);
         setLines(merged);
         setCache("RecuperarLineaPorCuandoLlega", merged);
       })
@@ -281,6 +282,17 @@ export default function RecorridoClient() {
       setMapLoading(false);
     }
   }
+
+  useEffect(() => {
+    if (deepLinkHandledRef.current || linesLoading || lines.length === 0) return;
+    const code = searchParams.get("linea")?.trim();
+    if (!code) return;
+    const line = lines.find((l) => l.CodigoLineaParada === code);
+    if (!line) return;
+    deepLinkHandledRef.current = true;
+    void selectLine(line);
+    router.replace("/recorrido", { scroll: false });
+  }, [linesLoading, lines, searchParams, router]);
 
   function goBack() {
     setStep("selector");

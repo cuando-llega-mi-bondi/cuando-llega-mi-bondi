@@ -27,6 +27,8 @@ interface ArrivalsPanelProps {
     loadingOtras?: boolean;
     onSelectOtraLinea?: (linea: Linea) => void;
     liveSharings?: { lat: number; lng: number; ramal: string | null }[];
+    /** Abreviaturas de bandera en esta parada (misma fuente que HomeClient). */
+    paradaBanderaAbrevs?: string[];
 }
 export const ArrivalsPanel = memo(function ArrivalsPanel({
     codLinea,
@@ -46,6 +48,7 @@ export const ArrivalsPanel = memo(function ArrivalsPanel({
     loadingOtras = false,
     onSelectOtraLinea,
     liveSharings = [],
+    paradaBanderaAbrevs = [],
 }: ArrivalsPanelProps) {
     return (
         <div style={{ marginTop: 12 }}>
@@ -175,6 +178,8 @@ export const ArrivalsPanel = memo(function ArrivalsPanel({
                     )}
                     <BusMap
                         arribos={displayArribos}
+                        selectedRamal={selectedRamal}
+                        paradaBanderaAbrevs={paradaBanderaAbrevs}
                         paradaLat={selectedParada?.LatitudParada || displayArribos[0]?.LatitudParada || ""}
                         paradaLon={selectedParada?.LongitudParada || displayArribos[0]?.LongitudParada || ""}
                         lineaCod={codLinea}
