@@ -46,7 +46,7 @@ export function LandingFeatures() {
             ¿Por qué usar <BrandLogo className="text-4xl lg:text-[40px]" />?
           </h2>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            Lo que opinan los usuarios que la usan todos los días.
+            La forma más simple de consultar cuándo llega tu colectivo.
           </p>
         </div>
 
