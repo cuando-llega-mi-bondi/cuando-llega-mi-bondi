@@ -9,7 +9,14 @@
     "lint": "eslint",
     "test": "vitest run",
     "test:watch": "vitest",
-    "gtfs:build": "node --experimental-strip-types scripts/generate-gtfs.ts && (cd public/gtfs && zip -q ../gtfs.zip *.txt)"
+    "gtfs:build": "node --experimental-strip-types scripts/generate-gtfs.ts && (cd public/gtfs && zip -q ../gtfs.zip *.txt)",
+    "db:start": "supabase start",
+    "db:stop": "supabase stop",
+    "db:reset": "supabase db reset",
+    "db:psql": "docker exec -it supabase_db_bondi-mdp psql -U postgres -d postgres",
+    "db:status": "supabase status",
+    "seed": "tsx scripts/seed.ts",
+    "cron:enable": "tsx scripts/cron-enable.ts"
   },
   "dependencies": {
     "@khmyznikov/pwa-install": "^0.6.3",
@@ -35,8 +42,17 @@
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "16.2.2",
+    "supabase": "^2.98.1",
     "tailwindcss": "^4",
+    "tsx": "^4.21.0",
     "typescript": "^5",
     "vitest": "^4.1.5"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "supabase",
+      "sharp",
+      "unrs-resolver"
+    ]
   }
 }
