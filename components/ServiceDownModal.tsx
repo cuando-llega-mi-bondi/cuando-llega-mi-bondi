@@ -103,7 +103,7 @@ export function ServiceDownModal({ isOpen, onClose }: ServiceDownModalProps) {
                 </li>
                 <li className="flex gap-3">
                   <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-amarillo text-[10px] font-bold text-black">2</span>
-                  <span>Abrí <strong>bondimdp.com</strong> en Safari.</span>
+                  <span>Abrí <strong>bondimdp.com.ar</strong> en Safari.</span>
                 </li>
                 <li className="flex gap-3">
                   <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-amarillo text-[10px] font-bold text-black">3</span>

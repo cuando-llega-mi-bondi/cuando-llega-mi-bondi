@@ -75,10 +75,16 @@ export function HomeClient({ children }: { children?: ReactNode }) {
 
   useEffect(() => {
     const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
-    if (isIOS) {
-      // Solo mostrar si es iPhone/iOS
+    const isDismissed = localStorage.getItem("service-down-dismissed") === "true";
+    if (isIOS && !isDismissed) {
+      // Solo mostrar si es iPhone/iOS y no ha sido descartado
       setShowServiceDownModal(true);
     }
+  }, []);
+
+  const handleCloseServiceDown = useCallback(() => {
+    setShowServiceDownModal(false);
+    localStorage.setItem("service-down-dismissed", "true");
   }, []);
 
   // Desestructuramos para no cambiar las props que reciben los hooks/componentes
@@ -626,7 +632,7 @@ export function HomeClient({ children }: { children?: ReactNode }) {
       />
       <ServiceDownModal
         isOpen={tab === "buscar" && showServiceDownModal}
-        onClose={() => setShowServiceDownModal(false)}
+        onClose={handleCloseServiceDown}
       />
 
       <BottomNav tab={tab} setTab={setTab} favCount={favoritos.length} />
