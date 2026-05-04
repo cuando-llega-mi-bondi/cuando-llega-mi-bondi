@@ -1,25 +1,31 @@
 #!/usr/bin/env bun
 
 /**
- * Genera un GTFS estático parcial a partir de los datasets públicos en
- * data/raw/ y de las fixtures grabadas (cuando existan) en fixtures/.
+ * Genera un GTFS estático completo a partir de los datasets públicos en
+ * data/raw/ (todos publicados por la muni en datos.mardelplata.gob.ar bajo CC 3.0).
  *
- * Lo que genera hoy con solo los datasets públicos:
- *   - agency.txt        ✅ del CSV de empresas operadoras
- *   - routes.txt        ✅ del CSV de líneas
- *   - stops.txt         ✅ del geojson (deduplicado por coords)
+ * Entradas:
+ *   - lineas-transporte-urbano.csv  → empresas operadoras + líneas
+ *   - paradas.geojson               → 10081 paradas (deduplicadas por coords)
+ *   - recorridos.geojson            → 128 trazas MultiLineString por línea/sentido
+ *   - frecuencias-2024.csv          → matriz hora×línea (servicios por hora)
+ *
+ * Salidas (public/gtfs/*.txt):
+ *   - agency.txt        ✅
+ *   - routes.txt        ✅
+ *   - stops.txt         ✅
  *   - calendar.txt      ✅ servicio diario placeholder
- *   - frequencies.txt   ✅ del CSV 2013 (datos viejos pero plausibles)
+ *   - shapes.txt        ✅ geometría real de cada recorrido
+ *   - trips.txt         ✅ un trip por feature de recorridos.geojson
+ *   - frequencies.txt   ✅ del CSV 2024
  *
- * Lo que NO genera todavía (requiere fixtures de la API muni):
- *   - trips.txt         orden parada → trip
- *   - stop_times.txt    paradas por trip y orden
- *   - shapes.txt        geometría WKT del recorrido por línea
+ * Pendiente: stop_times.txt requiere matching geométrico parada↔recorrido
+ * (proyectar cada parada al recorrido más cercano y ordenarla por progreso
+ * sobre el shape). Trabajo geo no trivial; queda para una iteración futura.
  *
  * Uso:
- *   bun scripts/generate-gtfs.ts
- *   # genera public/gtfs/*.txt
- *   # zipear con: (cd public/gtfs && zip ../gtfs.zip *.txt)
+ *   node --experimental-strip-types scripts/generate-gtfs.ts
+ *   (cd public/gtfs && zip ../gtfs.zip *.txt)
  */
 
 import { promises as fs } from "node:fs";
@@ -39,6 +45,11 @@ type StopRow = {
     stop_name: string;
     stop_lat: number;
     stop_lon: number;
+};
+type RecorridoFeature = {
+    geometry: { type: "MultiLineString"; coordinates: [number, number][][] }
+        | { type: "LineString"; coordinates: [number, number][] };
+    properties: { cartodb_id: number; col1: string; col2?: string };
 };
 
 function escape(s: string): string {
@@ -66,31 +77,42 @@ async function readLineas(): Promise<Linea[]> {
         path.join(RAW, "lineas-transporte-urbano.csv"),
         "utf-8",
     );
-    const lines = raw.split(/\r?\n/).filter(Boolean);
-    return lines.slice(1).map((row) => {
+    return raw.split(/\r?\n/).filter(Boolean).slice(1).map((row) => {
         const [empresa, numero] = row.split(";");
         return { empresa: empresa!.trim(), numero: numero!.trim() };
     });
 }
 
+/** Parsea matriz transpuesta `Hora/Linea;511;512;...` → array de
+ *  {linea, hora_from, hora_to, servicios}. */
 async function readFrecuencias(): Promise<
     { linea: string; from: string; to: string; servicios: number }[]
 > {
     const raw = await fs.readFile(
-        path.join(RAW, "frecuencias-2013.csv"),
+        path.join(RAW, "frecuencias-2024.csv"),
         "utf-8",
     );
     const lines = raw.split(/\r?\n/).filter(Boolean);
-    return lines.slice(1).map((row) => {
-        const [linea, franja, n] = row.split(";");
-        const [from, to] = franja!.split(" - ");
-        return {
-            linea: linea!.trim(),
-            from: `${from!.trim()}:00`,
-            to: `${to!.trim()}:00`,
-            servicios: Number(n!.trim()),
-        };
-    });
+    const header = lines[0]!.split(";");
+    const lineNames = header.slice(1).map((s) => s.trim());
+
+    const out: { linea: string; from: string; to: string; servicios: number }[] = [];
+    for (const row of lines.slice(1)) {
+        const cols = row.split(";");
+        const franja = cols[0]!.trim();
+        const [from, to] = franja.split(/\s*a\s*/);
+        for (let i = 0; i < lineNames.length; i++) {
+            const servicios = Number(cols[i + 1]!.trim());
+            if (!Number.isFinite(servicios) || servicios <= 0) continue;
+            out.push({
+                linea: lineNames[i]!,
+                from: `${from!.trim()}:00`,
+                to: `${to!.trim()}:00`,
+                servicios,
+            });
+        }
+    }
+    return out;
 }
 
 async function readParadas(): Promise<StopRow[]> {
@@ -101,9 +123,7 @@ async function readParadas(): Promise<StopRow[]> {
             properties: { cartodb_id: number; linea: string };
         }>;
     };
-    // El geojson trae 10081 paradas, muchas duplicadas (misma coord para cada
-    // línea que pasa). Las deduplicamos por coord redondeada a 5 decimales
-    // (~1m) — eso colapsa filas que son la misma parada física.
+    // Dedup por coord redondeada a 5 decimales (~1m).
     const seen = new Map<string, StopRow>();
     for (const f of fc.features) {
         const [lon, lat] = f.geometry.coordinates;
@@ -119,11 +139,18 @@ async function readParadas(): Promise<StopRow[]> {
     return Array.from(seen.values());
 }
 
+async function readRecorridos(): Promise<RecorridoFeature[]> {
+    const raw = await fs.readFile(
+        path.join(RAW, "recorridos.geojson"),
+        "utf-8",
+    );
+    const fc = JSON.parse(raw) as { features: RecorridoFeature[] };
+    return fc.features;
+}
+
 async function writeFile(name: string, content: string): Promise<void> {
     await fs.writeFile(path.join(OUT, name), content, "utf-8");
-    console.log(
-        `  ✓ ${name} (${content.split("\n").length - 1} rows)`,
-    );
+    console.log(`  ✓ ${name} (${content.split("\n").length - 1} rows)`);
 }
 
 async function main() {
@@ -132,45 +159,74 @@ async function main() {
     const lineas = await readLineas();
     const stops = await readParadas();
     const frecuencias = await readFrecuencias();
+    const recorridos = await readRecorridos();
 
     // ── agency.txt ───────────────────────────────────────────────────────
     const empresas = new Map<string, string>();
     for (const l of lineas) {
         if (!empresas.has(l.empresa)) empresas.set(l.empresa, slugify(l.empresa));
     }
-    const agencyRows = [
-        "agency_id,agency_name,agency_url,agency_timezone,agency_lang",
-        ...Array.from(empresas).map(([name, id]) =>
-            csvLine([id, name, AGENCY_URL, TIMEZONE, "es-AR"]),
-        ),
-    ];
-    await writeFile("agency.txt", agencyRows.join("\n") + "\n");
+    await writeFile(
+        "agency.txt",
+        [
+            "agency_id,agency_name,agency_url,agency_timezone,agency_lang",
+            ...Array.from(empresas).map(([name, id]) =>
+                csvLine([id, name, AGENCY_URL, TIMEZONE, "es-AR"]),
+            ),
+        ].join("\n") + "\n",
+    );
 
     // ── routes.txt ───────────────────────────────────────────────────────
-    const routeRows = [
-        "route_id,agency_id,route_short_name,route_long_name,route_type",
-        ...lineas.map((l) =>
-            csvLine([
-                `r${l.numero}`,
-                empresas.get(l.empresa)!,
-                l.numero,
-                `Línea ${l.numero}`,
-                3, // 3 = bus en spec GTFS
-            ]),
-        ),
-    ];
-    await writeFile("routes.txt", routeRows.join("\n") + "\n");
+    // El CSV de líneas es base, pero recorridos.geojson tiene variantes que
+    // no están ahí (ej "BATAN", "COSTA AZUL", "593CORTA"). Mergeamos ambos.
+    const routesByName = new Map<
+        string,
+        { agency_id: string; route_short_name: string }
+    >();
+    for (const l of lineas) {
+        routesByName.set(l.numero, {
+            agency_id: empresas.get(l.empresa)!,
+            route_short_name: l.numero,
+        });
+    }
+    const recorridoLines = new Set(recorridos.map((r) => r.properties.col1));
+    const fallbackAgency = empresas.values().next().value ?? "muni";
+    for (const linea of recorridoLines) {
+        if (!routesByName.has(linea)) {
+            routesByName.set(linea, {
+                agency_id: fallbackAgency,
+                route_short_name: linea,
+            });
+        }
+    }
+    await writeFile(
+        "routes.txt",
+        [
+            "route_id,agency_id,route_short_name,route_long_name,route_type",
+            ...Array.from(routesByName).map(([linea, r]) =>
+                csvLine([
+                    `r${slugify(linea)}`,
+                    r.agency_id,
+                    r.route_short_name,
+                    `Línea ${linea}`,
+                    3,
+                ]),
+            ),
+        ].join("\n") + "\n",
+    );
 
     // ── stops.txt ────────────────────────────────────────────────────────
-    const stopRows = [
-        "stop_id,stop_name,stop_lat,stop_lon",
-        ...stops.map((s) => csvLine([s.stop_id, s.stop_name, s.stop_lat, s.stop_lon])),
-    ];
-    await writeFile("stops.txt", stopRows.join("\n") + "\n");
+    await writeFile(
+        "stops.txt",
+        [
+            "stop_id,stop_name,stop_lat,stop_lon",
+            ...stops.map((s) =>
+                csvLine([s.stop_id, s.stop_name, s.stop_lat, s.stop_lon]),
+            ),
+        ].join("\n") + "\n",
+    );
 
     // ── calendar.txt ─────────────────────────────────────────────────────
-    // Placeholder: un único service_id "everyday" activo todos los días.
-    // Cuando tengamos data por día (fines de semana, feriados), se expande.
     const today = new Date().toISOString().slice(0, 10).replace(/-/g, "");
     const oneYearLater = new Date(Date.now() + 365 * 86_400_000)
         .toISOString().slice(0, 10).replace(/-/g, "");
@@ -181,27 +237,81 @@ everyday,1,1,1,1,1,1,1,${today},${oneYearLater}
 `,
     );
 
+    // ── shapes.txt ───────────────────────────────────────────────────────
+    // Cada feature de recorridos.geojson genera un shape con el mismo id
+    // que su trip. MultiLineString se aplana a un solo shape (con jumps los
+    // puntos quedarían discontinuos, asumimos que son trazas continuas).
+    const shapeRows = ["shape_id,shape_pt_lat,shape_pt_lon,shape_pt_sequence"];
+    for (const r of recorridos) {
+        const id = `s${r.properties.cartodb_id}`;
+        const lines =
+            r.geometry.type === "MultiLineString"
+                ? r.geometry.coordinates
+                : [r.geometry.coordinates];
+        let seq = 1;
+        for (const line of lines) {
+            for (const [lon, lat] of line) {
+                shapeRows.push(csvLine([id, lat, lon, seq++]));
+            }
+        }
+    }
+    await writeFile("shapes.txt", shapeRows.join("\n") + "\n");
+
+    // ── trips.txt ────────────────────────────────────────────────────────
+    // Un trip por feature. trip_headsign = parte después del ";" en col2.
+    const tripRows = [
+        "route_id,service_id,trip_id,trip_headsign,shape_id",
+    ];
+    for (const r of recorridos) {
+        const linea = r.properties.col1;
+        const headsign = r.properties.col2?.split(";").pop()?.trim() ?? linea;
+        tripRows.push(
+            csvLine([
+                `r${slugify(linea)}`,
+                "everyday",
+                `t${r.properties.cartodb_id}`,
+                headsign,
+                `s${r.properties.cartodb_id}`,
+            ]),
+        );
+    }
+    await writeFile("trips.txt", tripRows.join("\n") + "\n");
+
     // ── frequencies.txt ──────────────────────────────────────────────────
-    // Mapea cada franja del CSV 2013 a un headway_secs = 3600 / servicios_por_hora.
-    // En GTFS frequencies se asocia a un trip, no a una route. Como todavía no
-    // generamos trips reales, asumimos un trip placeholder por línea: t{linea}.
-    // Cuando trips.txt esté completo, este mapeo se reusa con los trip_id reales.
+    // Mapea cada (línea, franja, servicios) a headway_secs sobre el primer
+    // trip de esa línea. No es perfecto (lo correcto sería distribuir entre
+    // ramales), pero da una primera aproximación válida.
+    const firstTripByLinea = new Map<string, string>();
+    for (const r of recorridos) {
+        if (!firstTripByLinea.has(r.properties.col1)) {
+            firstTripByLinea.set(r.properties.col1, `t${r.properties.cartodb_id}`);
+        }
+    }
     const freqRows = [
         "trip_id,start_time,end_time,headway_secs,exact_times",
-        ...frecuencias
-            .filter((f) => f.servicios > 0)
-            .map((f) => {
-                const headway = Math.round(3600 / f.servicios);
-                return csvLine([`t${f.linea}`, f.from, f.to, headway, 0]);
-            }),
     ];
+    let unmapped = 0;
+    for (const f of frecuencias) {
+        const tripId = firstTripByLinea.get(f.linea);
+        if (!tripId) {
+            unmapped++;
+            continue;
+        }
+        const headway = Math.round(3600 / f.servicios);
+        freqRows.push(csvLine([tripId, f.from, f.to, headway, 0]));
+    }
     await writeFile("frequencies.txt", freqRows.join("\n") + "\n");
+
+    if (unmapped > 0) {
+        console.log(
+            `  ⚠ ${unmapped} entradas de frecuencias sin trip (línea no aparece en recorridos.geojson)`,
+        );
+    }
 
     console.log("\nGenerado en", OUT);
     console.log("Empaquetar con: (cd public/gtfs && zip ../gtfs.zip *.txt)");
     console.log(
-        "\nFaltan trips.txt, stop_times.txt, shapes.txt: requieren fixtures",
-        "grabadas con MGP_USE_FIXTURES=record (rama dx/local-fixtures-and-mocks).",
+        "\nFalta solo stop_times.txt (matching geométrico parada↔recorrido).",
     );
 }
 
