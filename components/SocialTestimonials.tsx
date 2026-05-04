@@ -38,7 +38,7 @@ export function SocialTestimonials() {
     <LandingSection
       title="Lo que dice la"
       highlight="gente"
-      description="La forma más simple de consultar cuándo llega tu colectivo"
+      description="Lo que opinan los usuarios que la usan todos los días."
       className="max-w-7xl mx-auto"
     >
       <div className="grid md:grid-cols-3 gap-6">
