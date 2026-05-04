@@ -39,3 +39,7 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# GTFS generado por scripts/generate-gtfs.ts (regenerable desde data/raw)
+/public/gtfs/
+/public/gtfs.zip

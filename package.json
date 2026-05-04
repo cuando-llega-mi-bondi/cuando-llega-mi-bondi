@@ -4,11 +4,12 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "node --experimental-strip-types scripts/generate-gtfs.ts && (cd public/gtfs && zip -q ../gtfs.zip *.txt) && next build",
     "start": "next start",
     "lint": "eslint",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "gtfs:build": "node --experimental-strip-types scripts/generate-gtfs.ts && (cd public/gtfs && zip -q ../gtfs.zip *.txt)"
   },
   "dependencies": {
     "@khmyznikov/pwa-install": "^0.6.3",
