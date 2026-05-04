@@ -66,12 +66,20 @@ const NAMING_CLOSED: NamingState = { open: false };
 export function HomeClient({ children }: { children?: ReactNode }) {
   const router = useRouter();
   const [tab, setTab] = useState<"buscar" | "favoritos">("buscar");
-  const [showServiceDownModal, setShowServiceDownModal] = useState(true);
+  const [showServiceDownModal, setShowServiceDownModal] = useState(false);
   const [sel, setSel] = useState<Selection>(EMPTY_SELECTION);
   const [isConsulting, setIsConsulting] = useState(false);
   const [sheetOpen, setSheetOpen] = useState(false);
   const [error, setError] = useState("");
   const [naming, setNaming] = useState<NamingState>(NAMING_CLOSED);
+
+  useEffect(() => {
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+    if (isIOS) {
+      // Solo mostrar si es iPhone/iOS
+      setShowServiceDownModal(true);
+    }
+  }, []);
 
   // Desestructuramos para no cambiar las props que reciben los hooks/componentes
   const { codLinea, codCalle, codInterseccion, paradaId, selectedRamal } = sel;
@@ -616,11 +624,10 @@ export function HomeClient({ children }: { children?: ReactNode }) {
             : "Guardar parada"
         }
       />
-{/* 
       <ServiceDownModal
         isOpen={tab === "buscar" && showServiceDownModal}
         onClose={() => setShowServiceDownModal(false)}
-      /> */}
+      />
 
       <BottomNav tab={tab} setTab={setTab} favCount={favoritos.length} />
     </div>
