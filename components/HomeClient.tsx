@@ -602,11 +602,11 @@ export function HomeClient({ children }: { children?: ReactNode }) {
             : "Guardar parada"
         }
       />
-
+{/* 
       <ServiceDownModal
         isOpen={tab === "buscar" && showServiceDownModal}
         onClose={() => setShowServiceDownModal(false)}
-      />
+      /> */}
 
       <BottomNav tab={tab} setTab={setTab} favCount={favoritos.length} />
     </div>

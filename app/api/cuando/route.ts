@@ -48,11 +48,14 @@ const CACHEABLE_ACCIONES = new Set<string>([
   "RecuperarBanderasAsociadasAParada",
 ]);
 
-async function forceProxyInit(initUrl: string) {
+/** Lee `cookies` del JSON de `/init` para enviarlas en `Cookie` en POST `/proxy`. */
+async function mgpProxyInitCookies(initUrl: string): Promise<string | null> {
     console.log("🔄 Solicitando nueva sesión al proxy...", initUrl);
     try {
         const res = await fetch(initUrl, { cache: "no-store" });
-        return await res.json();
+        const data = (await res.json()) as { cookies?: unknown };
+        const c = data?.cookies;
+        return typeof c === "string" && c.trim() ? c.trim() : null;
     } catch (e) {
         console.error("❌ Error llamando a /init:", e);
         return null;
@@ -71,21 +74,28 @@ async function fetchMgpJsonFromProxy(
     const proxyUrl = `${proxy.baseUrl}/proxy`;
     const initUrl = `${proxy.baseUrl}/init`;
 
+    let sessionCookies = await mgpProxyInitCookies(initUrl);
+
     for (let attempt = 0; attempt < 2; attempt++) {
         let response: Response;
+        const headers: Record<string, string> = {
+            "Content-Type": "application/x-www-form-urlencoded",
+            "x-proxy-token": proxy.token,
+        };
+        if (sessionCookies) {
+            headers["Cookie"] = sessionCookies;
+        }
         try {
             response = await fetch(proxyUrl, {
                 method: "POST",
-                headers: {
-                    "Content-Type": "application/x-www-form-urlencoded",
-                    "x-proxy-token": proxy.token,
-                },
+                headers,
                 body,
                 cache: "no-store",
             });
         } catch (e) {
             if (attempt === 0) {
-                await forceProxyInit(initUrl);
+                sessionCookies =
+                    (await mgpProxyInitCookies(initUrl)) ?? sessionCookies;
                 continue;
             }
             if (isLastInChain) throw e;
@@ -99,7 +109,8 @@ async function fetchMgpJsonFromProxy(
             data = JSON.parse(text);
         } catch {
             if (attempt === 0) {
-                await forceProxyInit(initUrl);
+                sessionCookies =
+                    (await mgpProxyInitCookies(initUrl)) ?? sessionCookies;
                 continue;
             }
             if (isLastInChain) {
@@ -116,7 +127,8 @@ async function fetchMgpJsonFromProxy(
 
         if (sessionBroke) {
             if (attempt === 0) {
-                await forceProxyInit(initUrl);
+                sessionCookies =
+                    (await mgpProxyInitCookies(initUrl)) ?? sessionCookies;
                 continue;
             }
             if (isLastInChain) {
