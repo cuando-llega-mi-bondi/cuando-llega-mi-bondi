@@ -15,7 +15,11 @@ import { useParadas } from "@/lib/hooks/useParadas";
 import { useUrlSync } from "@/lib/hooks/useUrlSync";
 import { getCache } from "@/lib/storage/localCache";
 import type { Arribo, Favorito, HistorialEntry, Linea } from "@/lib/types";
-import { arriboBanderaLabel, arriboLineaDescripcion, cleanLabel } from "@/lib/utils";
+import {
+  arriboBanderaLabel,
+  arriboLineaDescripcion,
+  cleanLabel,
+} from "@/lib/utils";
 
 import { Header } from "@/components/Header";
 import { BottomNav } from "@/components/BottomNav";
@@ -24,6 +28,7 @@ import { HistorialList } from "@/components/HistorialList";
 import { SearchFlow } from "@/components/SearchFlow";
 import { ArrivalsOverlay } from "@/components/ArrivalsOverlay";
 import { FavoriteNameModal } from "@/components/FavoriteNameModal";
+import { ServiceDownModal } from "@/components/ServiceDownModal";
 import { PageShell } from "@/components/layout";
 
 type RawCalleMatch = { Codigo: string; Descripcion: string };
@@ -59,6 +64,7 @@ const NAMING_CLOSED: NamingState = { open: false };
 
 export function HomeClient({ children }: { children?: ReactNode }) {
   const [tab, setTab] = useState<"buscar" | "favoritos">("buscar");
+  const [showServiceDownModal, setShowServiceDownModal] = useState(true);
   const [sel, setSel] = useState<Selection>(EMPTY_SELECTION);
   const [isConsulting, setIsConsulting] = useState(false);
   const [sheetOpen, setSheetOpen] = useState(false);
@@ -205,7 +211,8 @@ export function HomeClient({ children }: { children?: ReactNode }) {
     (i) => i.value === codInterseccion,
   )?.label;
 
-  const lineaLabel = lineas.find((l) => l.CodigoLineaParada === codLinea)?.Descripcion ?? "";
+  const lineaLabel =
+    lineas.find((l) => l.CodigoLineaParada === codLinea)?.Descripcion ?? "";
 
   const { otrasLineas, loadingOtras } = useOtrasLineas({
     isConsulting,
@@ -233,7 +240,9 @@ export function HomeClient({ children }: { children?: ReactNode }) {
       codLinea,
       lineaLabel: historialLineaLabel || undefined,
       descripcionLinea:
-        arriboLineaDescripcion(first) || first.DescripcionLinea || historialLineaLabel,
+        arriboLineaDescripcion(first) ||
+        first.DescripcionLinea ||
+        historialLineaLabel,
       descripcionBandera:
         arriboBanderaLabel(first) || first.DescripcionBandera || "",
       calleLabel,
@@ -341,7 +350,9 @@ export function HomeClient({ children }: { children?: ReactNode }) {
         arriboBanderaLabel(arribo) ||
         selectedParada?.AbreviaturaBandera?.trim() ||
         "";
-      const ubicacion = [calleLabel, interseccionLabel].filter(Boolean).join(" e ");
+      const ubicacion = [calleLabel, interseccionLabel]
+        .filter(Boolean)
+        .join(" e ");
       let nombre = "";
       if (lineaPart && banderaPart) nombre = `${lineaPart} — ${banderaPart}`;
       else if (lineaPart) nombre = lineaPart;
@@ -590,6 +601,11 @@ export function HomeClient({ children }: { children?: ReactNode }) {
             ? "Renombrar parada"
             : "Guardar parada"
         }
+      />
+
+      <ServiceDownModal
+        isOpen={tab === "buscar" && showServiceDownModal}
+        onClose={() => setShowServiceDownModal(false)}
       />
 
       <BottomNav tab={tab} setTab={setTab} favCount={favoritos.length} />
