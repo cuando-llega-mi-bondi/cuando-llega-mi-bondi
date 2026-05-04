@@ -6,7 +6,7 @@
 //   - Live arrivals: network-first (fresh data needed).
 //   - HTML / pages: network-first with cache fallback.
 
-const CACHE_VERSION = 'v4';
+const CACHE_VERSION = 'v5';
 const STATIC_CACHE = `bondimdp-static-${CACHE_VERSION}`;
 const PAGES_CACHE = `bondimdp-pages-${CACHE_VERSION}`;
 const API_CACHE = `bondimdp-api-${CACHE_VERSION}`;
@@ -165,7 +165,7 @@ async function handleApiPost(request) {
 
   const networkPromise = fetch(request)
     .then(async (response) => {
-      if (response.ok) {
+      if (response.ok && (await isCacheable(response))) {
         const cloned = response.clone();
         const stored = new Response(await cloned.blob(), {
           status: cloned.status,
@@ -184,6 +184,25 @@ async function handleApiPost(request) {
     JSON.stringify({ error: 'Sin conexión. Revisá tu red.' }),
     { status: 503, headers: { 'Content-Type': 'application/json' } }
   );
+}
+
+// Defensa contra cache poisoning. Una respuesta puede ser HTTP 200 OK pero
+// contener `{error: ...}` (proxy roto) o `{CodigoEstado: -1, MensajeEstado: ...}`
+// (la muni indica "sin datos"). Cachear esas respuestas las deja pegadas hasta
+// que el usuario limpie la cache. El handler de Next ahora devuelve 502 en el
+// caso del proxy, pero mantenemos esta defensa por si el upstream cambia.
+async function isCacheable(response) {
+  try {
+    const cloned = response.clone();
+    const data = await cloned.json();
+    if (!data || typeof data !== 'object') return true;
+    if ('error' in data) return false;
+    if (typeof data.CodigoEstado === 'number' && data.CodigoEstado < 0) return false;
+    return true;
+  } catch {
+    // No es JSON parseable; no cacheamos para evitar guardar HTML de error.
+    return false;
+  }
 }
 
 async function syntheticKey(request, body) {
