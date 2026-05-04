@@ -44,6 +44,8 @@ export interface HistorialEntry {
     id: string;
     paradaId: string;
     codLinea: string;
+    /** Número / descripción de línea como en el selector (ej. "60"). */
+    lineaLabel?: string;
     descripcionLinea: string;
     descripcionBandera: string;
     calleLabel?: string;
@@ -56,6 +58,8 @@ export interface Favorito {
     nombre: string;
     identificadorParada: string;
     codigoLineaParada: string;
+    /** Número / descripción de línea como en el selector (ej. "60"). */
+    lineaLabel?: string;
     descripcionLinea: string;
     descripcionBandera: string;
 }

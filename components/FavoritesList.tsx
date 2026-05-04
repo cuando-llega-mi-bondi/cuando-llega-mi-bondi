@@ -56,7 +56,9 @@ export const FavoritesList = memo(function FavoritesList({ favoritos, onView, on
             {favoritos.map(fav => (
                 <Card key={fav.id} className="flex items-center gap-3 px-4 py-3.5">
                     <div className="min-w-14 flex-shrink-0 rounded-full border border-border bg-muted px-2.5 py-1 text-center font-display text-lg font-medium tracking-tight text-foreground">
-                        {fav.descripcionLinea}
+                        {fav.lineaLabel?.trim() ||
+                            fav.descripcionLinea?.trim() ||
+                            fav.codigoLineaParada}
                     </div>
                     <div className="flex-1">
                         <div className="mb-0.5 font-sans text-[15px] font-medium tracking-tight text-foreground">

@@ -1,3 +1,36 @@
+import type { Arribo } from "@/lib/types";
+
+/**
+ * Línea en payload de arribos MGP: a veces viene en camelCase o vacío en PascalCase.
+ */
+export function arriboLineaDescripcion(a: Arribo): string {
+    const r = a as unknown as Record<string, unknown>;
+    for (const key of ["DescripcionLinea", "descripcionLinea"] as const) {
+        const v = r[key];
+        if (typeof v === "string" && v.trim()) return v.trim();
+    }
+    return "";
+}
+
+/**
+ * Bandera / destino visible (cartel, bandera, corta; Pascal o camel).
+ */
+export function arriboBanderaLabel(a: Arribo): string {
+    const r = a as unknown as Record<string, unknown>;
+    for (const key of [
+        "DescripcionCartelBandera",
+        "descripcionCartelBandera",
+        "DescripcionBandera",
+        "descripcionBandera",
+        "DescripcionCortaBandera",
+        "descripcionCortaBandera",
+    ] as const) {
+        const v = r[key];
+        if (typeof v === "string" && v.trim()) return v.trim();
+    }
+    return "";
+}
+
 /**
  * Standard colors for arrival times
  */

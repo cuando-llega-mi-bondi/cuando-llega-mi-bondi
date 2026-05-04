@@ -15,7 +15,7 @@ import { useParadas } from "@/lib/hooks/useParadas";
 import { useUrlSync } from "@/lib/hooks/useUrlSync";
 import { getCache } from "@/lib/storage/localCache";
 import type { Arribo, Favorito, HistorialEntry, Linea } from "@/lib/types";
-import { cleanLabel } from "@/lib/utils";
+import { arriboBanderaLabel, arriboLineaDescripcion, cleanLabel } from "@/lib/utils";
 
 import { Header } from "@/components/Header";
 import { BottomNav } from "@/components/BottomNav";
@@ -205,8 +205,7 @@ export function HomeClient({ children }: { children?: ReactNode }) {
     (i) => i.value === codInterseccion,
   )?.label;
 
-  const lineaLabel =
-    lineas.find((l) => l.CodigoLineaParada === codLinea)?.Descripcion ?? "";
+  const lineaLabel = lineas.find((l) => l.CodigoLineaParada === codLinea)?.Descripcion ?? "";
 
   const { otrasLineas, loadingOtras } = useOtrasLineas({
     isConsulting,
@@ -223,12 +222,20 @@ export function HomeClient({ children }: { children?: ReactNode }) {
     if (savedHistRef.current === entryId) return;
     savedHistRef.current = entryId;
     const first = arribos[0];
+    const historialLineaLabel =
+      lineaLabel.trim() ||
+      arriboLineaDescripcion(first) ||
+      first.DescripcionLinea?.trim() ||
+      codLinea.trim();
     pushHistorialEntry({
       id: entryId,
       paradaId,
       codLinea,
-      descripcionLinea: first.DescripcionLinea,
-      descripcionBandera: first.DescripcionBandera,
+      lineaLabel: historialLineaLabel || undefined,
+      descripcionLinea:
+        arriboLineaDescripcion(first) || first.DescripcionLinea || historialLineaLabel,
+      descripcionBandera:
+        arriboBanderaLabel(first) || first.DescripcionBandera || "",
       calleLabel,
       interseccionLabel,
       timestamp: Date.now(),
@@ -239,6 +246,7 @@ export function HomeClient({ children }: { children?: ReactNode }) {
     codLinea,
     interseccionLabel,
     isConsulting,
+    lineaLabel,
     paradaId,
     pushHistorialEntry,
   ]);
@@ -324,21 +332,50 @@ export function HomeClient({ children }: { children?: ReactNode }) {
         removeFavoritoEntry(id);
         return;
       }
+      const lineaPart =
+        arriboLineaDescripcion(arribo) ||
+        lineaLabel.trim() ||
+        arribo.CodigoLineaParada ||
+        "";
+      const banderaPart =
+        arriboBanderaLabel(arribo) ||
+        selectedParada?.AbreviaturaBandera?.trim() ||
+        "";
+      const ubicacion = [calleLabel, interseccionLabel].filter(Boolean).join(" e ");
+      let nombre = "";
+      if (lineaPart && banderaPart) nombre = `${lineaPart} — ${banderaPart}`;
+      else if (lineaPart) nombre = lineaPart;
+      else if (banderaPart) nombre = banderaPart;
+      else if (ubicacion) nombre = ubicacion;
+      else nombre = "Parada favorita";
+
       setNaming({
         open: true,
         mode: "add",
         fav: {
           id,
-          nombre: `${arribo.DescripcionLinea} — ${arribo.DescripcionCartelBandera ?? arribo.DescripcionBandera}`,
+          nombre,
           identificadorParada: paradaId,
           codigoLineaParada: arribo.CodigoLineaParada,
-          descripcionLinea: arribo.DescripcionLinea,
-          descripcionBandera:
-            arribo.DescripcionCartelBandera ?? arribo.DescripcionBandera,
+          lineaLabel:
+            lineaLabel.trim() ||
+            lineaPart ||
+            arribo.CodigoLineaParada ||
+            undefined,
+          descripcionLinea: lineaPart || "—",
+          descripcionBandera: banderaPart || "—",
         },
       });
     },
-    [isFavoritoEntry, paradaId, removeFavoritoEntry],
+    [
+      calleLabel,
+      interseccionLabel,
+      isFavoritoEntry,
+      lineaLabel,
+      paradaId,
+      removeFavoritoEntry,
+      selectedParada,
+    ],
   );
 
   const handleSaveNaming = useCallback(

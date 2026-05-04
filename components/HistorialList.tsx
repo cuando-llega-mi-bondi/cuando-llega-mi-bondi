@@ -57,7 +57,9 @@ export const HistorialList = memo(function HistorialList({
                         className="flex animate-slide-up items-center gap-3 px-3.5 py-3 opacity-90"
                     >
                         <div className="min-w-12 flex-shrink-0 rounded-full border border-border bg-muted px-2.5 py-1 text-center font-display text-base font-medium tracking-tight text-foreground">
-                            {h.descripcionLinea}
+                            {h.lineaLabel?.trim() ||
+                                h.descripcionLinea?.trim() ||
+                                h.codLinea}
                         </div>
 
                         <div className="min-w-0 flex-1">
