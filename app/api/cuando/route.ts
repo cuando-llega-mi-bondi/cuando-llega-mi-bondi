@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { unstable_cache } from "next/cache";
 import { fetchMgpDirect, isDirectEnabled } from "@/lib/api/mgpDirect";
+import { fixtureMode, readFixture, writeFixture } from "@/lib/api/fixtures";
 
 const DEFAULT_PROXY_TOKEN = "bondimdp2024";
 
@@ -180,19 +181,39 @@ export async function POST(req: NextRequest) {
         const params = new URLSearchParams(body);
         const accion = params.get("accion");
 
+        const mode = fixtureMode();
+        if (mode === "replay") {
+            const fixture = await readFixture(body);
+            if (fixture !== null) return NextResponse.json(fixture);
+            return NextResponse.json(
+                {
+                    error: `No fixture para acción "${accion}".`,
+                    hint: "Ejecutar una vez con MGP_USE_FIXTURES=record contra la API real para grabarla.",
+                },
+                { status: 404 },
+            );
+        }
+
         const useReferenceCache = accion && CACHEABLE_ACCIONES.has(accion);
 
+        let data: unknown;
         if (useReferenceCache) {
             const getCached = unstable_cache(
                 async (bodyPayload: string) => fetchMgpJson(bodyPayload),
                 ["cuando-mgp"],
                 { revalidate: REFERENCE_DATA_REVALIDATE_S, tags: [body] },
             );
-            const data = await getCached(body);
-            return NextResponse.json(data);
+            data = await getCached(body);
+        } else {
+            data = await fetchMgpJson(body);
         }
 
-        const data = await fetchMgpJson(body);
+        if (mode === "record") {
+            void writeFixture(body, data).catch((e) => {
+                console.warn("[fixtures] No pude grabar:", e);
+            });
+        }
+
         return NextResponse.json(data);
     } catch (err) {
         const e = err as { message?: string };
