@@ -1,0 +1,4 @@
+-- Run once against pg-aeterna as superuser:
+--   docker exec -i pg-aeterna psql -U aeterna -d aeterna < bootstrap.sql
+CREATE USER bondi_push WITH PASSWORD 'CHANGEME';
+CREATE DATABASE bondi_push OWNER bondi_push;
