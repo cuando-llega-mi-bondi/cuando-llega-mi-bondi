@@ -46,7 +46,7 @@ export function LandingFeatures() {
             ¿Por qué usar <BrandLogo className="text-4xl lg:text-[40px]" />?
           </h2>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            La forma más simple de consultar cuándo llega tu colectivo
+            Lo que opinan los usuarios que la usan todos los días.
           </p>
         </div>
 
@@ -57,10 +57,15 @@ export function LandingFeatures() {
               className="bg-card border border-border rounded-2xl p-6 hover:border-turquesa/50 transition-colors"
             >
               <div className="w-12 h-12 bg-amarillo/10 rounded-2xl flex items-center justify-center mb-4">
-                <feature.icon className="w-5 h-5 text-amarillo" strokeWidth={2} />
+                <feature.icon
+                  className="w-5 h-5 text-amarillo"
+                  strokeWidth={2}
+                />
               </div>
               <h3 className="text-lg font-bold mb-2">{feature.title}</h3>
-              <p className="text-[15px] leading-relaxed text-muted-foreground">{feature.description}</p>
+              <p className="text-[15px] leading-relaxed text-muted-foreground">
+                {feature.description}
+              </p>
             </div>
           ))}
         </div>
