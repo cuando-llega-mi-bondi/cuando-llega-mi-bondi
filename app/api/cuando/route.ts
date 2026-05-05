@@ -38,6 +38,7 @@ function shuffleMgpProxies(proxies: MgpProxyEndpoint[]): MgpProxyEndpoint[] {
 }
 
 const REFERENCE_DATA_REVALIDATE_S = 300;
+const SESSION_COOKIE_REVALIDATE_S = 3600; // 1 hora
 
 const CACHEABLE_ACCIONES = new Set<string>([
     "RecuperarLineaPorCuandoLlega",
@@ -49,18 +50,31 @@ const CACHEABLE_ACCIONES = new Set<string>([
     "RecuperarBanderasAsociadasAParada",
 ]);
 
-/** Lee `cookies` del JSON de `/init` para enviarlas en `Cookie` en POST `/proxy`. */
+/** Duerme por ms millisegundos */
+function sleep(ms: number): Promise<void> {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+/** Lee `cookies` del JSON de `/init` para enviarlas en `Cookie` en POST `/proxy` - con caché. */
 async function mgpProxyInitCookies(initUrl: string): Promise<string | null> {
-    console.log("🔄 Solicitando nueva sesión al proxy...", initUrl);
-    try {
-        const res = await fetch(initUrl, { cache: "no-store" });
-        const data = (await res.json()) as { cookies?: unknown };
-        const c = data?.cookies;
-        return typeof c === "string" && c.trim() ? c.trim() : null;
-    } catch (e) {
-        console.error("❌ Error llamando a /init:", e);
-        return null;
-    }
+    // Cachea por 1 hora para evitar solicitudes excesivas
+    const getCached = unstable_cache(
+        async (url: string) => {
+            console.log("🔄 Solicitando nueva sesión al proxy...", url);
+            try {
+                const res = await fetch(url, { cache: "force-cache" });
+                const data = (await res.json()) as { cookies?: unknown };
+                const c = data?.cookies;
+                return typeof c === "string" && c.trim() ? c.trim() : null;
+            } catch (e) {
+                console.error("❌ Error llamando a /init:", e);
+                return null;
+            }
+        },
+        ["mgp-init-cookies"],
+        { revalidate: SESSION_COOKIE_REVALIDATE_S, tags: ["mgp-cookies"] },
+    );
+    return getCached(initUrl);
 }
 
 async function fetchMgpJsonFromProxy(
@@ -73,6 +87,7 @@ async function fetchMgpJsonFromProxy(
 
     let sessionCookies = await mgpProxyInitCookies(initUrl);
 
+    // Máximo 1 reintento para evitar "too many requests"
     for (let attempt = 0; attempt < 2; attempt++) {
         let response: Response;
         const headers: Record<string, string> = {
@@ -82,6 +97,14 @@ async function fetchMgpJsonFromProxy(
         if (sessionCookies) {
             headers["Cookie"] = sessionCookies;
         }
+        
+        // Backoff exponencial entre intentos
+        if (attempt > 0) {
+            const delayMs = Math.min(1000 * Math.pow(2, attempt - 1), 5000);
+            console.log(`⏳ Esperando ${delayMs}ms antes de reintentar...`);
+            await sleep(delayMs);
+        }
+
         try {
             response = await fetch(proxyUrl, {
                 method: "POST",
@@ -89,10 +112,16 @@ async function fetchMgpJsonFromProxy(
                 body,
                 cache: "no-store",
             });
+
+            // Si es rate limit, no reintentar inmediatamente
+            if (response.status === 429) {
+                console.warn(`⚠️ Rate limit del proxy (429), saltando...`);
+                if (isLastInChain) return { ok: false };
+                return { ok: false };
+            }
         } catch (e) {
             if (attempt === 0) {
-                sessionCookies =
-                    (await mgpProxyInitCookies(initUrl)) ?? sessionCookies;
+                console.log("🔄 Error de conexión, esperando e reintentando...");
                 continue;
             }
             if (isLastInChain) throw e;
@@ -106,8 +135,7 @@ async function fetchMgpJsonFromProxy(
             data = JSON.parse(text);
         } catch {
             if (attempt === 0) {
-                sessionCookies =
-                    (await mgpProxyInitCookies(initUrl)) ?? sessionCookies;
+                console.log("🔄 JSON inválido, reintentando...");
                 continue;
             }
             if (isLastInChain) {
@@ -122,16 +150,9 @@ async function fetchMgpJsonFromProxy(
             response.status === 403 ||
             Boolean(dataObj && typeof dataObj === "object" && dataObj.error);
 
-        if (sessionBroke) {
-            if (attempt === 0) {
-                sessionCookies =
-                    (await mgpProxyInitCookies(initUrl)) ?? sessionCookies;
-                continue;
-            }
-            if (isLastInChain) {
-                return { ok: true, data };
-            }
-            return { ok: false };
+        if (sessionBroke && attempt === 0) {
+            console.log("🔄 Sesión rota, reintentando...");
+            continue;
         }
 
         return { ok: true, data };
