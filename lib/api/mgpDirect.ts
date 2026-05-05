@@ -1,7 +1,8 @@
 import { publicEncrypt, constants, randomUUID } from "node:crypto";
 
 // Endpoint y headers replicados del comportamiento del WebView Cordova de la app oficial V670.
-const APP_BASE = "https://appsl.mardelplata.gob.ar/apps/app_cuando_llegaV670";
+//const APP_BASE = "https://appsl.mardelplata.gob.ar/apps/app_cuando_llegaV670";
+const APP_BASE = "https://appsl.mardelplata.gob.ar/app_cuando_llega/webWS.php"
 const UA =
     "Mozilla/5.0 (Linux; Android 14; Pixel 8 Build/UQ1A.231205.015; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/120.0.0.0 Mobile Safari/537.36";
 const HEADERS_BASE = {
