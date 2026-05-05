@@ -35,6 +35,7 @@ export function ArriboCard({
             {(
               arribo.DescripcionCartelBandera ??
               arribo.DescripcionBandera ??
+              arribo.DescripcionCortaBandera ??
               ""
             ).toUpperCase()}
           </div>
