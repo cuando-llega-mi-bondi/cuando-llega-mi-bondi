@@ -217,7 +217,11 @@ export function HomeClient({ children }: { children?: ReactNode }) {
     () =>
       selectedRamal === "TODOS"
         ? arribos
-        : arribos.filter((a) => a.DescripcionBandera === selectedRamal),
+        : arribos.filter(
+            (a) =>
+              a.DescripcionBandera === selectedRamal ||
+              a.DescripcionCortaBandera === selectedRamal,
+          ),
     [arribos, selectedRamal],
   );
 
