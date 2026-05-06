@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, type FormEvent } from "react";
+import { Suspense, useEffect, useState, type FormEvent } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { motion } from "motion/react";
 import { useBondiAuth } from "@/lib/bondi-api/AuthContext";
@@ -12,6 +12,14 @@ const ERROR_LABELS: Record<string, string> = {
 };
 
 export default function LoginPage() {
+    return (
+        <Suspense fallback={<div className="px-5 pt-2 font-mono text-[12px] text-[#6B7080]">Cargando…</div>}>
+            <LoginInner />
+        </Suspense>
+    );
+}
+
+function LoginInner() {
     const router = useRouter();
     const params = useSearchParams();
     const next = params.get("next") || "/v2";
