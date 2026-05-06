@@ -20,6 +20,9 @@
 # production
 /build
 
+# dump de datos de referencia MGP (generado localmente)
+/data/
+
 # misc
 .DS_Store
 *.pem
