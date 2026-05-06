@@ -3,8 +3,29 @@ services:
     image: osrm/osrm-backend:latest
     container_name: osrm-mdp-foot
     restart: unless-stopped
+    # Mantenemos el bind localhost para que el server-side de Next (en host)
+    # le pegue por localhost:5000. Traefik lo alcanza vía la network web.
     ports:
       - "127.0.0.1:5000:5000"
     volumes:
       - ./data/processed:/data:ro
+    networks:
+      - web
+    labels:
+      - traefik.enable=true
+      - traefik.docker.network=web
+      - traefik.http.routers.osrm.entrypoints=web
+      - traefik.http.routers.osrm.rule=Host(`osrm.aeterna.red`)
+      - traefik.http.services.osrm.loadbalancer.server.port=5000
+      # OSRM no manda CORS headers por sí solo. Agregamos un middleware que
+      # solo permite los orígenes del frontend.
+      - traefik.http.middlewares.osrm-cors.headers.accesscontrolallowmethods=GET,OPTIONS
+      - traefik.http.middlewares.osrm-cors.headers.accesscontrolallowheaders=Content-Type
+      - traefik.http.middlewares.osrm-cors.headers.accesscontrolalloworiginlist=https://bondimdp.com.ar,http://localhost:3000
+      - traefik.http.middlewares.osrm-cors.headers.accesscontrolmaxage=600
+      - traefik.http.routers.osrm.middlewares=osrm-cors@docker
     command: osrm-routed --algorithm mld --max-table-size 5000 /data/mdp.osrm
+
+networks:
+  web:
+    external: true
