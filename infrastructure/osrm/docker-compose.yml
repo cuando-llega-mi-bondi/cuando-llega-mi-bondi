@@ -1,0 +1,10 @@
+services:
+  osrm:
+    image: osrm/osrm-backend:latest
+    container_name: osrm-mdp-foot
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:5000:5000"
+    volumes:
+      - ./data/processed:/data:ro
+    command: osrm-routed --algorithm mld --max-table-size 5000 /data/mdp.osrm

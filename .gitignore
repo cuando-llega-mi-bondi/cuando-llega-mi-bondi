@@ -43,3 +43,17 @@ next-env.d.ts
 # GTFS generado por scripts/generate-gtfs.ts (regenerable desde data/raw)
 /public/gtfs/
 /public/gtfs.zip
+
+# OSRM data (regenerable con infrastructure/osrm/setup.sh)
+/infrastructure/osrm/data/
+
+# Fixtures del MGP cacheados por scripts/prefetch-reference.ts (regenerables)
+/fixtures/Recuperar*/
+
+# Logs locales
+/dev.log
+/spider.log
+
+# Server (backend self-hosted)
+/server/node_modules
+/server/dist
