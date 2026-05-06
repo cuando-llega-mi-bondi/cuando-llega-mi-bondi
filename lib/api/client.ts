@@ -1,3 +1,37 @@
+import { STATIC_REFERENCE_ACCIONES } from "@/lib/staticReferenceAcciones";
+
+function staticReferenceEnabled(): boolean {
+    return !!(
+        typeof process !== "undefined" &&
+        process.env.NEXT_PUBLIC_USE_STATIC_REFERENCE
+    );
+}
+
+/** Origen para `fetch` a rutas internas cuando `post` corre fuera del navegador (poco frecuente). */
+function internalAppOrigin(): string {
+    if (typeof window !== "undefined") {
+        return "";
+    }
+    const vercel = process.env.VERCEL_URL?.trim();
+    if (vercel) {
+        return /^https?:\/\//i.test(vercel) ? vercel : `https://${vercel}`;
+    }
+    const internal = process.env.INTERNAL_APP_URL?.trim().replace(/\/$/, "");
+    if (internal) {
+        return /^https?:\/\//i.test(internal)
+            ? internal
+            : `https://${internal.replace(/^\/+/, "")}`;
+    }
+    return "http://localhost:3000";
+}
+
+/**
+ * Cliente HTTP hacia el proxy MGP (`BASE_URL`, típicamente `/api/cuando`).
+ *
+ * Modo catálogo local: con `NEXT_PUBLIC_USE_STATIC_REFERENCE=true` y dump en
+ * `data/mgp-static-dump.json`, las acciones en `STATIC_REFERENCE_ACCIONES`
+ * se atienden primero con `GET /api/reference` (sin pegarle a la muni).
+ */
 function resolveCuandoApiBase(): string {
     /** Optional absolute URL to offload proxy traffic from Vercel Edge Requests (own Worker/VPS). */
     const raw =
@@ -18,6 +52,20 @@ export type ActionParams = Record<string, string>;
 export type SwrActionKey = [string, ActionParams];
 
 export async function post(accion: string, params: ActionParams = {}) {
+    if (staticReferenceEnabled() && STATIC_REFERENCE_ACCIONES.has(accion)) {
+        try {
+            const q = new URLSearchParams({ accion, ...params }).toString();
+            const origin = internalAppOrigin();
+            const refUrl = `${origin || ""}/api/reference?${q}`;
+            const refRes = await fetch(refUrl, { method: "GET", cache: "no-store" });
+            if (refRes.ok) {
+                return refRes.json();
+            }
+        } catch {
+            // fallback a proxy MGP
+        }
+    }
+
     const body = new URLSearchParams({ accion, ...params }).toString();
     const res = await fetch(BASE_URL, {
         method: "POST",
