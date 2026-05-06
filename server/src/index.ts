@@ -8,6 +8,8 @@ import { authRoutes } from "./routes/auth.js";
 import { favoritosRoutes } from "./routes/favoritos.js";
 import { rutinasRoutes } from "./routes/rutinas.js";
 import { subscribeRoutes } from "./routes/subscribe.js";
+import { telegramRoutes } from "./routes/telegram.js";
+import { lineasRoutes } from "./routes/lineas.js";
 
 const app = new Hono();
 
@@ -32,6 +34,8 @@ app.route("/auth", authRoutes);
 app.route("/favoritos", favoritosRoutes);
 app.route("/rutinas", rutinasRoutes);
 app.route("/subscribe", subscribeRoutes);
+app.route("/telegram", telegramRoutes);
+app.route("/lineas", lineasRoutes);
 
 app.notFound((c) => c.json({ error: "not_found" }, 404));
 app.onError((err, c) => {
