@@ -1,10 +1,18 @@
 import { STATIC_REFERENCE_ACCIONES } from "@/lib/staticReferenceAcciones";
 
+/**
+ * Sirve líneas/calles/intersecciones/paradas/recorridos desde el dump local en
+ * `data/mgp-static-dump.json` (vía `/api/reference`) en lugar de pegarle a la
+ * muni. Habilitado por default. Si /api/reference falla, hacemos fallback al
+ * proxy MGP automáticamente — ver `post()` abajo.
+ *
+ * Para desactivarlo (ej. probar el proxy directo), seteá
+ * `NEXT_PUBLIC_USE_STATIC_REFERENCE=false`.
+ */
 function staticReferenceEnabled(): boolean {
-    return (
-        typeof process !== "undefined" &&
-        process.env.NEXT_PUBLIC_USE_STATIC_REFERENCE === "true"
-    );
+    if (typeof process === "undefined") return true;
+    const raw = process.env.NEXT_PUBLIC_USE_STATIC_REFERENCE?.trim().toLowerCase();
+    return raw !== "false" && raw !== "0";
 }
 
 /**
