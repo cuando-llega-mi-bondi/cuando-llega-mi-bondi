@@ -1,0 +1,31 @@
+{
+  "name": "bondi-server",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "start": "tsx src/index.ts",
+    "scheduler": "tsx src/scheduler/run.ts"
+  },
+  "dependencies": {
+    "@hono/node-server": "^1.13.7",
+    "@hono/zod-validator": "^0.4.2",
+    "bcryptjs": "^2.4.3",
+    "hono": "^4.6.13",
+    "jose": "^5.9.6",
+    "node-cron": "^3.0.3",
+    "pg": "^8.13.1",
+    "web-push": "^3.6.7",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@types/bcryptjs": "^2.4.6",
+    "@types/node": "^22.10.2",
+    "@types/node-cron": "^3.0.11",
+    "@types/pg": "^8.11.10",
+    "@types/web-push": "^3.6.4",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.2"
+  }
+}
