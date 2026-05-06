@@ -1,0 +1,60 @@
+# Stack del bondi-server self-hosted.
+# - bondi-api: HTTP server, expuesto via traefik en bondi.aeterna.red
+# - bondi-scheduler: worker node-cron, no expone puertos
+#
+# Networks externas:
+# - web:      donde vive traefik (entrypoint público)
+# - internal: donde vive pg-aeterna
+#
+# Las dos networks ya existen (creadas por aeterna). Si todavía no, el
+# compose tira un error claro.
+
+services:
+  bondi-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: bondi-server:latest
+    container_name: bondi-api
+    restart: unless-stopped
+    env_file:
+      - .env.local
+    volumes:
+      # Reusamos el catálogo de líneas/paradas del frontend en read-only para
+      # que el server pueda calcular ETAs sin duplicar la data.
+      - ../lib/static:/app/static-data:ro
+    networks:
+      - web
+      - internal
+    labels:
+      - traefik.enable=true
+      - traefik.docker.network=web
+      - traefik.http.routers.bondi-api.entrypoints=web
+      - traefik.http.routers.bondi-api.rule=Host(`bondi.aeterna.red`)
+      - traefik.http.services.bondi-api.loadbalancer.server.port=4000
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:4000/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+  bondi-scheduler:
+    image: bondi-server:latest
+    container_name: bondi-scheduler
+    restart: unless-stopped
+    depends_on:
+      - bondi-api
+    env_file:
+      - .env.local
+    volumes:
+      - ../lib/static:/app/static-data:ro
+    networks:
+      - internal
+    command: ["pnpm", "scheduler"]
+
+networks:
+  web:
+    external: true
+  internal:
+    external: true

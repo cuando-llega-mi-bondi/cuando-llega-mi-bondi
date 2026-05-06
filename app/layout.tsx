@@ -143,8 +143,15 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                     dangerouslySetInnerHTML={{
                         __html: `
                             if ('serviceWorker' in navigator && window.location.hostname !== 'localhost') {
+                                var swReloaded = false;
+                                navigator.serviceWorker.addEventListener('controllerchange', function() {
+                                    if (swReloaded) return;
+                                    swReloaded = true;
+                                    window.location.reload();
+                                });
                                 window.addEventListener('load', function() {
                                     navigator.serviceWorker.register('/sw.js')
+                                        .then(function(reg) { return reg.update(); })
                                         .catch(function(err) { console.warn('SW registration failed:', err); });
                                 });
                             }

@@ -32,6 +32,11 @@ const schema = z.object({
         .string()
         .regex(/^(mailto:|https?:\/\/)/, "VAPID_SUBJECT debe ser mailto: o https://"),
 
+    // Path "directo" (firma RSA + clave compartida) — replica el WebView Cordova de la app oficial.
+    // Si están seteados, usamos este path en lugar de MGP_PROXY_URL.
+    MGP_RSA_PUBKEY: z.string().optional(),
+    MGP_SHARED_KEY: z.string().optional(),
+    // Path "proxy" (Termux/Oracle u otro endpoint que envuelve el flujo init+proxy).
     MGP_PROXY_URL: z.string().url().optional(),
 
     PORT: z.coerce.number().int().positive().default(4000),

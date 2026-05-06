@@ -6,7 +6,7 @@
 //   - Live arrivals: network-first (fresh data needed).
 //   - HTML / pages: network-first with cache fallback.
 
-const CACHE_VERSION = 'v5';
+const CACHE_VERSION = 'v6';
 const STATIC_CACHE = `bondimdp-static-${CACHE_VERSION}`;
 const PAGES_CACHE = `bondimdp-pages-${CACHE_VERSION}`;
 const API_CACHE = `bondimdp-api-${CACHE_VERSION}`;
@@ -217,3 +217,37 @@ async function syntheticKey(request, body) {
   url.pathname = `${url.pathname}/__cache/${hash}`;
   return new Request(url.toString(), { method: 'GET' });
 }
+
+// ── Web Push ─────────────────────────────────────────────────────────────────
+
+self.addEventListener('push', (event) => {
+  if (!event.data) return;
+  let payload;
+  try {
+    payload = event.data.json();
+  } catch {
+    payload = { title: 'Bondi MDP', body: event.data.text() };
+  }
+  const title = payload.title || 'Bondi MDP';
+  const options = {
+    body: payload.body || '',
+    tag: payload.tag,
+    data: { url: payload.url || '/v2' },
+    icon: '/icon-192x192.png',
+    badge: '/icon-192x192.png',
+  };
+  event.waitUntil(self.registration.showNotification(title, options));
+});
+
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close();
+  const url = (event.notification.data && event.notification.data.url) || '/v2';
+  event.waitUntil(
+    self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((list) => {
+      for (const c of list) {
+        if (c.url.includes(url) && 'focus' in c) return c.focus();
+      }
+      if (self.clients.openWindow) return self.clients.openWindow(url);
+    }),
+  );
+});
