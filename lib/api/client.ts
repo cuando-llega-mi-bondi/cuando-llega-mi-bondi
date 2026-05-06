@@ -1,13 +1,18 @@
 import { STATIC_REFERENCE_ACCIONES } from "@/lib/staticReferenceAcciones";
 
 function staticReferenceEnabled(): boolean {
-    return !!(
+    return (
         typeof process !== "undefined" &&
-        process.env.NEXT_PUBLIC_USE_STATIC_REFERENCE
+        process.env.NEXT_PUBLIC_USE_STATIC_REFERENCE === "true"
     );
 }
 
-/** Origen para `fetch` a rutas internas cuando `post` corre fuera del navegador (poco frecuente). */
+/**
+ * Origen absoluto solo si `post` corre en el servidor (poco frecuente en este proyecto).
+ * En el navegador se devuelve `""` y el fetch va a `/api/reference` en el mismo host.
+ * En Vercel, `VERCEL_URL` lo define el entorno; en local, `http://localhost:3000` por defecto.
+ * No hace falta añadir nada a `.env` para esto.
+ */
 function internalAppOrigin(): string {
     if (typeof window !== "undefined") {
         return "";
@@ -15,12 +20,6 @@ function internalAppOrigin(): string {
     const vercel = process.env.VERCEL_URL?.trim();
     if (vercel) {
         return /^https?:\/\//i.test(vercel) ? vercel : `https://${vercel}`;
-    }
-    const internal = process.env.INTERNAL_APP_URL?.trim().replace(/\/$/, "");
-    if (internal) {
-        return /^https?:\/\//i.test(internal)
-            ? internal
-            : `https://${internal.replace(/^\/+/, "")}`;
     }
     return "http://localhost:3000";
 }

@@ -10,12 +10,17 @@
  * Override de ruta: `STATIC_REFERENCE_DUMP_PATH` (absoluto o relativo al cwd del proceso Node).
  */
 
-import { readFile } from "node:fs/promises";
+import { readFile, stat } from "node:fs/promises";
 import path from "node:path";
-import { unstable_cache } from "next/cache";
 import type { MgpStaticDump } from "@/lib/staticDumpTypes";
 
-export const STATIC_DUMP_REVALIDATE_S = 3600;
+type DumpCacheEntry = {
+    path: string;
+    mtimeMs: number;
+    dump: MgpStaticDump;
+};
+
+let dumpCache: DumpCacheEntry | null = null;
 
 function resolveDumpPath(): string {
     const override = process.env.STATIC_REFERENCE_DUMP_PATH?.trim();
@@ -31,15 +36,29 @@ function resolveDumpPath(): string {
     );
 }
 
-export const getCachedStaticDump = unstable_cache(
-    async (): Promise<MgpStaticDump | null> => {
-        try {
-            const raw = await readFile(resolveDumpPath(), "utf-8");
-            return JSON.parse(raw) as MgpStaticDump;
-        } catch {
-            return null;
+/**
+ * Loads and parses the static dump once per process (or when the file changes).
+ * `unstable_cache` is not used: Next.js caps Data Cache entries at 2MB and this dump is larger.
+ */
+export async function getCachedStaticDump(): Promise<MgpStaticDump | null> {
+    const dumpPath = resolveDumpPath();
+    try {
+        const st = await stat(dumpPath);
+        if (
+            dumpCache &&
+            dumpCache.path === dumpPath &&
+            dumpCache.mtimeMs === st.mtimeMs
+        ) {
+            return dumpCache.dump;
         }
-    },
-    ["mgp-static-dump-parse"],
-    { revalidate: STATIC_DUMP_REVALIDATE_S },
-);
+        const raw = await readFile(dumpPath, "utf-8");
+        const dump = JSON.parse(raw) as MgpStaticDump;
+        dumpCache = { path: dumpPath, mtimeMs: st.mtimeMs, dump };
+        return dump;
+    } catch {
+        if (dumpCache?.path === dumpPath) {
+            dumpCache = null;
+        }
+        return null;
+    }
+}
