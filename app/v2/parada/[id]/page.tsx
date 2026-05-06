@@ -2,6 +2,8 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { STOPS } from "@/lib/static/stops";
 import { StopRouting } from "./_components/StopRouting";
+import { FavoriteButton } from "./_components/FavoriteButton";
+import { LiveArrivals } from "./_components/LiveArrivals";
 
 export default async function ParadaPage({
     params,
@@ -38,6 +40,9 @@ export default async function ParadaPage({
                             {stop.nombre}
                         </h1>
                     </div>
+                </div>
+                <div className="mt-3">
+                    <FavoriteButton stopId={stop.id} stopName={stop.nombre} />
                 </div>
             </header>
 
@@ -79,14 +84,7 @@ export default async function ParadaPage({
             ) : null}
 
             <div className="px-5">
-                <div className="rounded-2xl border border-dashed border-[#E8E2D2] bg-white/50 p-4 text-center">
-                    <p className="font-mono text-[10.5px] uppercase tracking-wider text-[#6B7080]">
-                        Próximos arribos
-                    </p>
-                    <p className="mt-2 font-display text-[14px] text-[#6B7080]">
-                        Próximamente — requiere conexión al MGP en vivo.
-                    </p>
-                </div>
+                <LiveArrivals paradaId={stop.id} lineas={stop.lineas} />
             </div>
         </div>
     );
