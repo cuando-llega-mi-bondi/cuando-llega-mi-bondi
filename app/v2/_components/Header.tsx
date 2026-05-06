@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { motion } from "motion/react";
-import { useDemoUser } from "@/lib/demo/DemoUserContext";
+import { useBondiAuth } from "@/lib/bondi-api/AuthContext";
 import { Avatar } from "./Avatar";
 
 function saludoPorHora(h: number) {
@@ -12,8 +12,16 @@ function saludoPorHora(h: number) {
   return "Buenas noches";
 }
 
+function inicialesDe(nombre: string | null | undefined): string {
+  if (!nombre) return "?";
+  const partes = nombre.trim().split(/\s+/).filter(Boolean);
+  if (partes.length === 0) return "?";
+  if (partes.length === 1) return partes[0]!.slice(0, 1).toUpperCase();
+  return (partes[0]![0]! + partes[partes.length - 1]![0]!).toUpperCase();
+}
+
 export function HomeHeader() {
-  const { user } = useDemoUser();
+  const { state } = useBondiAuth();
   const [now, setNow] = useState<Date | null>(null);
 
   useEffect(() => {
@@ -24,6 +32,9 @@ export function HomeHeader() {
 
   const hora = now?.getHours() ?? 18;
   const saludo = saludoPorHora(hora);
+  const nombre =
+    state.status === "authenticated" ? state.user.nombre || state.user.email : null;
+  const iniciales = inicialesDe(nombre);
 
   return (
     <header className="px-5 pt-2">
@@ -44,22 +55,20 @@ export function HomeHeader() {
               : "—"}
           </p>
           <h1 className="font-display text-[30px] font-semibold leading-[1.05] tracking-tight text-[#0F1115]">
-            {saludo},
-            <br />
-            <span className="text-[#0099FF]">{user.nombre}.</span>
+            {saludo}
+            {nombre ? (
+              <>
+                ,
+                <br />
+                <span className="text-[#0099FF]">{nombre}.</span>
+              </>
+            ) : (
+              "."
+            )}
           </h1>
         </div>
-        <Avatar iniciales={user.iniciales} size="lg" />
+        {nombre ? <Avatar iniciales={iniciales} size="lg" /> : null}
       </motion.div>
-      <motion.p
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.25, duration: 0.5 }}
-        className="mt-3 text-[14px] leading-snug text-[#6B7080]"
-      >
-        {user.viajesEstaSemana} viajes esta semana ·{" "}
-        <span className="text-[#0F1115]">{user.zonaHabitual}</span> es tu zona habitual.
-      </motion.p>
     </header>
   );
 }
