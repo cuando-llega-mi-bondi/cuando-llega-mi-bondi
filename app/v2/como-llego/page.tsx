@@ -25,6 +25,15 @@ type Destino = {
   source: "place" | "pin";
 };
 
+type ManualOrigen = { lat: number; lng: number };
+
+type OrigenEfectivo =
+  | { source: "gps"; coords: { lat: number; lng: number }; accuracyMts: number }
+  | { source: "manual"; coords: { lat: number; lng: number } }
+  | null;
+
+type PinPurpose = "origen" | "destino";
+
 function placeToDestino(p: Place): Destino {
   return {
     label: p.name,
@@ -39,29 +48,37 @@ export default function ComoLlegoPage() {
   const geo = useGeolocation();
   const [destinoQuery, setDestinoQuery] = useState("");
   const [destino, setDestino] = useState<Destino | null>(null);
-  const [showPinPicker, setShowPinPicker] = useState(false);
+  const [manualOrigen, setManualOrigen] = useState<ManualOrigen | null>(null);
+  const [pinPurpose, setPinPurpose] = useState<PinPurpose | null>(null);
+
+  // Manual gana sobre GPS — si el user marcó un punto, lo respetamos.
+  const origen: OrigenEfectivo = manualOrigen
+    ? { source: "manual", coords: manualOrigen }
+    : geo.status === "granted"
+      ? { source: "gps", coords: geo.coords, accuracyMts: geo.accuracyMts }
+      : null;
 
   const candidates = useMemo<Place[]>(() => {
     return searchPlaces(destinoQuery, 8);
   }, [destinoQuery]);
 
   const itineraries = useMemo<Itinerary[]>(() => {
-    if (geo.status !== "granted" || !destino) return [];
+    if (!origen || !destino) return [];
     return findRoutes(
-      geo.coords,
+      origen.coords,
       { lat: destino.lat, lng: destino.lng },
       { radiusMts: 500 },
     );
-  }, [geo, destino]);
+  }, [origen, destino]);
 
   const bestMultiLine = useMemo<MultiLineItinerary | null>(() => {
-    if (geo.status !== "granted" || !destino) return null;
+    if (!origen || !destino) return null;
     return findBestRoute(
-      geo.coords,
+      origen.coords,
       { lat: destino.lat, lng: destino.lng },
       { radiusMts: 500 },
     );
-  }, [geo, destino]);
+  }, [origen, destino]);
 
   // Mostramos la opción con transbordo solo si:
   //  - no hay ninguna directa, o
@@ -87,7 +104,12 @@ export default function ComoLlegoPage() {
 
       <div className="px-5">
         <div className="rounded-2xl border border-[#E8E2D2] bg-white v2-card-shadow">
-          <OriginRow geo={geo} />
+          <OriginRow
+            geo={geo}
+            origen={origen}
+            onPickManual={() => setPinPurpose("origen")}
+            onClearManual={() => setManualOrigen(null)}
+          />
           <div className="mx-4 h-3 border-l-2 border-dashed border-[#E8E2D2]" />
           <DestinoRow
             destino={destino}
@@ -163,7 +185,7 @@ export default function ComoLlegoPage() {
 
             <button
               type="button"
-              onClick={() => setShowPinPicker(true)}
+              onClick={() => setPinPurpose("destino")}
               className="flex w-full items-center gap-3 rounded-2xl border border-dashed border-[#0099FF]/40 bg-[#EAF6FF] px-4 py-3 text-left transition hover:bg-[#D7EDFF]"
             >
               <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-[#0099FF] text-white">
@@ -196,42 +218,57 @@ export default function ComoLlegoPage() {
         ) : null}
       </div>
 
-      {destino && geo.status === "granted" ? (
+      {destino && origen ? (
         <ItinerariesList
           itineraries={itineraries}
           multiLine={showTransfer ? bestMultiLine : null}
         />
       ) : null}
 
-      {destino && geo.status !== "granted" ? (
+      {destino && !origen ? (
         <div className="px-5">
           <div className="rounded-2xl border border-dashed border-[#E8E2D2] bg-white/50 p-5 text-center">
             <p className="font-display text-[15px] font-semibold text-[#0F1115]">
-              Necesitamos tu ubicación
+              Necesitamos un punto de partida
             </p>
             <p className="mt-1 font-mono text-[11px] text-[#6B7080]">
-              Activá el GPS para calcular el itinerario desde donde estás.
+              Activá el GPS o marcá tu origen en el mapa.
             </p>
+            <button
+              type="button"
+              onClick={() => setPinPurpose("origen")}
+              className="mt-3 rounded-2xl bg-[#0099FF] px-4 py-2 font-display text-[13px] font-semibold text-white"
+            >
+              Marcar en el mapa
+            </button>
           </div>
         </div>
       ) : null}
 
-      {showPinPicker ? (
+      {pinPurpose ? (
         <PinPickerMap
-          initial={destino && destino.source === "pin"
-            ? { lat: destino.lat, lng: destino.lng }
-            : null}
-          onCancel={() => setShowPinPicker(false)}
+          initial={
+            pinPurpose === "destino"
+              ? destino && destino.source === "pin"
+                ? { lat: destino.lat, lng: destino.lng }
+                : null
+              : manualOrigen
+          }
+          onCancel={() => setPinPurpose(null)}
           onConfirm={({ lat, lng }) => {
-            setDestino({
-              label: "Punto en el mapa",
-              hint: `${lat.toFixed(4)}, ${lng.toFixed(4)}`,
-              lat,
-              lng,
-              source: "pin",
-            });
-            setDestinoQuery("");
-            setShowPinPicker(false);
+            if (pinPurpose === "destino") {
+              setDestino({
+                label: "Punto en el mapa",
+                hint: `${lat.toFixed(4)}, ${lng.toFixed(4)}`,
+                lat,
+                lng,
+                source: "pin",
+              });
+              setDestinoQuery("");
+            } else {
+              setManualOrigen({ lat, lng });
+            }
+            setPinPurpose(null);
           }}
         />
       ) : null}
@@ -239,28 +276,88 @@ export default function ComoLlegoPage() {
   );
 }
 
-function OriginRow({ geo }: { geo: ReturnType<typeof useGeolocation> }) {
+function OriginRow({
+  geo,
+  origen,
+  onPickManual,
+  onClearManual,
+}: {
+  geo: ReturnType<typeof useGeolocation>;
+  origen: OrigenEfectivo;
+  onPickManual: () => void;
+  onClearManual: () => void;
+}) {
+  const isManual = origen?.source === "manual";
+  const gpsBusy = geo.status === "requesting" || geo.status === "idle";
+  const noGps = geo.status === "denied" || geo.status === "unavailable";
+
+  let label = "";
+  if (isManual && origen) {
+    label = `Punto en el mapa · ${origen.coords.lat.toFixed(4)}, ${origen.coords.lng.toFixed(4)}`;
+  } else if (origen?.source === "gps") {
+    label = `Tu ubicación · ± ${origen.accuracyMts} m`;
+  } else if (gpsBusy) {
+    label = "Buscando tu ubicación…";
+  } else if (noGps) {
+    label = geo.status === "denied" ? "GPS desactivado" : "GPS no disponible";
+  }
+
   return (
     <div className="flex items-center gap-3 rounded-2xl px-3 py-3">
-      <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-[#0099FF] text-white">
-        <svg viewBox="0 0 24 24" fill="none" className="h-4 w-4">
-          <circle cx="12" cy="12" r="3.5" stroke="currentColor" strokeWidth="2" />
-          <path d="M12 2v3M12 19v3M2 12h3M19 12h3" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-        </svg>
+      <span
+        className={`grid h-9 w-9 shrink-0 place-items-center rounded-xl text-white ${
+          isManual ? "bg-[#FFD60A] text-[#0F1115]" : "bg-[#0099FF]"
+        }`}
+      >
+        {isManual ? (
+          <svg viewBox="0 0 24 24" fill="currentColor" className="h-4 w-4">
+            <path d="M12 2C7.58 2 4 5.58 4 10c0 5.25 8 12 8 12s8-6.75 8-12c0-4.42-3.58-8-8-8Zm0 11a3 3 0 1 1 0-6 3 3 0 0 1 0 6Z" />
+          </svg>
+        ) : (
+          <svg viewBox="0 0 24 24" fill="none" className="h-4 w-4">
+            <circle cx="12" cy="12" r="3.5" stroke="currentColor" strokeWidth="2" />
+            <path
+              d="M12 2v3M12 19v3M2 12h3M19 12h3"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+            />
+          </svg>
+        )}
       </span>
       <div className="min-w-0 flex-1">
         <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-[#6B7080]">
-          Desde
+          Desde {isManual ? "· marcado en mapa" : null}
         </p>
         <p className="truncate font-display text-[15px] font-semibold leading-tight text-[#0F1115]">
-          {geo.status === "granted" ? `Tu ubicación · ± ${geo.accuracyMts} m` : null}
-          {geo.status === "requesting" || geo.status === "idle"
-            ? "Buscando tu ubicación…"
-            : null}
-          {geo.status === "denied" ? "GPS desactivado" : null}
-          {geo.status === "unavailable" ? "GPS no disponible" : null}
+          {label}
         </p>
+        {(noGps || isManual) && !gpsBusy ? (
+          <button
+            type="button"
+            onClick={isManual ? onClearManual : onPickManual}
+            className="mt-1 font-mono text-[11px] uppercase tracking-wider text-[#0099FF] hover:underline"
+          >
+            {isManual ? "Volver a usar GPS" : "Marcar en el mapa"}
+          </button>
+        ) : null}
       </div>
+      {origen?.source === "gps" && !isManual ? (
+        <button
+          type="button"
+          onClick={onPickManual}
+          className="grid h-7 w-7 place-items-center rounded-full bg-[#FAF7F0] text-[#6B7080] hover:bg-[#0F1115] hover:text-white"
+          aria-label="Marcar otro origen"
+          title="Marcar otro origen en el mapa"
+        >
+          <svg viewBox="0 0 24 24" fill="none" className="h-3.5 w-3.5">
+            <path
+              d="M12 2C7.58 2 4 5.58 4 10c0 5.25 8 12 8 12s8-6.75 8-12c0-4.42-3.58-8-8-8Zm0 11a3 3 0 1 1 0-6 3 3 0 0 1 0 6Z"
+              fill="currentColor"
+            />
+          </svg>
+        </button>
+      ) : null}
     </div>
   );
 }

@@ -9,4 +9,9 @@ export type Stop = {
     banderas: string[];
 };
 
-export const STOPS: Stop[] = stopsData as Stop[];
+const API_STOPS: Stop[] = stopsData as Stop[];
+
+// eslint-disable-next-line import/first
+import { MANUAL_STOPS } from "./manual";
+
+export const STOPS: Stop[] = [...API_STOPS, ...MANUAL_STOPS];

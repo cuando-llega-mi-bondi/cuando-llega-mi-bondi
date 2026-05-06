@@ -1,7 +1,9 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { LINES } from "@/lib/static/lines";
+import { MANUAL_LINE_GEOJSON } from "@/lib/static/manual";
 import { STOPS, type Stop } from "@/lib/static/stops";
+import { LineaMap } from "./_components/LineaMap";
 import { ParadaList } from "./_components/ParadaList";
 
 export default async function LineaPage({
@@ -25,6 +27,15 @@ export default async function LineaPage({
               .map((id) => stopsById.get(id))
               .filter((s): s is Stop => Boolean(s))
         : [];
+
+    const banderaIdx = banderaActiva
+        ? line.banderas.findIndex((bb) => bb.nombre === banderaActiva.nombre)
+        : -1;
+    const geojsonForLine = MANUAL_LINE_GEOJSON[line.descripcion];
+    const polylineUrl =
+        geojsonForLine && banderaIdx >= 0
+            ? geojsonForLine[banderaIdx]
+            : undefined;
 
     return (
         <div className="space-y-5">
@@ -84,6 +95,16 @@ export default async function LineaPage({
                             );
                         })}
                     </div>
+                </div>
+            ) : null}
+
+            {banderaActiva && paradasBandera.length > 0 ? (
+                <div className="px-5">
+                    <LineaMap
+                        paradas={paradasBandera}
+                        polylineUrl={polylineUrl}
+                        lineaDescripcion={line.descripcion}
+                    />
                 </div>
             ) : null}
 
