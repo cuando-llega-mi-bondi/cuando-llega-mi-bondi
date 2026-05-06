@@ -11,7 +11,6 @@ function staticReferenceEnabled(): boolean {
  * Origen absoluto solo si `post` corre en el servidor (poco frecuente en este proyecto).
  * En el navegador se devuelve `""` y el fetch va a `/api/reference` en el mismo host.
  * En Vercel, `VERCEL_URL` lo define el entorno; en local, `http://localhost:3000` por defecto.
- * No hace falta añadir nada a `.env` para esto.
  */
 function internalAppOrigin(): string {
     if (typeof window !== "undefined") {
@@ -25,19 +24,23 @@ function internalAppOrigin(): string {
 }
 
 /**
- * Cliente HTTP hacia el proxy MGP (`BASE_URL`, típicamente `/api/cuando`).
+ * Cliente HTTP hacia el backend self-hosted (`NEXT_PUBLIC_CUANDO_API_URL`).
+ *
+ * No hay ruta interna: la API municipal bloquea las IPs de Vercel, así que
+ * todo el tráfico vivo (no-referencia) tiene que salir por nuestro backend
+ * propio. Si la env var no está configurada, `post()` falla en el primer uso
+ * en vez de pegar silenciosamente a un endpoint que no existe.
  *
  * Modo catálogo local: con `NEXT_PUBLIC_USE_STATIC_REFERENCE=true` y dump en
  * `data/mgp-static-dump.json`, las acciones en `STATIC_REFERENCE_ACCIONES`
- * se atienden primero con `GET /api/reference` (sin pegarle a la muni).
+ * se atienden primero con `GET /api/reference` (sin pegarle al backend).
  */
-function resolveCuandoApiBase(): string {
-    /** Optional absolute URL to offload proxy traffic from Vercel Edge Requests (own Worker/VPS). */
+function resolveCuandoApiBase(): string | null {
     const raw =
         typeof process !== "undefined"
             ? process.env.NEXT_PUBLIC_CUANDO_API_URL?.trim()
             : undefined;
-    if (!raw) return "/api/cuando";
+    if (!raw) return null;
     let base = raw.replace(/\/$/, "");
     if (!/^https?:\/\//i.test(base)) {
         base = `https://${base.replace(/^\/+/, "")}`;
@@ -63,6 +66,12 @@ export async function post(accion: string, params: ActionParams = {}) {
         } catch {
             // fallback a proxy MGP
         }
+    }
+
+    if (!BASE_URL) {
+        throw new Error(
+            "NEXT_PUBLIC_CUANDO_API_URL no está configurada. El front no puede pegarle directo a la muni desde Vercel; configurá la URL del backend self-hosted.",
+        );
     }
 
     const body = new URLSearchParams({ accion, ...params }).toString();

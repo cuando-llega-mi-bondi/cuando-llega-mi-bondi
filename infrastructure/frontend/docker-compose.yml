@@ -17,7 +17,7 @@ services:
       args:
         # Las NEXT_PUBLIC_* se hornean en el bundle del cliente en build-time.
         # Cambiarlas requiere rebuild.
-        NEXT_PUBLIC_BONDI_API_URL: ${NEXT_PUBLIC_BONDI_API_URL:-https://bondi.aeterna.red}
+        NEXT_PUBLIC_CUANDO_API_URL: ${NEXT_PUBLIC_CUANDO_API_URL:-https://bondi.aeterna.red}
         NEXT_PUBLIC_OSRM_URL: ${NEXT_PUBLIC_OSRM_URL:-https://osrm.aeterna.red}
         NEXT_PUBLIC_VAPID_PUBLIC: ${NEXT_PUBLIC_VAPID_PUBLIC}
         NEXT_PUBLIC_USE_STATIC_REFERENCE: "true"
