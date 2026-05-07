@@ -17,13 +17,17 @@ const app = new Hono();
 app.use(logger());
 app.use(secureHeaders());
 
-// Acepta orígenes en ALLOWED_ORIGINS o cualquier subdominio *.vercel.app
-// (preview deploys cambian de URL en cada push y no queremos sincronizar a mano).
-const VERCEL_PREVIEW_RE = /^https:\/\/[a-z0-9.-]+\.vercel\.app$/i;
+// Acepta orígenes en ALLOWED_ORIGINS, cualquier *.vercel.app (preview deploys
+// cambian de URL en cada push) y cualquier *.bondimdp.com.ar / bondimdp.com.ar
+// (prod + staging + futuros subdominios sin sincronizar a mano).
+const ALLOWED_HOST_RES = [
+    /^https:\/\/[a-z0-9.-]+\.vercel\.app$/i,
+    /^https:\/\/(?:[a-z0-9-]+\.)*bondimdp\.com\.ar$/i,
+];
 function isAllowedOrigin(origin: string | undefined): boolean {
     if (!origin) return false;
     if (env.ALLOWED_ORIGINS.includes(origin)) return true;
-    return VERCEL_PREVIEW_RE.test(origin);
+    return ALLOWED_HOST_RES.some((re) => re.test(origin));
 }
 
 app.use(
@@ -40,40 +44,41 @@ app.use(
 app.get("/", (c) => c.json({ service: "bondi-api", ok: true }));
 app.get("/health", (c) => c.json({ ok: true, ts: new Date().toISOString() }));
 
-// Compat shim: el frontend legacy (rama staging) hace POST / con
-// `accion=...&otherParams=...` apuntando a este host. Reenvía el body raw a la
-// API municipal y devuelve la respuesta JSON sin transformar (shape PascalCase
-// original que el frontend ya parsea).
-app.post("/", async (c) => {
+// Compat shim: el frontend legacy (rama staging y ops/self-host-frontend) hace
+// POST / con `accion=...&otherParams=...` apuntando a este host. Reenvía el
+// body raw al MGP y devuelve la respuesta JSON sin transformar (shape
+// PascalCase original que el frontend ya parsea).
+//
+// Cache stale-while-error: ante 429/timeout/red de MGP, servimos la última
+// respuesta exitosa (si tenemos) en lugar de 502. Imprescindible porque MGP
+// rate-limitea por IP y un solo episodio nos deja varios minutos en el piso.
+const FRESH_TTL_MS = 15_000;
+const STALE_MAX_MS = 30 * 60 * 1000;
+type CacheEntry = { at: number; payload: unknown; status: number };
+const proxyCache = new Map<string, CacheEntry>();
+
+function normalizeKey(body: string): string {
+    return new URLSearchParams(body).toString();
+}
+
+async function readProxyBody(c: import("hono").Context): Promise<string | null> {
     const ct = (c.req.header("content-type") ?? "").toLowerCase();
-    let body: string;
     if (ct.includes("application/x-www-form-urlencoded")) {
-        body = await c.req.text();
-    } else if (ct.includes("multipart/form-data")) {
+        return c.req.text();
+    }
+    if (ct.includes("multipart/form-data")) {
         const fd = await c.req.formData();
         const params = new URLSearchParams();
         for (const [k, v] of fd.entries()) {
             if (typeof v === "string") params.append(k, v);
         }
-        body = params.toString();
-    } else {
-        return c.json({ error: "unsupported_content_type", got: ct }, 415);
+        return params.toString();
     }
+    return null;
+}
 
-    if (!body) return c.json({ error: "empty_body" }, 400);
-
-    if (isMgpDirectEnabled()) {
-        try {
-            const data = await fetchMgpDirect(body);
-            return c.json(data as Record<string, unknown>);
-        } catch (e) {
-            return c.json(
-                { error: "mgp_direct_failed", message: (e as Error).message },
-                502,
-            );
-        }
-    }
-
+async function callMgp(body: string): Promise<unknown> {
+    if (isMgpDirectEnabled()) return fetchMgpDirect(body);
     if (env.MGP_PROXY_URL) {
         const ctrl = new AbortController();
         const tid = setTimeout(() => ctrl.abort(), 8_000);
@@ -85,23 +90,51 @@ app.post("/", async (c) => {
                 signal: ctrl.signal,
             });
             const text = await r.text();
-            const status = r.status as 200 | 400 | 401 | 403 | 404 | 500 | 502;
-            try {
-                return c.json(JSON.parse(text), status);
-            } catch {
-                return c.text(text, status);
-            }
-        } catch (e) {
-            return c.json(
-                { error: "mgp_proxy_failed", message: (e as Error).message },
-                502,
-            );
+            if (!r.ok) throw new Error(`HTTP ${r.status}`);
+            return JSON.parse(text);
         } finally {
             clearTimeout(tid);
         }
     }
+    throw new Error("no_mgp_config");
+}
 
-    return c.json({ error: "no_mgp_config" }, 500);
+app.post("/", async (c) => {
+    const body = await readProxyBody(c);
+    if (body === null) {
+        return c.json(
+            { error: "unsupported_content_type", got: c.req.header("content-type") },
+            415,
+        );
+    }
+    if (!body) return c.json({ error: "empty_body" }, 400);
+
+    const key = normalizeKey(body);
+    const now = Date.now();
+    const cached = proxyCache.get(key);
+
+    if (cached && now - cached.at < FRESH_TTL_MS) {
+        c.header("X-Cache", "HIT");
+        return c.json(cached.payload as Record<string, unknown>);
+    }
+
+    try {
+        const data = await callMgp(body);
+        proxyCache.set(key, { at: now, payload: data, status: 200 });
+        c.header("X-Cache", "MISS");
+        return c.json(data as Record<string, unknown>);
+    } catch (e) {
+        const message = (e as Error).message;
+        if (cached && now - cached.at < STALE_MAX_MS) {
+            c.header("X-Cache", "STALE");
+            c.header("X-Stale-Reason", message.slice(0, 120));
+            return c.json(cached.payload as Record<string, unknown>);
+        }
+        return c.json(
+            { error: "mgp_unavailable", message },
+            502,
+        );
+    }
 });
 
 app.route("/auth", authRoutes);
