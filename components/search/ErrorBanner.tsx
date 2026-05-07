@@ -1,4 +1,8 @@
+"use client";
+
 import { IconX } from "@/components/icons/IconX";
+import { ServiceDownModal } from "@/components/ServiceDownModal";
+import { useState } from "react";
 
 interface ErrorBannerProps {
     message: string;
@@ -6,7 +10,11 @@ interface ErrorBannerProps {
 }
 
 export function ErrorBanner({ message, onClose }: ErrorBannerProps) {
+    const [isModalOpen, setIsModalOpen] = useState(false);
+
     if (!message) return null;
+
+    const isServerError = message.toLowerCase().includes("servidor") || message.toLowerCase().includes("muni");
 
     return (
         <div className="flex animate-slide-up items-start gap-3 rounded-xl border border-danger/35 bg-danger/12 px-4 py-3.5">
@@ -32,8 +40,18 @@ export function ErrorBanner({ message, onClose }: ErrorBannerProps) {
                 </div>
                 <div className="font-sans text-xs leading-relaxed text-danger/90">
                     {message}
+                    {isServerError && (
+                        <button
+                            type="button"
+                            onClick={() => setIsModalOpen(true)}
+                            className="ml-1 font-semibold underline decoration-danger/30 underline-offset-2 transition-colors hover:decoration-danger"
+                        >
+                            Ver detalles
+                        </button>
+                    )}
                 </div>
             </div>
+            <ServiceDownModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
             <button
                 type="button"
                 onClick={onClose}
