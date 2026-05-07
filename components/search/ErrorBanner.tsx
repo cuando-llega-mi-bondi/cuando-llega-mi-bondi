@@ -10,11 +10,10 @@ interface ErrorBannerProps {
 }
 
 export function ErrorBanner({ message, onClose }: ErrorBannerProps) {
-    const [isModalOpen, setIsModalOpen] = useState(false);
+    const isServerError = message.toLowerCase().includes("servidor") || message.toLowerCase().includes("muni");
+    const [isModalOpen, setIsModalOpen] = useState(isServerError);
 
     if (!message) return null;
-
-    const isServerError = message.toLowerCase().includes("servidor") || message.toLowerCase().includes("muni");
 
     return (
         <div className="flex animate-slide-up items-start gap-3 rounded-xl border border-danger/35 bg-danger/12 px-4 py-3.5">
