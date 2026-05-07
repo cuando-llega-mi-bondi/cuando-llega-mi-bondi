@@ -31,12 +31,20 @@ app.use("*", async (c, next) => {
     await next();
     const path = new URL(c.req.url).pathname;
     if (path.startsWith("/stats")) return;
+    // Cloudflare → traefik → bondi-api: el header CF-Connecting-IP tiene la IP
+    // real del cliente; X-Forwarded-For como fallback.
+    const ip =
+        c.req.header("cf-connecting-ip") ??
+        c.req.header("x-forwarded-for")?.split(",")[0]?.trim() ??
+        c.req.header("x-real-ip");
     recordRequest({
         at: start,
         method: c.req.method,
         path,
         status: c.res.status,
         durationMs: Date.now() - start,
+        ip,
+        ua: c.req.header("user-agent"),
     });
 });
 
@@ -172,6 +180,51 @@ app.post("/", async (c) => {
             return c.json(cached.payload as Record<string, unknown>);
         }
         recordError("POST /", 502, message);
+        return c.json({ error: "mgp_unavailable", message }, 502);
+    }
+});
+
+// GET /mgp/:accion?<params> — variante cacheable por Cloudflare. Mismo shape
+// PascalCase que el POST / shim, pero como GET para que CF pueda cachearla en
+// edge con TTL corto. Con 50 usuarios pidiendo la misma parada en 30s, CF
+// sirve 49 desde edge y solo 1 atraviesa hasta el server.
+app.get("/mgp/:accion", async (c) => {
+    const accion = c.req.param("accion");
+    const params: Record<string, string> = {};
+    for (const [k, v] of new URL(c.req.url).searchParams.entries()) {
+        params[k] = v;
+    }
+    const body = new URLSearchParams({ accion, ...params }).toString();
+    const key = body;
+    const now = Date.now();
+    const cached = proxyCache.get(key);
+    recordAccion(accion);
+
+    if (cached && now - cached.at < FRESH_TTL_MS) {
+        recordCache("HIT");
+        c.header("X-Cache", "HIT");
+        c.header("Cache-Control", "public, max-age=15, s-maxage=30");
+        return c.json(cached.payload as Record<string, unknown>);
+    }
+
+    try {
+        const data = await callMgp(body);
+        proxyCache.set(key, { at: now, payload: data, status: 200 });
+        recordCache("MISS");
+        c.header("X-Cache", "MISS");
+        c.header("Cache-Control", "public, max-age=15, s-maxage=30");
+        return c.json(data as Record<string, unknown>);
+    } catch (e) {
+        const message = (e as Error).message;
+        if (cached && now - cached.at < STALE_MAX_MS) {
+            recordCache("STALE");
+            c.header("X-Cache", "STALE");
+            c.header("X-Stale-Reason", message.slice(0, 120));
+            c.header("Cache-Control", "public, max-age=10, s-maxage=15");
+            return c.json(cached.payload as Record<string, unknown>);
+        }
+        recordError(`GET /mgp/${accion}`, 502, message);
+        c.header("Cache-Control", "no-store");
         return c.json({ error: "mgp_unavailable", message }, 502);
     }
 });
