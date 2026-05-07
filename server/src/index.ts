@@ -23,7 +23,17 @@ import {
 const app = new Hono();
 
 app.use(logger());
-app.use(secureHeaders());
+
+// secureHeaders agrega `cross-origin-resource-policy: same-origin` y otros
+// que CF interpreta como uncacheable para /mgp/*. Lo aplicamos a todo
+// EXCEPTO /mgp/*.
+const secureHeadersMiddleware = secureHeaders();
+app.use("*", async (c, next) => {
+    if (c.req.path.startsWith("/mgp/")) {
+        return next();
+    }
+    return secureHeadersMiddleware(c, next);
+});
 
 // Métricas: registra todas las requests salvo /stats/* (que ruidan el dashboard).
 app.use("*", async (c, next) => {
@@ -61,16 +71,23 @@ function isAllowedOrigin(origin: string | undefined): boolean {
     return ALLOWED_HOST_RES.some((re) => re.test(origin));
 }
 
-app.use(
-    "*",
-    cors({
-        origin: (origin) => (isAllowedOrigin(origin) ? origin : null),
-        credentials: true,
-        allowMethods: ["GET", "POST", "PATCH", "DELETE", "OPTIONS"],
-        allowHeaders: ["Content-Type", "Authorization"],
-        maxAge: 600,
-    }),
-);
+const corsMiddleware = cors({
+    origin: (origin) => (isAllowedOrigin(origin) ? origin : null),
+    credentials: true,
+    allowMethods: ["GET", "POST", "PATCH", "DELETE", "OPTIONS"],
+    allowHeaders: ["Content-Type", "Authorization"],
+    maxAge: 600,
+});
+
+// CORS para todas las rutas EXCEPTO /mgp/* — esa devuelve `Allow-Origin: *`
+// sin `Vary: Origin` para que Cloudflare pueda cachearla en edge sin crear
+// una entrada de cache distinta por cada origen.
+app.use("*", async (c, next) => {
+    if (c.req.path.startsWith("/mgp/")) {
+        return next();
+    }
+    return corsMiddleware(c, next);
+});
 
 app.get("/", (c) => c.json({ service: "bondi-api", ok: true }));
 app.get("/health", (c) => c.json({ ok: true, ts: new Date().toISOString() }));
@@ -201,6 +218,12 @@ app.post("/", async (c) => {
 // PascalCase que el POST / shim, pero como GET para que CF pueda cachearla en
 // edge con TTL corto. Con 50 usuarios pidiendo la misma parada en 30s, CF
 // sirve 49 desde edge y solo 1 atraviesa hasta el server.
+//
+// CORS especial: la data MGP es pública (arribos de bondi), no varía por
+// origen. Devolvemos `Access-Control-Allow-Origin: *` y NO `Vary: Origin`
+// para que CF pueda cachear una sola entrada compartida entre orígenes
+// (sin Vary, CF crearía una entrada de cache por cada origen distinto).
+
 app.get("/mgp/:accion", async (c) => {
     const accion = c.req.param("accion");
     const params: Record<string, string> = {};
@@ -212,6 +235,10 @@ app.get("/mgp/:accion", async (c) => {
     const now = Date.now();
     const cached = proxyCache.get(key);
     recordAccion(accion);
+
+    // CORS público (sin Vary): la data MGP es pública y queremos que CF
+    // cachee una sola entrada compartida entre todos los orígenes.
+    c.header("Access-Control-Allow-Origin", "*");
 
     if (cached && now - cached.at < FRESH_TTL_MS) {
         recordCache("HIT");
