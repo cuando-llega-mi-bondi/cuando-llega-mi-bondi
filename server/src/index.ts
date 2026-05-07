@@ -108,7 +108,17 @@ async function readProxyBody(c: import("hono").Context): Promise<string | null> 
     return null;
 }
 
+// Circuit breaker: cuando MGP devuelve 429, queda "open" durante este tiempo
+// y no le pegamos más. Le da espacio a enfriarse en lugar de hammerearla en
+// bucle (que es lo que la mantiene rate-limiteada). Mientras está open,
+// callMgp tira inmediatamente para que la lógica de cache stale entre.
+const BREAKER_OPEN_MS = 30_000;
+let breakerOpenUntil = 0;
+
 async function callMgp(body: string): Promise<unknown> {
+    if (Date.now() < breakerOpenUntil) {
+        throw new Error("circuit_open: appWS.php devolvió 429 reciente");
+    }
     try {
         const data = isMgpDirectEnabled()
             ? await fetchMgpDirect(body)
@@ -119,6 +129,9 @@ async function callMgp(body: string): Promise<unknown> {
         const message = (e as Error).message;
         const m = message.match(/(\d{3})/);
         const status = m ? Number(m[1]) : 0;
+        if (status === 429) {
+            breakerOpenUntil = Date.now() + BREAKER_OPEN_MS;
+        }
         recordMgp({ at: Date.now(), ok: false, status, message });
         throw e;
     }
