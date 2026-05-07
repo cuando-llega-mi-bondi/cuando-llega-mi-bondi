@@ -10,12 +10,35 @@ import { rutinasRoutes } from "./routes/rutinas.js";
 import { subscribeRoutes } from "./routes/subscribe.js";
 import { telegramRoutes } from "./routes/telegram.js";
 import { lineasRoutes } from "./routes/lineas.js";
+import { statsRoutes } from "./routes/stats.js";
 import { fetchMgpDirect, isMgpDirectEnabled } from "./lib/mgpDirect.js";
+import {
+    recordAccion,
+    recordCache,
+    recordError,
+    recordMgp,
+    recordRequest,
+} from "./stats.js";
 
 const app = new Hono();
 
 app.use(logger());
 app.use(secureHeaders());
+
+// Métricas: registra todas las requests salvo /stats/* (que ruidan el dashboard).
+app.use("*", async (c, next) => {
+    const start = Date.now();
+    await next();
+    const path = new URL(c.req.url).pathname;
+    if (path.startsWith("/stats")) return;
+    recordRequest({
+        at: start,
+        method: c.req.method,
+        path,
+        status: c.res.status,
+        durationMs: Date.now() - start,
+    });
+});
 
 // Acepta orígenes en ALLOWED_ORIGINS, cualquier *.vercel.app (preview deploys
 // cambian de URL en cada push) y cualquier *.bondimdp.com.ar / bondimdp.com.ar
@@ -78,25 +101,38 @@ async function readProxyBody(c: import("hono").Context): Promise<string | null> 
 }
 
 async function callMgp(body: string): Promise<unknown> {
-    if (isMgpDirectEnabled()) return fetchMgpDirect(body);
-    if (env.MGP_PROXY_URL) {
-        const ctrl = new AbortController();
-        const tid = setTimeout(() => ctrl.abort(), 8_000);
-        try {
-            const r = await fetch(env.MGP_PROXY_URL, {
-                method: "POST",
-                headers: { "content-type": "application/x-www-form-urlencoded" },
-                body,
-                signal: ctrl.signal,
-            });
-            const text = await r.text();
-            if (!r.ok) throw new Error(`HTTP ${r.status}`);
-            return JSON.parse(text);
-        } finally {
-            clearTimeout(tid);
-        }
+    try {
+        const data = isMgpDirectEnabled()
+            ? await fetchMgpDirect(body)
+            : await callMgpProxy(body);
+        recordMgp({ at: Date.now(), ok: true, status: 200 });
+        return data;
+    } catch (e) {
+        const message = (e as Error).message;
+        const m = message.match(/(\d{3})/);
+        const status = m ? Number(m[1]) : 0;
+        recordMgp({ at: Date.now(), ok: false, status, message });
+        throw e;
     }
-    throw new Error("no_mgp_config");
+}
+
+async function callMgpProxy(body: string): Promise<unknown> {
+    if (!env.MGP_PROXY_URL) throw new Error("no_mgp_config");
+    const ctrl = new AbortController();
+    const tid = setTimeout(() => ctrl.abort(), 8_000);
+    try {
+        const r = await fetch(env.MGP_PROXY_URL, {
+            method: "POST",
+            headers: { "content-type": "application/x-www-form-urlencoded" },
+            body,
+            signal: ctrl.signal,
+        });
+        const text = await r.text();
+        if (!r.ok) throw new Error(`HTTP ${r.status}`);
+        return JSON.parse(text);
+    } finally {
+        clearTimeout(tid);
+    }
 }
 
 app.post("/", async (c) => {
@@ -112,8 +148,11 @@ app.post("/", async (c) => {
     const key = normalizeKey(body);
     const now = Date.now();
     const cached = proxyCache.get(key);
+    const accion = new URLSearchParams(body).get("accion") ?? "(desconocida)";
+    recordAccion(accion);
 
     if (cached && now - cached.at < FRESH_TTL_MS) {
+        recordCache("HIT");
         c.header("X-Cache", "HIT");
         return c.json(cached.payload as Record<string, unknown>);
     }
@@ -121,19 +160,19 @@ app.post("/", async (c) => {
     try {
         const data = await callMgp(body);
         proxyCache.set(key, { at: now, payload: data, status: 200 });
+        recordCache("MISS");
         c.header("X-Cache", "MISS");
         return c.json(data as Record<string, unknown>);
     } catch (e) {
         const message = (e as Error).message;
         if (cached && now - cached.at < STALE_MAX_MS) {
+            recordCache("STALE");
             c.header("X-Cache", "STALE");
             c.header("X-Stale-Reason", message.slice(0, 120));
             return c.json(cached.payload as Record<string, unknown>);
         }
-        return c.json(
-            { error: "mgp_unavailable", message },
-            502,
-        );
+        recordError("POST /", 502, message);
+        return c.json({ error: "mgp_unavailable", message }, 502);
     }
 });
 
@@ -143,6 +182,7 @@ app.route("/rutinas", rutinasRoutes);
 app.route("/subscribe", subscribeRoutes);
 app.route("/telegram", telegramRoutes);
 app.route("/lineas", lineasRoutes);
+app.route("/stats", statsRoutes);
 
 app.notFound((c) => c.json({ error: "not_found" }, 404));
 app.onError((err, c) => {
