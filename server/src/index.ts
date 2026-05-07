@@ -102,6 +102,24 @@ app.get("/health", (c) => c.json({ ok: true, ts: new Date().toISOString() }));
 // rate-limitea por IP y un solo episodio nos deja varios minutos en el piso.
 const FRESH_TTL_MS = 15_000;
 const STALE_MAX_MS = 30 * 60 * 1000;
+
+// Acciones semi-estáticas: la respuesta cambia rara vez (relación parada→
+// líneas no se modifica salvo cuando la muni reasigna recorridos). Cacheamos
+// por 6h fresh + 24h stale. Reduce drásticamente las requests a MGP para
+// estas acciones sin necesidad de dumpearlas en el catálogo estático.
+const SEMI_STATIC_ACCIONES = new Set<string>([
+    "RecuperarBanderasAsociadasAParada",
+]);
+const SEMI_STATIC_FRESH_MS = 6 * 60 * 60 * 1000;
+const SEMI_STATIC_STALE_MS = 24 * 60 * 60 * 1000;
+
+function getTtls(accion: string): { fresh: number; stale: number } {
+    if (SEMI_STATIC_ACCIONES.has(accion)) {
+        return { fresh: SEMI_STATIC_FRESH_MS, stale: SEMI_STATIC_STALE_MS };
+    }
+    return { fresh: FRESH_TTL_MS, stale: STALE_MAX_MS };
+}
+
 type CacheEntry = { at: number; payload: unknown; status: number };
 const proxyCache = new Map<string, CacheEntry>();
 
@@ -187,9 +205,10 @@ app.post("/", async (c) => {
     const now = Date.now();
     const cached = proxyCache.get(key);
     const accion = new URLSearchParams(body).get("accion") ?? "(desconocida)";
+    const { fresh: freshTtl, stale: staleTtl } = getTtls(accion);
     recordAccion(accion);
 
-    if (cached && now - cached.at < FRESH_TTL_MS) {
+    if (cached && now - cached.at < freshTtl) {
         recordCache("HIT");
         c.header("X-Cache", "HIT");
         return c.json(cached.payload as Record<string, unknown>);
@@ -203,7 +222,7 @@ app.post("/", async (c) => {
         return c.json(data as Record<string, unknown>);
     } catch (e) {
         const message = (e as Error).message;
-        if (cached && now - cached.at < STALE_MAX_MS) {
+        if (cached && now - cached.at < staleTtl) {
             recordCache("STALE");
             c.header("X-Cache", "STALE");
             c.header("X-Stale-Reason", message.slice(0, 120));
@@ -234,16 +253,21 @@ app.get("/mgp/:accion", async (c) => {
     const key = body;
     const now = Date.now();
     const cached = proxyCache.get(key);
+    const { fresh: freshTtl, stale: staleTtl } = getTtls(accion);
+    const isSemiStatic = SEMI_STATIC_ACCIONES.has(accion);
+    // CF edge TTL: 21600s (6h) para semi-static, 30s para live.
+    const sMaxAge = isSemiStatic ? 21_600 : 30;
+    const browserMaxAge = isSemiStatic ? 3_600 : 15;
     recordAccion(accion);
 
     // CORS público (sin Vary): la data MGP es pública y queremos que CF
     // cachee una sola entrada compartida entre todos los orígenes.
     c.header("Access-Control-Allow-Origin", "*");
 
-    if (cached && now - cached.at < FRESH_TTL_MS) {
+    if (cached && now - cached.at < freshTtl) {
         recordCache("HIT");
         c.header("X-Cache", "HIT");
-        c.header("Cache-Control", "public, max-age=15, s-maxage=30");
+        c.header("Cache-Control", `public, max-age=${browserMaxAge}, s-maxage=${sMaxAge}`);
         return c.json(cached.payload as Record<string, unknown>);
     }
 
@@ -252,15 +276,16 @@ app.get("/mgp/:accion", async (c) => {
         proxyCache.set(key, { at: now, payload: data, status: 200 });
         recordCache("MISS");
         c.header("X-Cache", "MISS");
-        c.header("Cache-Control", "public, max-age=15, s-maxage=30");
+        c.header("Cache-Control", `public, max-age=${browserMaxAge}, s-maxage=${sMaxAge}`);
         return c.json(data as Record<string, unknown>);
     } catch (e) {
         const message = (e as Error).message;
-        if (cached && now - cached.at < STALE_MAX_MS) {
+        if (cached && now - cached.at < staleTtl) {
             recordCache("STALE");
             c.header("X-Cache", "STALE");
             c.header("X-Stale-Reason", message.slice(0, 120));
-            c.header("Cache-Control", "public, max-age=10, s-maxage=15");
+            // Stale: TTL más corto para refrescar antes cuando MGP vuelva.
+            c.header("Cache-Control", `public, max-age=${Math.min(browserMaxAge, 10)}, s-maxage=${Math.min(sMaxAge, 15)}`);
             return c.json(cached.payload as Record<string, unknown>);
         }
         recordError(`GET /mgp/${accion}`, 502, message);
