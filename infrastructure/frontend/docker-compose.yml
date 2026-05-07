@@ -1,0 +1,53 @@
+# Bondi MDP — Frontend self-hosted con Next.js standalone + traefik.
+#
+# Asume las networks externas `web` (traefik) e `internal` (DB / bondi-api)
+# ya creadas por el stack de aeterna. El stack del backend vive en
+# server/docker-compose.yml.
+#
+# Build:   docker compose -f infrastructure/frontend/docker-compose.yml build
+# Run:     docker compose -f infrastructure/frontend/docker-compose.yml up -d
+# Logs:    docker compose -f infrastructure/frontend/docker-compose.yml logs -f
+# Stop:    docker compose -f infrastructure/frontend/docker-compose.yml down
+
+services:
+  bondi-front:
+    build:
+      context: ../..
+      dockerfile: infrastructure/frontend/Dockerfile
+      args:
+        # Las NEXT_PUBLIC_* se hornean en el bundle del cliente en build-time.
+        # Cambiarlas requiere rebuild.
+        NEXT_PUBLIC_CUANDO_API_URL: ${NEXT_PUBLIC_CUANDO_API_URL:-https://bondi.aeterna.red}
+        NEXT_PUBLIC_OSRM_URL: ${NEXT_PUBLIC_OSRM_URL:-https://osrm.aeterna.red}
+        NEXT_PUBLIC_VAPID_PUBLIC: ${NEXT_PUBLIC_VAPID_PUBLIC}
+        NEXT_PUBLIC_USE_STATIC_REFERENCE: "true"
+        NEXT_PUBLIC_SUPABASE_URL: ${NEXT_PUBLIC_SUPABASE_URL:-}
+        NEXT_PUBLIC_SUPABASE_ANON_KEY: ${NEXT_PUBLIC_SUPABASE_ANON_KEY:-}
+    image: bondi-front:latest
+    container_name: bondi-front
+    restart: unless-stopped
+    env_file:
+      # Server-side env vars (MGP keys, etc). NEXT_PUBLIC_* no van acá:
+      # ya están horneadas en el build.
+      - .env.local
+    networks:
+      - web
+      - internal
+    labels:
+      - traefik.enable=true
+      - traefik.docker.network=web
+      - traefik.http.routers.bondi-front.entrypoints=web
+      - traefik.http.routers.bondi-front.rule=Host(`bondimdp.aeterna.red`)
+      - traefik.http.services.bondi-front.loadbalancer.server.port=3000
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3000/').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+
+networks:
+  web:
+    external: true
+  internal:
+    external: true
