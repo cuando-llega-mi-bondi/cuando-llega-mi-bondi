@@ -27,7 +27,7 @@ Para orientarte rápido, así está organizado el código hoy:
 - **`/app`**: rutas del [App Router](https://nextjs.org/docs/app) de Next.js.
   - `layout.tsx`, `page.tsx`: shell y página principal.
   - `/consultar`, `/recorrido`, `/acerca`: flujos de consulta, mapa de recorrido y página institucional.
-  - `/app/api/cuando/route.ts`: **proxy** hacia uno o más hosts intermedios (`MGP_PROXY_*`, `MGP_ORACLE_*`) y desde ahí a la API municipal.
+  - `/app/api/reference/route.ts`: sirve catálogo (líneas, calles, paradas) desde el dump estático en `data/mgp-static-dump.json`. Único path de datos MGP que vive en Vercel.
   - `/app/api/telegram-webhook/route.ts`: webhook opcional del bot de Telegram (Supabase + token del bot).
 - **`/components`**: UI en React (`HomeClient`, `SearchFlow`, `RouteMap`, `Combobox`, carpeta `search/`, iconos, etc.).
 - **`/lib/api`**: cliente del proxy (`client.ts` con `post` / `swrFetcher`) y módulos por dominio (`lineas.ts`, `arribos.ts`, `recorrido.ts`, …).
@@ -59,11 +59,11 @@ Si una línea no está disponible en la API oficial de la Municipalidad, podés 
      geoJsonPath: "/nombre-linea.geojson",
    }
    ```
-3. **Validación:** Una vez agregado, la línea aparecerá automáticamente en el buscador principal y el mapa cargará el recorrido desde el archivo local sin consultar el proxy.
+3. **Validación:** Una vez agregado, la línea aparecerá automáticamente en el buscador principal y el mapa cargará el recorrido desde el archivo local sin consultar el backend.
 
 ## Variables de entorno (desarrollo avanzado)
 
-Para que **`/api/cuando`** responda en tu máquina o en el deploy, hace falta al menos **`MGP_PROXY_URL`** o **`MGP_ORACLE_URL`** (y tokens si tu proxy los exige). Otra opción es definir **`NEXT_PUBLIC_CUANDO_API_URL`** apuntando a un endpoint HTTPS ya desplegado compatible, y así el cliente no usa la ruta interna. El detalle de cada variable está en el README.
+Para acciones en vivo (arribos, banderas) tenés que definir **`NEXT_PUBLIC_CUANDO_API_URL`** apuntando al backend self-hosted (`server/`). No hay proxy interno en este front: la muni bloquea las IPs de Vercel, así que el cliente pega directo a esa URL. Sin la env var, `post()` tira un error explícito en el primer uso. El detalle de cada variable está en el README.
 
 Para **Telegram** y **ubicación en vivo** (mapa + webhook), además necesitás `NEXT_PUBLIC_TELEGRAM_BOT_USERNAME`, `TELEGRAM_BOT_TOKEN`, `NEXT_PUBLIC_SUPABASE_URL` y `NEXT_PUBLIC_SUPABASE_ANON_KEY`.
 

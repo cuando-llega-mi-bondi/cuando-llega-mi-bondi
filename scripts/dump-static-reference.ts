@@ -1,10 +1,10 @@
 /**
  * Genera un JSON con datos de referencia MGP (líneas, calles, intersecciones,
- * paradas por tripleta y recorrido/ramales para mapa). Requiere que la API
- * responda en NEXT_PUBLIC_CUANDO_API_URL (por defecto http://localhost:3000/api/cuando).
+ * paradas por tripleta y recorrido/ramales para mapa). Requiere
+ * `NEXT_PUBLIC_CUANDO_API_URL` apuntando al backend self-hosted (no hay ruta
+ * interna en este repo: la muni bloquea las IPs de Vercel).
  *
  * Uso: npm run dump-static
- * Con servidor dev en marcha, o apuntando a un deploy con env cargado.
  */
 
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
@@ -68,11 +68,14 @@ async function main(): Promise<void> {
     const rawUrl =
         process.env.NEXT_PUBLIC_CUANDO_API_URL?.trim() ||
         process.env.DUMP_MGP_URL?.trim();
-    const baseUrl = rawUrl
-        ? /^https?:\/\//i.test(rawUrl)
-            ? rawUrl.replace(/\/$/, "")
-            : `https://${rawUrl.replace(/^\/+/, "").replace(/\/$/, "")}`
-        : "http://localhost:3000/api/cuando";
+    if (!rawUrl) {
+        throw new Error(
+            "Configurá NEXT_PUBLIC_CUANDO_API_URL (o DUMP_MGP_URL) apuntando al backend self-hosted antes de correr el dump.",
+        );
+    }
+    const baseUrl = /^https?:\/\//i.test(rawUrl)
+        ? rawUrl.replace(/\/$/, "")
+        : `https://${rawUrl.replace(/^\/+/, "").replace(/\/$/, "")}`;
 
     if (!process.env.NEXT_PUBLIC_CUANDO_API_URL?.trim()) {
         process.env.NEXT_PUBLIC_CUANDO_API_URL = baseUrl;

@@ -2,14 +2,16 @@
 //
 // Strategies per resource type:
 //   - /_next/static/, /icon-*, fonts: cache-first (immutable, hashed filenames).
-//   - Reference API actions (lineas, calles, recorridos): stale-while-revalidate.
-//   - Live arrivals: network-first (fresh data needed).
 //   - HTML / pages: network-first with cache fallback.
+//
+// Reference/live API traffic ya no se intercepta: las acciones de catálogo van
+// al mismo origen (`/api/reference`, dump estático) y las de tiempo real salen
+// cross-origin al backend self-hosted, que el SW no toca por la guarda de
+// `url.origin !== self.location.origin`.
 
 const CACHE_VERSION = 'v4';
 const STATIC_CACHE = `bondimdp-static-${CACHE_VERSION}`;
 const PAGES_CACHE = `bondimdp-pages-${CACHE_VERSION}`;
-const API_CACHE = `bondimdp-api-${CACHE_VERSION}`;
 
 const PRECACHE_URLS = [
   '/',
@@ -18,16 +20,6 @@ const PRECACHE_URLS = [
   '/icon-192x192.png',
   '/icon-512x512.png',
 ];
-
-const REFERENCE_ACTIONS = new Set([
-  'RecuperarLineaPorCuandoLlega',
-  'RecuperarCallesPrincipalPorLinea',
-  'RecuperarInterseccionPorLineaYCalle',
-  'RecuperarParadasConBanderaPorLineaCalleEInterseccion',
-  'RecuperarRecorridoParaMapaAbrevYAmpliPorEntidadYLinea',
-  'RecuperarParadasConBanderaYDestinoPorLinea',
-  'RecuperarBanderasAsociadasAParada',
-]);
 
 // ── Install ──────────────────────────────────────────────────────────────────
 self.addEventListener('install', (event) => {
@@ -40,7 +32,7 @@ self.addEventListener('install', (event) => {
 
 // ── Activate ─────────────────────────────────────────────────────────────────
 self.addEventListener('activate', (event) => {
-  const allowed = new Set([STATIC_CACHE, PAGES_CACHE, API_CACHE]);
+  const allowed = new Set([STATIC_CACHE, PAGES_CACHE]);
   event.waitUntil(
     caches.keys().then((cacheNames) => {
       return Promise.all(
@@ -61,13 +53,6 @@ self.addEventListener('fetch', (event) => {
   const url = new URL(request.url);
 
   if (url.origin !== self.location.origin) return;
-
-  // POST a /api/cuando (reference actions): stale-while-revalidate por body.
-  if (request.method === 'POST' && url.pathname.startsWith('/api/cuando')) {
-    event.respondWith(handleApiPost(request));
-    return;
-  }
-
   if (request.method !== 'GET') return;
 
   // Immutable static assets (Next.js hashed filenames, app icons).
@@ -146,55 +131,4 @@ async function staleWhileRevalidate(request, cacheName) {
   const fresh = await networkPromise;
   if (fresh) return fresh;
   return new Response('Offline', { status: 503 });
-}
-
-// POST requests cannot be matched by the standard Cache API, so we build a
-// synthetic GET cache key from the request body and reuse staleWhileRevalidate.
-async function handleApiPost(request) {
-  const body = await request.clone().text();
-  const params = new URLSearchParams(body);
-  const accion = params.get('accion');
-
-  if (!accion || !REFERENCE_ACTIONS.has(accion)) {
-    return fetch(request);
-  }
-
-  const cache = await caches.open(API_CACHE);
-  const cacheKey = await syntheticKey(request, body);
-  const cached = await cache.match(cacheKey);
-
-  const networkPromise = fetch(request)
-    .then(async (response) => {
-      if (response.ok) {
-        const cloned = response.clone();
-        const stored = new Response(await cloned.blob(), {
-          status: cloned.status,
-          headers: { 'Content-Type': 'application/json' },
-        });
-        cache.put(cacheKey, stored);
-      }
-      return response;
-    })
-    .catch(() => null);
-
-  if (cached) return cached;
-  const fresh = await networkPromise;
-  if (fresh) return fresh;
-  return new Response(
-    JSON.stringify({ error: 'Sin conexión. Revisá tu red.' }),
-    { status: 503, headers: { 'Content-Type': 'application/json' } }
-  );
-}
-
-async function syntheticKey(request, body) {
-  const url = new URL(request.url);
-  const digest = await crypto.subtle.digest(
-    'SHA-256',
-    new TextEncoder().encode(body),
-  );
-  const hash = Array.from(new Uint8Array(digest))
-    .map((b) => b.toString(16).padStart(2, '0'))
-    .join('');
-  url.pathname = `${url.pathname}/__cache/${hash}`;
-  return new Request(url.toString(), { method: 'GET' });
 }
