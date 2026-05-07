@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
+import Link from "next/link";
 
 interface ServiceDownModalProps {
     isOpen: boolean;
@@ -113,14 +114,13 @@ export function ServiceDownModal({ isOpen, onClose }: ServiceDownModalProps) {
 
                 {/* Footer */}
                 <div className="border-t border-border/30 bg-muted/30 px-6 py-4">
-                    <button
-                        ref={closeButtonRef}
-                        type="button"
+                    <Link
+                        href="/acerca"
                         onClick={onClose}
-                        className="w-full rounded-xl border border-border/40 bg-card px-4 py-3 font-sans text-sm font-semibold text-foreground transition-all hover:bg-muted active:scale-[0.98]"
+                        className="flex w-full items-center justify-center rounded-xl border border-border/40 bg-card px-4 py-3 font-sans text-sm font-semibold text-foreground transition-all hover:bg-muted active:scale-[0.98]"
                     >
                         Entendido 🤝
-                    </button>
+                    </Link>
                 </div>
             </div>
         </div>,
