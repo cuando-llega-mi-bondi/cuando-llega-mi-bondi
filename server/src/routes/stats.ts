@@ -1,11 +1,13 @@
 import { Hono } from "hono";
 import { query } from "../db.js";
 import { snapshot } from "../stats.js";
+import { getWarmupStats } from "../lib/banderasWarmup.js";
 
 export const statsRoutes = new Hono();
 
 statsRoutes.get("/data", async (c) => {
     const snap = snapshot();
+    const warmup = getWarmupStats();
     let db: Record<string, number | string> = {};
     try {
         const r = await query<{ k: string; n: number }>(`
@@ -26,7 +28,7 @@ statsRoutes.get("/data", async (c) => {
     } catch (e) {
         db = { error: (e as Error).message };
     }
-    return c.json({ ...snap, db });
+    return c.json({ ...snap, db, warmup });
 });
 
 const HTML = /* html */ `<!DOCTYPE html>
@@ -195,6 +197,18 @@ const HTML = /* html */ `<!DOCTYPE html>
     <div class="row"><span class="k">rutinas</span><span class="v" id="db-rut">–</span></div>
     <div class="row"><span class="k">push subs</span><span class="v" id="db-subs">–</span></div>
   </div>
+
+  <div class="card">
+    <h2>warmup banderas (background)</h2>
+    <div class="row"><span class="k">paradas con cache</span><span class="v" id="wu-cached">–</span></div>
+    <div class="row"><span class="k">cobertura</span><span class="v" id="wu-pct">–</span></div>
+    <div style="background:var(--surface-2);border-radius:6px;height:8px;margin:8px 0;overflow:hidden;">
+      <div id="wu-bar" style="background:var(--green);height:100%;width:0%;transition:width 0.5s;"></div>
+    </div>
+    <div class="row"><span class="k">faltan</span><span class="v" id="wu-pending">–</span></div>
+    <div class="row"><span class="k">última fetch</span><span class="v" id="wu-last">–</span></div>
+    <div class="row"><span class="k">próximo tick</span><span class="v" id="wu-next">–</span></div>
+  </div>
 </div>
 
 <div class="grid" style="margin-top:16px">
@@ -209,6 +223,16 @@ const HTML = /* html */ `<!DOCTYPE html>
   <div class="card">
     <h2>status codes</h2>
     <table id="by-status"><tbody></tbody></table>
+  </div>
+
+  <div class="card">
+    <h2>top IPs (de dónde vienen)</h2>
+    <table id="top-ips"><tbody></tbody></table>
+  </div>
+
+  <div class="card">
+    <h2>top user-agents</h2>
+    <table id="top-uas"><tbody></tbody></table>
   </div>
 </div>
 
@@ -314,6 +338,23 @@ async function refresh() {
     document.getElementById('db-rut').textContent = db.rutinas ?? '–';
     document.getElementById('db-subs').textContent = db.subscriptions ?? '–';
 
+    const wu = d.warmup || {};
+    if (wu.enabled) {
+      document.getElementById('wu-cached').textContent = wu.cached + ' / ' + wu.totalParadas;
+      const pct = wu.totalParadas ? Math.round(wu.cached / wu.totalParadas * 100) : 0;
+      document.getElementById('wu-pct').textContent = pct + '%';
+      document.getElementById('wu-bar').style.width = pct + '%';
+      document.getElementById('wu-pending').textContent = wu.pendingFirstFetch;
+      document.getElementById('wu-last').textContent = wu.lastFetchAt
+        ? fmtAge(wu.lastFetchAt) + ' atrás (' + (wu.lastFetchParada || '?') + ')'
+        : 'nunca';
+      document.getElementById('wu-next').textContent = wu.nextTickAt
+        ? 'en ' + Math.max(0, Math.round((wu.nextTickAt - Date.now())/1000)) + 's'
+        : '–';
+    } else {
+      document.getElementById('wu-cached').textContent = 'desactivado';
+    }
+
     rowsTo(document.getElementById('top-paths'),
       d.requests.topPaths.map(p => '<tr><td>' + p.key + '</td><td class="r">' + p.count + '</td></tr>'));
     rowsTo(document.getElementById('top-acciones'),
@@ -321,6 +362,10 @@ async function refresh() {
     rowsTo(document.getElementById('by-status'),
       Object.entries(d.requests.byStatus).sort((a,b)=>a[0]-b[0]).map(([s,n]) =>
         '<tr><td class="' + statusClass(+s) + '">' + s + '</td><td class="r">' + n + '</td></tr>'));
+    rowsTo(document.getElementById('top-ips'),
+      (d.requests.topIps || []).map(p => '<tr><td>' + p.key + '</td><td class="r">' + p.count + '</td></tr>'));
+    rowsTo(document.getElementById('top-uas'),
+      (d.requests.topUas || []).map(p => '<tr><td>' + p.key + '</td><td class="r">' + p.count + '</td></tr>'));
 
     rowsTo(document.getElementById('recent'),
       d.recentRequests.map(r => '<tr><td class="muted">' + fmtAge(r.at) + '</td><td>' + r.method + ' ' + r.path + '</td><td class="r ' + statusClass(r.status) + '">' + r.status + '</td><td class="r muted">' + r.durationMs + '</td></tr>'));

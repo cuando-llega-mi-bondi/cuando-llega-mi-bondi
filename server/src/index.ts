@@ -12,6 +12,7 @@ import { telegramRoutes } from "./routes/telegram.js";
 import { lineasRoutes } from "./routes/lineas.js";
 import { statsRoutes } from "./routes/stats.js";
 import { fetchMgpDirect, isMgpDirectEnabled } from "./lib/mgpDirect.js";
+import { startBanderasWarmup } from "./lib/banderasWarmup.js";
 import {
     recordAccion,
     recordCache,
@@ -314,3 +315,11 @@ serve(
         console.log(`[bondi-api] http://${info.address}:${info.port}`);
     },
 );
+
+// Warmup background del cache de banderas: descarga gradual hasta tener todas
+// las paradas, después refresh semanal. Estado expuesto en /stats/data.warmup.
+startBanderasWarmup({
+    proxyCache,
+    callMgp,
+    isBreakerOpen: () => Date.now() < breakerOpenUntil,
+}).catch((e) => console.error("[warmup] failed to start:", e));
