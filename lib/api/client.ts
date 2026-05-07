@@ -83,12 +83,13 @@ export async function post(accion: string, params: ActionParams = {}) {
         );
     }
 
-    const body = new URLSearchParams({ accion, ...params }).toString();
-    const res = await fetch(BASE_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body,
-    });
+    // GET /mgp/:accion?params: ruta cacheable por Cloudflare. Con TTL corto en
+    // edge, una sola request al backend sirve a todos los usuarios que pidan
+    // la misma combinación en la ventana de cache. Mismo shape que el POST /
+    // shim (PascalCase MGP raw).
+    const qs = new URLSearchParams(params).toString();
+    const url = `${BASE_URL}/mgp/${encodeURIComponent(accion)}${qs ? `?${qs}` : ""}`;
+    const res = await fetch(url, { method: "GET" });
 
     if (!res.ok) {
         throw new Error(`HTTP ${res.status}`);
