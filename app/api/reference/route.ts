@@ -106,7 +106,36 @@ export async function GET(req: NextRequest) {
                 const puntos = (row.recorrido?.ramales ?? []).flatMap(
                     (r) => r.puntos ?? [],
                 );
-                return NextResponse.json({ puntos });
+                // Rebuild legacy `paradas` shape (Record<id, LegacyParadaEntry[]>)
+                // from the precomputed ParadaMapa[] so getRecorridoMapaCliente's
+                // parseLegacyParadasMap can recover the full stop list. Without
+                // this the client falls back to IsPuntoPaso=true points and
+                // shows a fraction of the real stops.
+                const paradas: Record<
+                    string,
+                    {
+                        Codigo: string;
+                        Identificador: string;
+                        Descripcion: string;
+                        AbreviaturaBandera: string;
+                        AbreviaturaAmpliadaBandera: string;
+                        LatitudParada: string;
+                        LongitudParada: string;
+                    }[]
+                > = {};
+                for (const p of row.recorrido?.paradas ?? []) {
+                    const ramales = p.ramales.length ? p.ramales : [""];
+                    paradas[p.id] = ramales.map((ramal) => ({
+                        Codigo: p.codigo,
+                        Identificador: p.id,
+                        Descripcion: p.label,
+                        AbreviaturaBandera: ramal,
+                        AbreviaturaAmpliadaBandera: ramal,
+                        LatitudParada: String(p.lat),
+                        LongitudParada: String(p.lng),
+                    }));
+                }
+                return NextResponse.json({ puntos, paradas });
             }
             default:
                 return NextResponse.json(
