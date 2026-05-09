@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { getLineas, getRecorridoMapaCliente } from "@/lib/api";
 import { getCache, setCache } from "@/lib/storage/localCache";
+import { withViewTransition } from "@/lib/viewTransition";
 import type { Linea, ParadaMapa, PuntoRecorrido, RamalData } from "@/lib/types";
 import { MANUAL_LINES, MANUAL_ROUTES, mergeLineasWithManual } from "@/lib/manualRoutes";
 import { supabase } from "@/lib/supabaseClient";
@@ -177,13 +178,15 @@ export default function RecorridoClient() {
 
   // ── Actions ──────────────────────────────────────────────────────────────────
   async function selectLine(line: Linea) {
-    setSelectedLine(line);
-    setMapLoading(true);
-    setMapError(null);
-    setStep("map");
-    setRamales([]);
-    setSelectedRamal(null);
-    setParadas([]);
+    withViewTransition(() => {
+      setSelectedLine(line);
+      setMapLoading(true);
+      setMapError(null);
+      setStep("map");
+      setRamales([]);
+      setSelectedRamal(null);
+      setParadas([]);
+    });
 
     try {
       if (line.isManual) {
@@ -295,14 +298,16 @@ export default function RecorridoClient() {
   }, [linesLoading, lines, searchParams, router]);
 
   function goBack() {
-    setStep("selector");
-    setSearch("");
-    setSelectedLine(null);
-    setRamales([]);
-    setSelectedRamal(null);
-    setParadas([]);
-    setMapError(null);
-    setRawLiveBuses([]);
+    withViewTransition(() => {
+      setStep("selector");
+      setSearch("");
+      setSelectedLine(null);
+      setRamales([]);
+      setSelectedRamal(null);
+      setParadas([]);
+      setMapError(null);
+      setRawLiveBuses([]);
+    });
   }
 
   // ── Supabase Live Locations Subscription ─────────────────────────────────────

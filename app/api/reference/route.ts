@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getCachedStaticDump } from "@/lib/server/loadStaticDump";
+import { getLineaData, getLineas } from "@/lib/server/loadStaticDump";
 import { STATIC_REFERENCE_ACCIONES } from "@/lib/staticReferenceAcciones";
 import { paradaLookupKey } from "@/lib/staticDumpTypes";
 
@@ -12,20 +12,19 @@ export async function GET(req: NextRequest) {
         );
     }
 
-    const dump = await getCachedStaticDump();
-    if (!dump) {
-        return NextResponse.json(
-            { error: "Static dump not available" },
-            { status: 404 },
-        );
-    }
-
     const codLinea = req.nextUrl.searchParams.get("codLinea") ?? "";
 
     try {
         switch (accion) {
             case "RecuperarLineaPorCuandoLlega": {
-                return NextResponse.json({ lineas: dump.lineas ?? [] });
+                const lineas = await getLineas();
+                if (!lineas) {
+                    return NextResponse.json(
+                        { error: "Static dump not available" },
+                        { status: 404 },
+                    );
+                }
+                return NextResponse.json({ lineas });
             }
             case "RecuperarCallesPrincipalPorLinea": {
                 if (!codLinea) {
@@ -34,7 +33,7 @@ export async function GET(req: NextRequest) {
                         { status: 404 },
                     );
                 }
-                const row = dump.byLinea[codLinea];
+                const row = await getLineaData(codLinea);
                 if (!row) {
                     return NextResponse.json(
                         { error: "Unknown line" },
@@ -55,7 +54,7 @@ export async function GET(req: NextRequest) {
                         { status: 404 },
                     );
                 }
-                const row = dump.byLinea[codLinea];
+                const row = await getLineaData(codLinea);
                 if (!row) {
                     return NextResponse.json(
                         { error: "Unknown line" },
@@ -77,7 +76,7 @@ export async function GET(req: NextRequest) {
                         { status: 404 },
                     );
                 }
-                const row = dump.byLinea[codLinea];
+                const row = await getLineaData(codLinea);
                 if (!row) {
                     return NextResponse.json(
                         { error: "Unknown line" },
@@ -96,7 +95,7 @@ export async function GET(req: NextRequest) {
                         { status: 404 },
                     );
                 }
-                const row = dump.byLinea[codLinea];
+                const row = await getLineaData(codLinea);
                 if (!row) {
                     return NextResponse.json(
                         { error: "Unknown line" },

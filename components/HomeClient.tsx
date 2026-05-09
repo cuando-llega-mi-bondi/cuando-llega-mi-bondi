@@ -15,6 +15,7 @@ import { useOtrasLineas } from "@/lib/hooks/useOtrasLineas";
 import { useParadas } from "@/lib/hooks/useParadas";
 import { useUrlSync } from "@/lib/hooks/useUrlSync";
 import { getCache } from "@/lib/storage/localCache";
+import { withViewTransition } from "@/lib/viewTransition";
 import type { Arribo, Favorito, HistorialEntry, Linea } from "@/lib/types";
 import {
   arriboBanderaLabel,
@@ -351,13 +352,17 @@ export function HomeClient({ children }: { children?: ReactNode }) {
 
   const handleConsultar = useCallback(() => {
     if (!paradaId) return;
-    setIsConsulting(true);
-    setSheetOpen(true);
+    withViewTransition(() => {
+      setIsConsulting(true);
+      setSheetOpen(true);
+    });
   }, [paradaId]);
 
   const handleCloseSheet = useCallback(() => {
-    setSheetOpen(false);
-    setIsConsulting(false);
+    withViewTransition(() => {
+      setSheetOpen(false);
+      setIsConsulting(false);
+    });
   }, []);
 
   // ─── Favoritos ────────────────────────────────────────────────────────────
@@ -436,15 +441,17 @@ export function HomeClient({ children }: { children?: ReactNode }) {
   );
 
   const fetchFavArribos = useCallback((fav: Favorito) => {
-    setTab("buscar");
-    // FIX: usamos el campo directo en lugar de split("_")
-    setSel({
-      ...EMPTY_SELECTION,
-      paradaId: fav.identificadorParada,
-      codLinea: fav.codigoLineaParada,
+    withViewTransition(() => {
+      setTab("buscar");
+      // FIX: usamos el campo directo en lugar de split("_")
+      setSel({
+        ...EMPTY_SELECTION,
+        paradaId: fav.identificadorParada,
+        codLinea: fav.codigoLineaParada,
+      });
+      setIsConsulting(true);
+      setSheetOpen(true);
     });
-    setIsConsulting(true);
-    setSheetOpen(true);
   }, []);
 
   // ─── Otras líneas ─────────────────────────────────────────────────────────
@@ -525,15 +532,17 @@ export function HomeClient({ children }: { children?: ReactNode }) {
 
   // ─── Historial ────────────────────────────────────────────────────────────
   const fetchHistEntry = useCallback((entry: HistorialEntry) => {
-    setTab("buscar");
-    setSel({
-      ...EMPTY_SELECTION,
-      paradaId: entry.paradaId,
-      codLinea: entry.codLinea,
+    withViewTransition(() => {
+      setTab("buscar");
+      setSel({
+        ...EMPTY_SELECTION,
+        paradaId: entry.paradaId,
+        codLinea: entry.codLinea,
+      });
+      savedHistRef.current = "";
+      setIsConsulting(true);
+      setSheetOpen(true);
     });
-    savedHistRef.current = "";
-    setIsConsulting(true);
-    setSheetOpen(true);
   }, []);
 
   return (

@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "dump-static": "tsx scripts/dump-static-reference.ts"
+    "dump-static": "tsx scripts/dump-static-reference.ts",
+    "split-static": "tsx scripts/split-static-dump.ts"
   },
   "dependencies": {
     "@khmyznikov/pwa-install": "^0.6.3",
@@ -31,6 +32,7 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "babel-plugin-react-compiler": "^1.0.0",
     "eslint": "^9",
     "eslint-config-next": "16.2.2",
     "tailwindcss": "^4",

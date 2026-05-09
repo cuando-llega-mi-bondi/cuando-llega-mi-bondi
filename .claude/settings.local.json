@@ -1,0 +1,16 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(Get-ChildItem -Path . -Recurse -Depth 2)",
+      "Bash(Select-Object -Property FullName)",
+      "Bash(Get-ChildItem -Path \"C:\\\\Users\\\\matic\\\\OneDrive\\\\Escritorio\\\\celiz\\\\DevEnv\\\\cuando-llega-mi-bondi\" -Force)",
+      "Bash(Select-Object Name, PSIsContainer)",
+      "Bash(xargs wc -l)",
+      "Bash(findstr -i \"cache\")",
+      "Bash(bun run *)",
+      "Bash(node -e \"const R=require\\('react'\\); console.log\\('keys with View:', Object.keys\\(R\\).filter\\(k=>/view/i.test\\(k\\)\\)\\); console.log\\('all keys count:', Object.keys\\(R\\).length\\); console.log\\('version:', R.version\\);\")",
+      "Bash(node -e \"const R=require\\('react'\\); const all=Object.keys\\(R\\); console.log\\('all React exports:'\\); console.log\\(all.join\\('\\\\n'\\)\\);\")",
+      "Bash(node -e \"try { const R=require\\('react/experimental'\\); console.log\\(Object.keys\\(R\\).filter\\(k=>/view/i.test\\(k\\)\\)\\); } catch\\(e\\) { console.log\\('no react/experimental:', e.message\\); }; try { const D=require\\('react-dom'\\); console.log\\('react-dom keys w/ View:', Object.keys\\(D\\).filter\\(k=>/view/i.test\\(k\\)\\)\\); } catch\\(e\\) {}\")"
+    ]
+  }
+}

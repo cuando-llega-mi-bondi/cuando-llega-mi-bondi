@@ -1,64 +1,58 @@
 /**
- * Carga `data/mgp-static-dump.json` (generado con `bun run dump-static` / `npm run dump-static`).
+ * Acceso a la referencia estática MGP partida en `data/static/`:
  *
- * Activación en cliente: `NEXT_PUBLIC_USE_STATIC_REFERENCE=true` en [`lib/api/client.ts`](../api/client.ts),
- * que llama a `GET /api/reference` en lugar de la muni para acciones de catálogo.
+ *   data/static/lineas.json              → `getLineas()`
+ *   data/static/linea/<codLinea>.json    → `getLineaData(codLinea)`
  *
- * Deploy: la carpeta `data/` está en `.gitignore`; en producción hay que proveer el archivo
- * (artifact en CI, volumen, blob, o quitar el ignore si versionás el dump).
+ * Ambas funciones usan `'use cache'` con `cacheLife('max')`. Invalidación
+ * vía `revalidateTag('mgp-lineas')` / `revalidateTag(\`mgp-linea-<cod>\`)`
+ * cuando se regenera el dump.
  *
- * Override de ruta: `STATIC_REFERENCE_DUMP_PATH` (absoluto o relativo al cwd del proceso Node).
+ * Generación: el script `scripts/split-static-dump.ts` produce estos archivos
+ * a partir de `data/mgp-static-dump.json` (la fuente de verdad). El JSON
+ * monolítico no se lee en runtime.
  */
 
-import { readFile, stat } from "node:fs/promises";
+import { readFile } from "node:fs/promises";
 import path from "node:path";
-import type { MgpStaticDump } from "@/lib/staticDumpTypes";
+import { cacheLife, cacheTag } from "next/cache";
+import type { Linea } from "@/lib/types";
+import type { StaticLineDump } from "@/lib/staticDumpTypes";
 
-type DumpCacheEntry = {
-    path: string;
-    mtimeMs: number;
-    dump: MgpStaticDump;
-};
+const STATIC_DIR = path.join(
+    process.cwd(),
+    /* turbopackIgnore: true */ "data",
+    "static",
+);
 
-let dumpCache: DumpCacheEntry | null = null;
-
-function resolveDumpPath(): string {
-    const override = process.env.STATIC_REFERENCE_DUMP_PATH?.trim();
-    if (override) {
-        return path.isAbsolute(override)
-            ? override
-            : path.join(process.cwd(), override);
+export async function getLineas(): Promise<Linea[] | null> {
+    "use cache";
+    cacheLife("max");
+    cacheTag("mgp-lineas");
+    try {
+        const raw = await readFile(
+            path.join(STATIC_DIR, "lineas.json"),
+            "utf-8",
+        );
+        return JSON.parse(raw) as Linea[];
+    } catch {
+        return null;
     }
-    return path.join(
-        process.cwd(),
-        /* turbopackIgnore: true */ "data",
-        "mgp-static-dump.json",
-    );
 }
 
-/**
- * Loads and parses the static dump once per process (or when the file changes).
- * `unstable_cache` is not used: Next.js caps Data Cache entries at 2MB and this dump is larger.
- */
-export async function getCachedStaticDump(): Promise<MgpStaticDump | null> {
-    const dumpPath = resolveDumpPath();
+export async function getLineaData(
+    codLinea: string,
+): Promise<StaticLineDump | null> {
+    "use cache";
+    cacheLife("max");
+    cacheTag(`mgp-linea-${codLinea}`);
     try {
-        const st = await stat(dumpPath);
-        if (
-            dumpCache &&
-            dumpCache.path === dumpPath &&
-            dumpCache.mtimeMs === st.mtimeMs
-        ) {
-            return dumpCache.dump;
-        }
-        const raw = await readFile(dumpPath, "utf-8");
-        const dump = JSON.parse(raw) as MgpStaticDump;
-        dumpCache = { path: dumpPath, mtimeMs: st.mtimeMs, dump };
-        return dump;
+        const raw = await readFile(
+            path.join(STATIC_DIR, "linea", `${codLinea}.json`),
+            "utf-8",
+        );
+        return JSON.parse(raw) as StaticLineDump;
     } catch {
-        if (dumpCache?.path === dumpPath) {
-            dumpCache = null;
-        }
         return null;
     }
 }
