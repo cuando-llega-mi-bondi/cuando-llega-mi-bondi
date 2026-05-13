@@ -325,6 +325,7 @@ export function ComoLlegoClient() {
     }, [dest.coords, origin.coords]);
 
     const activeMapView = mapViews[selectedIdx] ?? null;
+    const tripActive = itineraries.length > 0;
 
     const uses221Selected = useMemo(() => {
         const it = itineraries[selectedIdx];
@@ -407,17 +408,40 @@ export function ComoLlegoClient() {
                     </Link>
                 </div>
 
-                <div className="pointer-events-auto relative rounded-2xl border border-white/12 bg-[#0f2744]/96 p-3 shadow-2xl backdrop-blur-md">
-                    <div className="space-y-2.5">
-                        <div className="flex items-end gap-2">
+                <div
+                    className={cn(
+                        "pointer-events-auto relative border border-white/12 bg-[#0f2744]/96 shadow-2xl backdrop-blur-md",
+                        tripActive ? "rounded-xl p-2" : "rounded-2xl p-3",
+                    )}
+                >
+                    <div className={tripActive ? "space-y-1.5" : "space-y-2.5"}>
+                        <div className={cn("flex gap-2", tripActive ? "items-center" : "items-end")}>
                             <div className="min-w-0 flex-1">
-                                <label className="mb-1 block text-[10px] font-bold uppercase tracking-wide text-slate-400">
+                                <label
+                                    className={cn(
+                                        "font-bold uppercase tracking-wide text-slate-400",
+                                        tripActive
+                                            ? "sr-only"
+                                            : "mb-1 block text-[10px]",
+                                    )}
+                                >
                                     Origen
                                 </label>
                                 <div className="flex items-center gap-2">
-                                    <span className="mb-0.5 h-2.5 w-2.5 shrink-0 rounded-full bg-emerald-500 shadow-sm" aria-hidden />
+                                    <span
+                                        className={cn(
+                                            "shrink-0 rounded-full bg-emerald-500 shadow-sm",
+                                            tripActive ? "h-2 w-2" : "mb-0.5 h-2.5 w-2.5",
+                                        )}
+                                        aria-hidden
+                                    />
                                     <input
-                                        className="min-w-0 flex-1 rounded-xl border border-white/15 bg-white/5 px-3 py-2.5 text-sm text-white placeholder:text-slate-500 focus:border-sky-400/50 focus:outline-none"
+                                        className={cn(
+                                            "min-w-0 flex-1 rounded-xl border border-white/15 bg-white/5 text-white placeholder:text-slate-500 focus:border-sky-400/50 focus:outline-none",
+                                            tripActive
+                                                ? "rounded-lg px-2 py-1.5 text-xs"
+                                                : "px-3 py-2.5 text-sm",
+                                        )}
                                         placeholder="Dirección, lugar o GPS"
                                         value={origin.text}
                                         onChange={(e) => {
@@ -442,7 +466,10 @@ export function ComoLlegoClient() {
                             </div>
                             <button
                                 type="button"
-                                className="mb-0.5 flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-white/15 bg-white/10 text-lg text-white hover:bg-white/15 disabled:opacity-50"
+                                className={cn(
+                                    "flex shrink-0 items-center justify-center rounded-full border border-white/15 bg-white/10 text-white hover:bg-white/15 disabled:opacity-50",
+                                    tripActive ? "h-9 w-9 text-base" : "mb-0.5 h-11 w-11 text-lg",
+                                )}
                                 aria-label="Usar mi ubicación como origen"
                                 disabled={gettingGps}
                                 onClick={useMyLocation}
@@ -451,15 +478,33 @@ export function ComoLlegoClient() {
                             </button>
                         </div>
 
-                        <div className="flex items-end gap-2">
+                        <div className={cn("flex gap-2", tripActive ? "items-center" : "items-end")}>
                             <div className="min-w-0 flex-1">
-                                <label className="mb-1 block text-[10px] font-bold uppercase tracking-wide text-slate-400">
+                                <label
+                                    className={cn(
+                                        "font-bold uppercase tracking-wide text-slate-400",
+                                        tripActive
+                                            ? "sr-only"
+                                            : "mb-1 block text-[10px]",
+                                    )}
+                                >
                                     Destino
                                 </label>
                                 <div className="flex items-center gap-2">
-                                    <span className="mb-0.5 h-2.5 w-2.5 shrink-0 rounded-full bg-red-500 shadow-sm" aria-hidden />
+                                    <span
+                                        className={cn(
+                                            "shrink-0 rounded-full bg-red-500 shadow-sm",
+                                            tripActive ? "h-2 w-2" : "mb-0.5 h-2.5 w-2.5",
+                                        )}
+                                        aria-hidden
+                                    />
                                     <input
-                                        className="min-w-0 flex-1 rounded-xl border border-white/15 bg-white/5 px-3 py-2.5 text-sm text-white placeholder:text-slate-500 focus:border-sky-400/50 focus:outline-none"
+                                        className={cn(
+                                            "min-w-0 flex-1 rounded-xl border border-white/15 bg-white/5 text-white placeholder:text-slate-500 focus:border-sky-400/50 focus:outline-none",
+                                            tripActive
+                                                ? "rounded-lg px-2 py-1.5 text-xs"
+                                                : "px-3 py-2.5 text-sm",
+                                        )}
                                         placeholder="Dirección o lugar"
                                         value={dest.text}
                                         onChange={(e) => {
@@ -484,7 +529,10 @@ export function ComoLlegoClient() {
                             </div>
                             <button
                                 type="button"
-                                className="mb-0.5 flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-white/15 bg-white/10 text-lg text-white hover:bg-white/15 disabled:opacity-40"
+                                className={cn(
+                                    "flex shrink-0 items-center justify-center rounded-full border border-white/15 bg-white/10 text-white hover:bg-white/15 disabled:opacity-40",
+                                    tripActive ? "h-9 w-9 text-sm" : "mb-0.5 h-11 w-11 text-lg",
+                                )}
                                 aria-label="Intercambiar origen y destino"
                                 disabled={!origin.coords && !dest.coords}
                                 onClick={swap}
@@ -494,10 +542,20 @@ export function ComoLlegoClient() {
                         </div>
                     </div>
 
-                    <div className="mt-2.5 flex flex-wrap gap-x-3 gap-y-1 border-t border-white/10 pt-2.5">
+                    <div
+                        className={cn(
+                            "flex flex-wrap border-t border-white/10",
+                            tripActive
+                                ? "mt-1.5 gap-x-2 gap-y-0 pt-1.5"
+                                : "mt-2.5 gap-x-3 gap-y-1 pt-2.5",
+                        )}
+                    >
                         <button
                             type="button"
-                            className="text-xs font-semibold text-sky-300 hover:underline"
+                            className={cn(
+                                "font-semibold text-sky-300 hover:underline",
+                                tripActive ? "text-[10px] leading-tight" : "text-xs",
+                            )}
                             onClick={() => {
                                 setPickingMode("origin");
                                 setLongPressMenu(null);
@@ -508,7 +566,10 @@ export function ComoLlegoClient() {
                         </button>
                         <button
                             type="button"
-                            className="text-xs font-semibold text-sky-300 hover:underline"
+                            className={cn(
+                                "font-semibold text-sky-300 hover:underline",
+                                tripActive ? "text-[10px] leading-tight" : "text-xs",
+                            )}
                             onClick={() => {
                                 setPickingMode("dest");
                                 setLongPressMenu(null);
@@ -519,23 +580,25 @@ export function ComoLlegoClient() {
                         </button>
                     </div>
 
-                    <p className="mt-2 text-[11px] leading-relaxed text-slate-400">
-                        El planificador incluye la línea{" "}
-                        <Link href="/recorrido?linea=221" className="font-semibold text-sky-300 hover:underline">
-                            221 Costa Azul
-                        </Link>{" "}
-                        (recorrido manual Serena–Mar Chiquita; ver mapa en Recorridos).
-                    </p>
-
                     {planning ? (
-                        <div className="mt-2 flex items-center gap-2 border-t border-white/10 pt-2 text-xs text-slate-300">
+                        <div
+                            className={cn(
+                                "flex items-center gap-2 border-t border-white/10 text-slate-300",
+                                tripActive ? "mt-1.5 pt-1.5 text-[10px]" : "mt-2 pt-2 text-xs",
+                            )}
+                        >
                             <Spinner />
                             Buscando rutas…
                         </div>
                     ) : null}
 
                     {errorMsg ? (
-                        <p className="mt-2 rounded-lg border border-red-500/30 bg-red-950/40 px-2.5 py-2 text-xs text-red-100">
+                        <p
+                            className={cn(
+                                "rounded-lg border border-red-500/30 bg-red-950/40 text-red-100",
+                                tripActive ? "mt-1.5 px-2 py-1.5 text-[10px] leading-snug" : "mt-2 px-2.5 py-2 text-xs",
+                            )}
+                        >
                             {errorMsg}
                         </p>
                     ) : null}
