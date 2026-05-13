@@ -551,6 +551,12 @@ html.dark *::-webkit-scrollbar-thumb {
   pointer-events: none !important;
 }
 
+/* Cómo llego: mapa visible detrás del sheet (portal en body) */
+body.como-llego-sheet-open .react-modal-sheet-backdrop {
+  background-color: transparent !important;
+  pointer-events: none !important;
+}
+
 .react-modal-sheet-container {
   background: var(--background) !important;
   border-top: 1px solid var(--border) !important;
@@ -584,6 +590,11 @@ html.dark *::-webkit-scrollbar-thumb {
 }
 
 body.arrivals-overlay-open {
+  overflow: hidden;
+  overscroll-behavior: none;
+}
+
+body.como-llego-overlay-open {
   overflow: hidden;
   overscroll-behavior: none;
 }

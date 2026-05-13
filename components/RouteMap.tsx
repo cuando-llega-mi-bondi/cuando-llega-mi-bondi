@@ -70,7 +70,7 @@ interface RouteMapProps {
   stops: Stop[];
   /** Line number badge, e.g. "522" */
   lineNumber?: string;
-  /** Código de línea MGP para armar `/?linea=&parada=` hacia la home. */
+  /** Código de línea MGP para armar el enlace a `/consultar` con `linea` y `parada`. */
   codigoLineaParada?: string;
   routeName?: string;
   accentColor?: string;
@@ -247,7 +247,12 @@ function googleDirUrl(lat: number, lng: number) {
 }
 
 function homeConsultSearch(line: string, paradaId: string) {
-  return `/?linea=${encodeURIComponent(line)}&parada=${encodeURIComponent(paradaId)}`;
+  const q = new URLSearchParams({
+    linea: line,
+    parada: paradaId,
+    tab: "buscar",
+  });
+  return `/consultar?${q.toString()}`;
 }
 
 function showArribosEnHomeCta(codigoLineaParada?: string, identificadorParada?: string) {

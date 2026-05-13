@@ -2,8 +2,10 @@
 
 import type { ReactNode } from "react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { post } from "@/lib/api/client";
+import { resolveUbicacionFormularioPorParada } from "@/lib/api/resolveUbicacionFormulario";
 import { useArribos } from "@/lib/hooks/useArribos";
 import { useCalles } from "@/lib/hooks/useCalles";
 import { useFavoritos } from "@/lib/hooks/useFavoritos";
@@ -21,10 +23,12 @@ import {
   arriboBanderaLabel,
   arriboLineaDescripcion,
   cleanLabel,
+  cn,
 } from "@/lib/utils";
 
 import { Header } from "@/components/Header";
 import { BottomNav } from "@/components/BottomNav";
+import { NearStopsSheet } from "@/components/NearStopsSheet";
 import { FavoritesList } from "@/components/FavoritesList";
 import { HistorialList } from "@/components/HistorialList";
 import { SearchFlow } from "@/components/SearchFlow";
@@ -32,6 +36,7 @@ import { ArrivalsOverlay } from "@/components/ArrivalsOverlay";
 import { FavoriteNameModal } from "@/components/FavoriteNameModal";
 import { ServiceDownModal } from "@/components/ServiceDownModal";
 import { PageShell } from "@/components/layout";
+import { Button } from "@/components/ui";
 
 type RawCalleMatch = { Codigo: string; Descripcion: string };
 type RawInterMatch = { Codigo: string; Descripcion: string };
@@ -68,6 +73,7 @@ export function HomeClient({ children }: { children?: ReactNode }) {
   const router = useRouter();
   const [tab, setTab] = useState<"buscar" | "favoritos">("buscar");
   const [showServiceDownModal, setShowServiceDownModal] = useState(false);
+  const [nearStopsOpen, setNearStopsOpen] = useState(false);
   const [sel, setSel] = useState<Selection>(EMPTY_SELECTION);
   const [isConsulting, setIsConsulting] = useState(false);
   const [sheetOpen, setSheetOpen] = useState(false);
@@ -316,6 +322,29 @@ export function HomeClient({ children }: { children?: ReactNode }) {
     setSel((p) => ({ ...p, paradaId: destinoOptions[0].value }));
   }, [codInterseccion, paradaId, loadingParadas, destinoOptions]);
 
+  // Completar calle + intersección cuando llegamos con línea y parada (favoritos,
+  // historial, ?linea=&parada=, mapa) pero sin el resto del formulario.
+  useEffect(() => {
+    if (!codLinea || !paradaId || (codCalle && codInterseccion)) return;
+    let cancelled = false;
+    void (async () => {
+      const ubi = await resolveUbicacionFormularioPorParada(codLinea, paradaId);
+      if (cancelled || !ubi) return;
+      setSel((p) => {
+        if (p.codLinea !== codLinea || p.paradaId !== paradaId) return p;
+        if (p.codCalle && p.codInterseccion) return p;
+        return {
+          ...p,
+          codCalle: ubi.codCalle,
+          codInterseccion: ubi.codInterseccion,
+        };
+      });
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [codLinea, paradaId, codCalle, codInterseccion]);
+
   // ─── Handlers de selección ────────────────────────────────────────────────
   const handleLineaChange = useCallback(
     (v: string) => {
@@ -545,6 +574,24 @@ export function HomeClient({ children }: { children?: ReactNode }) {
     });
   }, []);
 
+  const handleNearPickLinea = useCallback(
+    (paradaId: string, codLinea: string) => {
+      const line = lineas.find((l) => l.CodigoLineaParada === codLinea);
+      if (line?.isManual) {
+        router.push(`/recorrido?linea=${encodeURIComponent(codLinea)}`);
+        return;
+      }
+      withViewTransition(() => {
+        setTab("buscar");
+        setSel({ ...EMPTY_SELECTION, paradaId, codLinea });
+        savedHistRef.current = "";
+        setIsConsulting(true);
+        setSheetOpen(true);
+      });
+    },
+    [lineas, router],
+  );
+
   return (
     <div className="flex min-h-pwa-shell flex-col">
       <Header />
@@ -552,7 +599,27 @@ export function HomeClient({ children }: { children?: ReactNode }) {
       <PageShell>
         {children}
         {tab === "buscar" ? (
-          <SearchFlow
+          <>
+            <div className="mb-3 grid grid-cols-2 gap-2">
+              <Button
+                type="button"
+                variant="secondary"
+                size="sm"
+                className="w-full text-xs font-bold"
+                onClick={() => setNearStopsOpen(true)}
+              >
+                Paradas cerca mío
+              </Button>
+              <Link
+                href="/como-llego"
+                className={cn(
+                  "btn-pill btn-secondary inline-flex min-h-9 w-full items-center justify-center px-3 text-xs font-bold tracking-tight",
+                )}
+              >
+                Cómo llego
+              </Link>
+            </div>
+            <SearchFlow
             codLinea={codLinea}
             setCodLinea={handleLineaChange}
             codCalle={codCalle}
@@ -577,6 +644,7 @@ export function HomeClient({ children }: { children?: ReactNode }) {
             setError={setError}
             handleConsultar={handleConsultar}
           />
+          </>
         ) : (
           <>
             <FavoritesList
@@ -642,6 +710,12 @@ export function HomeClient({ children }: { children?: ReactNode }) {
       <ServiceDownModal
         isOpen={tab === "buscar" && showServiceDownModal}
         onClose={handleCloseServiceDown}
+      />
+
+      <NearStopsSheet
+        open={nearStopsOpen}
+        onClose={() => setNearStopsOpen(false)}
+        onPickLinea={handleNearPickLinea}
       />
 
       <BottomNav tab={tab} setTab={setTab} favCount={favoritos.length} />

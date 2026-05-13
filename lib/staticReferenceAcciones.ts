@@ -6,4 +6,6 @@ export const STATIC_REFERENCE_ACCIONES = new Set<string>([
     "RecuperarParadasConBanderaPorLineaCalleEInterseccion",
     "RecuperarParadasConBanderaYDestinoPorLinea",
     "RecuperarRecorridoParaMapaAbrevYAmpliPorEntidadYLinea",
+    /** Resuelve calle + intersección para completar el formulario cuando ya hay `parada` (MGP). */
+    "ResolverUbicacionFormularioPorParada",
 ]);

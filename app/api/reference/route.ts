@@ -87,6 +87,39 @@ export async function GET(req: NextRequest) {
                 const paradas = row.paradasByCalleInterseccion[key] ?? [];
                 return NextResponse.json({ paradas });
             }
+            case "ResolverUbicacionFormularioPorParada": {
+                const parada = req.nextUrl.searchParams.get("parada") ?? "";
+                if (!codLinea || !parada) {
+                    return NextResponse.json(
+                        { error: "codLinea and parada required" },
+                        { status: 400 },
+                    );
+                }
+                const row = await getLineaData(codLinea);
+                if (!row) {
+                    return NextResponse.json({
+                        codCalle: null,
+                        codInterseccion: null,
+                    });
+                }
+                for (const [key, lista] of Object.entries(
+                    row.paradasByCalleInterseccion ?? {},
+                )) {
+                    if (!Array.isArray(lista)) continue;
+                    if (!lista.some((p) => p.Identificador === parada)) continue;
+                    const tab = key.indexOf("\t");
+                    if (tab <= 0) continue;
+                    const codCalle = key.slice(0, tab);
+                    const codInterseccion = key.slice(tab + 1);
+                    if (codCalle && codInterseccion) {
+                        return NextResponse.json({ codCalle, codInterseccion });
+                    }
+                }
+                return NextResponse.json({
+                    codCalle: null,
+                    codInterseccion: null,
+                });
+            }
             case "RecuperarParadasConBanderaYDestinoPorLinea":
             case "RecuperarRecorridoParaMapaAbrevYAmpliPorEntidadYLinea": {
                 if (!codLinea) {

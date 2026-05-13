@@ -28,6 +28,7 @@ export const MANUAL_ROUTES: ManualRouteConfig[] = [
       {
         key: "serena_mch",
         label: "Serena → Mar Chiquita",
+        /** Debe existir en `public/`; si falta, ese ramal no entra al planificador. */
         geoJsonPath: "/serena-marChiquita.geojson",
       },
       {
