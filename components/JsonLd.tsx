@@ -1,28 +1,41 @@
 export function JsonLd() {
-    const webApp = {
-        "@context": "https://schema.org",
-        "@type": "WebApplication",
-        "name": "Bondi MDP",
-        "description": "Aplicación para consultar el tiempo de arribo de colectivos en Mar del Plata en tiempo real.",
-        "applicationCategory": "TravelApplication",
-        "operatingSystem": "All",
-        "url": "https://www.bondimdp.com.ar",
-        "author": {
+    const appBase = {
+        name: "Bondi MDP",
+        description:
+            "App gratuita para consultar el tiempo de arribo de colectivos en Mar del Plata en tiempo real.",
+        applicationCategory: "TravelApplication",
+        url: "https://www.bondimdp.com.ar",
+        author: {
             "@type": "Organization",
-            "name": "Bondi MDP Team"
+            name: "Bondi MDP Team",
         },
-        "offers": {
+        offers: {
             "@type": "Offer",
-            "price": "0",
-            "priceCurrency": "ARS"
+            price: "0",
+            priceCurrency: "ARS",
         },
-        "screenshot": "https://www.bondimdp.com.ar/icon-512.png",
-        "featureList": [
+        screenshot: "https://www.bondimdp.com.ar/icon-512.png",
+        featureList: [
             "Tiempo real de arribos",
             "Recorridos completos",
             "Paradas favoritas",
-            "Historial de búsquedas"
-        ]
+            "Planificador de viajes",
+        ],
+    };
+
+    const webApp = {
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        ...appBase,
+        operatingSystem: "All",
+    };
+
+    const mobileApp = {
+        "@context": "https://schema.org",
+        "@type": "MobileApplication",
+        ...appBase,
+        operatingSystem: "Android, iOS",
+        installUrl: "https://www.bondimdp.com.ar",
     };
 
     const organization = {
@@ -56,6 +69,10 @@ export function JsonLd() {
             <script
                 type="application/ld+json"
                 dangerouslySetInnerHTML={{ __html: JSON.stringify(webApp) }}
+            />
+            <script
+                type="application/ld+json"
+                dangerouslySetInnerHTML={{ __html: JSON.stringify(mobileApp) }}
             />
             <script
                 type="application/ld+json"

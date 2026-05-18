@@ -29,7 +29,9 @@ export function LandingHero() {
             </h1>
 
             <p className="text-xl lg:text-2xl text-muted-foreground mb-8 max-w-lg mx-auto lg:mx-0">
-              Consultá cuándo llega tu colectivo en tiempo real.<br />Rápido, claro y sin vueltas.
+              App gratuita para Mar del Plata: consultá cuándo llega tu colectivo en tiempo real.
+              <br />
+              Rápido, claro y sin vueltas.
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">

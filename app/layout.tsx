@@ -21,11 +21,23 @@ const inter = Inter({
 export const metadata: Metadata = {
     metadataBase: new URL("https://www.bondimdp.com.ar"),
     title: {
-        default: "Bondi MDP — Colectivos en Tiempo Real",
+        default: "Bondi MDP — App de colectivos en Mar del Plata",
         template: "%s | Bondi MDP",
     },
-    description: "Consultá cuándo llega el colectivo en Mar del Plata. Horarios, recorridos y paradas en tiempo real de todas las líneas (511, 522, 541, etc.) de MGP.",
-    keywords: ["bondimdp", "bondi mdp", "colectivos mar del plata", "cuando llega mdp", "horarios colectivos mar del plata", "transporte publico mdp", "mgp", "paradas de colectivo"],
+    description:
+        "App gratuita para saber cuándo llega tu bondi en Mar del Plata. Horarios, recorridos y paradas en tiempo real de todas las líneas (511, 522, 541 y más) con datos MGP.",
+    keywords: [
+        "bondimdp",
+        "bondi mdp",
+        "app bondi mar del plata",
+        "app colectivos mar del plata",
+        "colectivos mar del plata",
+        "cuando llega mdp",
+        "horarios colectivos mar del plata",
+        "transporte publico mdp",
+        "mgp",
+        "paradas de colectivo",
+    ],
     manifest: "/manifest.json",
     alternates: {
         canonical: "/",
@@ -34,14 +46,16 @@ export const metadata: Metadata = {
         type: "website",
         locale: "es_AR",
         url: "https://www.bondimdp.com.ar",
-        title: "Bondi MDP — Colectivos en Tiempo Real",
-        description: "La forma más rápida de saber cuándo llega tu colectivo en Mar del Plata. Datos oficiales de MGP en una interfaz moderna.",
+        title: "Bondi MDP — App de colectivos en Mar del Plata",
+        description:
+            "App gratuita para saber cuándo llega tu bondi en Mar del Plata. Datos oficiales de MGP en una interfaz rápida, instalable en el celular.",
         siteName: "Bondi MDP",
     },
     twitter: {
         card: "summary_large_image",
-        title: "Bondi MDP",
-        description: "Colectivos en tiempo real en Mar del Plata. No pierdas más tiempo esperando.",
+        title: "Bondi MDP — App de colectivos MDP",
+        description:
+            "App gratuita de colectivos en tiempo real para Mar del Plata. No pierdas más tiempo esperando el bondi.",
     },
     appleWebApp: {
         capable: true,
