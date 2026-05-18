@@ -14,7 +14,7 @@ export function JsonLd() {
             price: "0",
             priceCurrency: "ARS",
         },
-        screenshot: "https://www.bondimdp.com.ar/icon-512.png",
+        screenshot: "https://www.bondimdp.com.ar/screenshots/results.jpg",
         featureList: [
             "Tiempo real de arribos",
             "Recorridos completos",
