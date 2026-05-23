@@ -7,6 +7,7 @@ import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import "@shared/map/leaflet.css";
 import { encodeLiveSharePayload } from "@features/live-sharing/lib/liveSharePayload";
+import { useLeafletMapReady } from "@shared/map/useLeafletMapReady";
 
 // ─── Icons ────────────────────────────────────────────────────────────────────
 
@@ -219,8 +220,11 @@ function MapController({
   const lastTrigger = useRef(triggerFit);
 
   useEffect(() => {
-    setTimeout(() => map.invalidateSize({ animate: true }), 100);
-    setTimeout(() => map.invalidateSize({ animate: true }), 300);
+    const timers = [
+      setTimeout(() => map.invalidateSize({ animate: true }), 100),
+      setTimeout(() => map.invalidateSize({ animate: true }), 300),
+    ];
+    return () => timers.forEach(clearTimeout);
   }, [isFullscreen, map]);
 
   useEffect(() => {
@@ -228,9 +232,14 @@ function MapController({
     if (!fitted.current || lastTrigger.current !== triggerFit) {
       fitted.current = true;
       lastTrigger.current = triggerFit;
-      setTimeout(() => {
-        map.fitBounds(bounds as L.LatLngBoundsExpression, { padding: [60, 60], animate: true });
+      const timer = setTimeout(() => {
+        try {
+          map.fitBounds(bounds as L.LatLngBoundsExpression, { padding: [60, 60], animate: true });
+        } catch {
+          /* map torn down during navigation */
+        }
       }, 120);
+      return () => clearTimeout(timer);
     }
   }, [map, bounds, triggerFit]);
 
@@ -273,6 +282,7 @@ export default function RouteMap({
   ramalLabel = "",
   telegramUsername = "",
 }: RouteMapProps) {
+  const mapReady = useLeafletMapReady();
   const [selectedStop, setSelectedStop] = useState<number | null>(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [showStopList, setShowStopList] = useState(false);
@@ -413,6 +423,7 @@ export default function RouteMap({
       </div>
 
       {/* ── Map ── */}
+      {mapReady ? (
       <MapContainer
         center={center}
         zoom={12}
@@ -494,6 +505,12 @@ export default function RouteMap({
           );
         })}
       </MapContainer>
+      ) : (
+        <div
+          style={{ height: "100%", width: "100%", flex: 1, background: "#090909" }}
+          aria-hidden
+        />
+      )}
 
       {/* ── Telegram CTA ── */}
       {telegramUsername && lineNumber && telegramStartPayload && (
