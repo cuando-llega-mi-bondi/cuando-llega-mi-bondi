@@ -1,13 +1,13 @@
 import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
-import { MicrosoftClarity } from "@/components/MicrosoftClarity";
-import { VercelAnalyticsDeferred } from "@/components/VercelAnalyticsDeferred";
-import { JsonLd } from "@/components/JsonLd";
-import { InstallPwaPrompt } from "@/components/InstallPwaPrompt";
-import { ThemeColorMeta } from "@/components/ThemeColorMeta";
-import { ThemeProvider } from "@/components/ThemeProvider";
-import { PwaViewportSync } from "@/components/PwaViewportSync";
+import { MicrosoftClarity } from "@shared/analytics/MicrosoftClarity";
+import { VercelAnalyticsDeferred } from "@shared/analytics/VercelAnalyticsDeferred";
+import { JsonLd } from "@shared/seo/JsonLd";
+import { InstallPwaPrompt } from "@shared/layout/InstallPwaPrompt";
+import { ThemeColorMeta } from "@shared/layout/ThemeColorMeta";
+import { ThemeProvider } from "@shared/layout/ThemeProvider";
+import { PwaViewportSync } from "@shared/layout/PwaViewportSync";
 import Script from "next/script";
 import { GoogleAnalytics } from "@next/third-parties/google";
 

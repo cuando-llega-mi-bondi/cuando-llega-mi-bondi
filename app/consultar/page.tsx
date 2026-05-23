@@ -1,6 +1,6 @@
 import { Suspense } from "react";
-import { HomeClient } from "@/components/HomeClient";
-import { HomeIntro } from "@/components/HomeIntro";
+import { HomeClient } from "@/app/HomeClient";
+import { HomeIntro } from "@features/landing/components/HomeIntro";
 
 export default function Page() {
     return (

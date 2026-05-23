@@ -16,8 +16,8 @@
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { cacheLife, cacheTag } from "next/cache";
-import type { Linea } from "@/lib/types";
-import type { StaticLineDump } from "@/lib/staticDumpTypes";
+import type { Linea } from "@shared/types";
+import type { StaticLineDump } from "@/lib/server/staticDumpTypes";
 
 const STATIC_DIR = path.join(
     process.cwd(),

@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { AcercaClient } from "@/components/AcercaClient";
+import { AcercaClient } from "@/app/acerca/AcercaClient";
 
 export const metadata: Metadata = {
     title: {

@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
-import { ComoLlegoClient } from "./ComoLlegoClient";
+import { ComoLlegoClient } from "@features/trip-planner/components/ComoLlegoClient";
 
 export const metadata: Metadata = {
     title: {

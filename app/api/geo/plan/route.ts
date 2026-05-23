@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getTransitStaticModels } from "@/lib/server/transitStaticModels";
-import { buildItineraryMapView } from "@/lib/routing/itineraryMapPayload";
-import { planMany } from "@/lib/routing/planner";
+import { buildItineraryMapView } from "@features/trip-planner/lib/itineraryMapPayload";
+import { planMany } from "@features/trip-planner/lib/planner";
 
 function enRegionMgp(lat: number, lng: number): boolean {
     return lat >= -39.5 && lat <= -36.0 && lng >= -58.6 && lng <= -56.0;

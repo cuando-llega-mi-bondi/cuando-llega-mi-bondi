@@ -1,17 +1,18 @@
-import { haversineMeters } from "@/lib/geo/haversine";
-import { mergeLineasWithManual } from "@/lib/manualRoutes";
-import type { Linea, ParadaMapa, PuntoRecorrido, RamalData } from "@/lib/types";
+import { haversineMeters } from "@shared/geo/haversine";
+import { mergeLineasWithManual } from "@features/route/manualRoutes";
+import type { Linea } from "@shared/types";
+import type { ParadaMapa, PuntoRecorrido, RamalData } from "@features/route/types";
 import { getLineas, getLineaData } from "@/lib/server/loadStaticDump";
 import { loadManualStaticLineDump } from "@/lib/server/loadManualStaticDump";
-import type { StaticLineDump } from "@/lib/staticDumpTypes";
-import { cleanLabel } from "@/lib/utils";
+import type { StaticLineDump } from "@/lib/server/staticDumpTypes";
+import { cleanLabel } from "@shared/utils";
 import type {
     ParadaGeo,
     RoutingGraph,
     SequenceRef,
     StopSequence,
     WalkNeighbor,
-} from "@/lib/routing/types";
+} from "@features/trip-planner/types";
 
 const WALK_RADIUS_METERS = 300;
 const GRID_CELL_DEG = 0.003;

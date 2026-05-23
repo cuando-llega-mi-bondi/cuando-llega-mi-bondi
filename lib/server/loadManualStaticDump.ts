@@ -1,8 +1,9 @@
 import { readFile } from "node:fs/promises";
 import path from "node:path";
-import { MANUAL_ROUTES } from "@/lib/manualRoutes";
-import type { StaticLineDump } from "@/lib/staticDumpTypes";
-import type { Linea, ParadaMapa, PuntoRecorrido, RamalData } from "@/lib/types";
+import { MANUAL_ROUTES } from "@features/route/manualRoutes";
+import type { StaticLineDump } from "@/lib/server/staticDumpTypes";
+import type { Linea } from "@shared/types";
+import type { ParadaMapa, PuntoRecorrido, RamalData } from "@features/route/types";
 
 type GeoFeature = {
     geometry: {

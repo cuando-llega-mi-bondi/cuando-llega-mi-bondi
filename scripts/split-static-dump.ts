@@ -17,7 +17,7 @@
 
 import { mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { isAbsolute, join, resolve } from "node:path";
-import type { MgpStaticDump } from "../lib/staticDumpTypes";
+import type { MgpStaticDump } from "../lib/server/staticDumpTypes";
 
 function resolveDumpPath(): string {
     const override = process.env.STATIC_REFERENCE_DUMP_PATH?.trim();

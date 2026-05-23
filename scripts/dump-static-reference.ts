@@ -82,9 +82,9 @@ async function main(): Promise<void> {
     }
 
     const { mergeLineasWithManual, MANUAL_ROUTES } = await import(
-        "../lib/manualRoutes",
+        "../features/route/manualRoutes",
     );
-    const { getRecorridoMapaCliente } = await import("../lib/api/recorrido");
+    const { getRecorridoMapaCliente } = await import("../features/route/api/recorrido");
 
     const delayMs = Math.max(0, Number(process.env.DUMP_DELAY_MS ?? "150") || 0);
 

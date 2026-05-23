@@ -3,8 +3,8 @@
 
 import { Suspense } from "react";
 import type { Metadata } from "next";
-import { RecorridoJsonLd } from "@/components/RecorridoJsonLd";
-import RecorridoClient from "./RecorridoClient";
+import { RecorridoJsonLd } from "@features/route/components/RecorridoJsonLd";
+import RecorridoClient from "@features/route/components/RecorridoClient";
 
 export const metadata: Metadata = {
     title: {

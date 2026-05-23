@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getLineaData, getLineas } from "@/lib/server/loadStaticDump";
-import { STATIC_REFERENCE_ACCIONES } from "@/lib/staticReferenceAcciones";
-import { paradaLookupKey } from "@/lib/staticDumpTypes";
+import { STATIC_REFERENCE_ACCIONES } from "@shared/api/staticReferenceAcciones";
+import { paradaLookupKey } from "@/lib/server/staticDumpTypes";
 
 export async function GET(req: NextRequest) {
     const accion = req.nextUrl.searchParams.get("accion");
