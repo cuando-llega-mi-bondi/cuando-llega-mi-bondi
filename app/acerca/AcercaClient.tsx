@@ -12,7 +12,7 @@ import { IconCode } from "@shared/icons/IconCode";
 import { IconMessage } from "@shared/icons/IconMessage";
 import { IconSearch } from "@shared/icons/IconSearch";
 import { BottomNav } from "@shared/layout/BottomNav";
-import { PageShell } from "@shared/layout";
+import { PageShell } from "@shared/layout/PageShell";
 import { BrandLogo } from "@shared/ui/BrandLogo";
 import { Footer } from "@shared/layout/Footer";
 import { IconIg } from "@shared/icons/IconIg";

@@ -1,8 +1,10 @@
+"use client";
+
 import Script from "next/script";
 
 const projectId = process.env.NEXT_PUBLIC_CLARITY_PROJECT_ID?.trim();
 
-export function MicrosoftClarity() {
+export function MicrosoftClarityScript() {
     if (!projectId) return null;
 
     const idLiteral = JSON.stringify(projectId);
@@ -10,7 +12,7 @@ export function MicrosoftClarity() {
     return (
         <Script
             id="microsoft-clarity"
-            strategy="afterInteractive"
+            strategy="lazyOnload"
             dangerouslySetInnerHTML={{
                 __html: `
 (function(c,l,a,r,i,t,y){

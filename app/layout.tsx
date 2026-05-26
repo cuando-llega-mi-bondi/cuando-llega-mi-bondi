@@ -1,7 +1,8 @@
 import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
-import { MicrosoftClarity } from "@shared/analytics/MicrosoftClarity";
+import { GoogleAnalyticsDeferred } from "@shared/analytics/GoogleAnalyticsDeferred";
+import { MicrosoftClarityDeferred } from "@shared/analytics/MicrosoftClarityDeferred";
 import { VercelAnalyticsDeferred } from "@shared/analytics/VercelAnalyticsDeferred";
 import { JsonLd } from "@shared/seo/JsonLd";
 import { InstallPwaPrompt } from "@shared/layout/InstallPwaPrompt";
@@ -9,7 +10,6 @@ import { ThemeColorMeta } from "@shared/layout/ThemeColorMeta";
 import { ThemeProvider } from "@shared/layout/ThemeProvider";
 import { PwaViewportSync } from "@shared/layout/PwaViewportSync";
 import Script from "next/script";
-import { GoogleAnalytics } from "@next/third-parties/google";
 
 const inter = Inter({
     subsets: ["latin"],
@@ -92,65 +92,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     return (
         <html lang="es" suppressHydrationWarning>
             <head>
-                {/*
-                  iOS PWA: 100dvh puede quedar ~un safe-area más corto que la pantalla real,
-                  dejando una franja bajo la barra fija. Sincronizamos altura con inner/visualViewport.
-                */}
-                <Script
-                    id="standalone-app-height"
-                    strategy="beforeInteractive"
-                    dangerouslySetInnerHTML={{
-                        __html: `
-(function(){
-  try {
-    var standalone = (window.matchMedia && window.matchMedia("(display-mode: standalone)").matches)
-      || window.navigator.standalone === true;
-    if (!standalone) return;
-    var lastH = 0;
-    function setAppHeight() {
-      var ih = window.innerHeight || 0;
-      var vvh = (window.visualViewport && window.visualViewport.height) || 0;
-      var ch = document.documentElement.clientHeight || 0;
-      /*
-       * screen.height is stable from the very first frame on iOS, even when
-       * innerHeight hasn't settled yet. Use it as a ceiling: the real usable
-       * height can never exceed screen.height.
-       */
-      var sh = window.screen && window.screen.height ? window.screen.height : 0;
-      var h = Math.max(ih, vvh, ch);
-      /* If innerHeight is suspiciously small (< 70% of screen), iOS hasn't
-         settled yet — skip this measurement so the CSS 100% fallback stays. */
-      if (sh && h < sh * 0.7) return;
-      if (h === lastH) return;
-      lastH = h;
-      document.documentElement.style.setProperty("--app-height", h + "px");
-    }
-    function setSafeBottomProbe() {
-      var el = document.createElement("div");
-      el.setAttribute("style", "position:fixed;bottom:0;left:0;width:0;height:0;visibility:hidden;pointer-events:none;z-index:-1;padding-bottom:env(safe-area-inset-bottom,0px);");
-      document.body.appendChild(el);
-      var pb = parseFloat(window.getComputedStyle(el).paddingBottom) || 0;
-      document.body.removeChild(el);
-      document.documentElement.style.setProperty("--safe-bottom-live", pb + "px");
-    }
-    function bump() {
-      setAppHeight();
-      if (document.body) setSafeBottomProbe();
-    }
-    bump();
-    requestAnimationFrame(function(){bump();requestAnimationFrame(bump);});
-    [0,16,50,120,280,500].forEach(function(ms){setTimeout(bump,ms);});
-    window.addEventListener("load", bump);
-    window.addEventListener("resize", bump);
-    if (window.visualViewport) {
-      window.visualViewport.addEventListener("resize", bump);
-      window.visualViewport.addEventListener("scroll", bump);
-    }
-  } catch (e) {}
-})();
-                        `.trim(),
-                    }}
-                />
                 <Script
                     id="sw-registration"
                     strategy="afterInteractive"
@@ -171,11 +112,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                     <PwaViewportSync />
                     <ThemeColorMeta />
                     <JsonLd />
-                    <MicrosoftClarity />
+                    <MicrosoftClarityDeferred />
                     <VercelAnalyticsDeferred />
-                    {process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID ? (
-                        <GoogleAnalytics gaId={process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID} />
-                    ) : null}
+                    <GoogleAnalyticsDeferred />
                     {children}
                     <InstallPwaPrompt />
                 </ThemeProvider>

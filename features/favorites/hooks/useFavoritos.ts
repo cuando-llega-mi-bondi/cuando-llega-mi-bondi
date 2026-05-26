@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import type { Favorito } from "@features/favorites/types";
 import {
     getFavoritos,
@@ -11,7 +11,11 @@ import {
 } from "@features/favorites/storage/favoritos";
 
 export function useFavoritos() {
-    const [favoritos, setFavoritos] = useState<Favorito[]>(() => getFavoritos());
+    const [favoritos, setFavoritos] = useState<Favorito[]>([]);
+
+    useEffect(() => {
+        setFavoritos(getFavoritos());
+    }, []);
 
     const refresh = useCallback(() => {
         setFavoritos(getFavoritos());

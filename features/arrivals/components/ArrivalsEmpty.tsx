@@ -1,7 +1,10 @@
-import { Button, Card } from "@shared/ui";
+import { Button } from "@shared/ui/Button";
+import { Card } from "@shared/ui/Card";
+
+export type ArrivalsEmptyMode = "prompt" | "no-data";
 
 interface ArrivalsEmptyProps {
-    isConsulting: boolean;
+    mode: ArrivalsEmptyMode;
     loadingArribos: boolean;
     selectedRamal: string;
     onRetry: () => void;
@@ -9,7 +12,7 @@ interface ArrivalsEmptyProps {
 }
 
 export function ArrivalsEmpty({
-    isConsulting,
+    mode,
     loadingArribos,
     selectedRamal,
     onRetry,
@@ -17,7 +20,7 @@ export function ArrivalsEmpty({
 }: ArrivalsEmptyProps) {
     return (
         <Card className="rounded-xl px-6 py-6 text-center font-sans text-sm text-muted-foreground">
-            {isConsulting ? (
+            {mode === "no-data" ? (
                 <>
                     <div className="mb-3.5 leading-relaxed">
                         Sin información en este momento. Podés reintentar o ver todos los

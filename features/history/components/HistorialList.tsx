@@ -1,7 +1,11 @@
+"use client";
+
 import { memo } from "react";
+import { useMounted } from "@shared/hooks/useMounted";
 import { IconX } from "@shared/icons/IconX";
 import type { HistorialEntry } from "@features/history/types";
-import { Button, Card } from "@shared/ui";
+import { Button } from "@shared/ui/Button";
+import { Card } from "@shared/ui/Card";
 
 interface HistorialListProps {
     historial: HistorialEntry[];
@@ -32,6 +36,8 @@ export const HistorialList = memo(function HistorialList({
     onRemove,
     onClear,
 }: HistorialListProps) {
+    const mounted = useMounted();
+
     if (historial.length === 0) return null;
 
     return (
@@ -74,7 +80,7 @@ export const HistorialList = memo(function HistorialList({
                             )}
                             <div className="flex items-center gap-1 font-mono text-[10px] text-muted-foreground">
                                 <IconClock />
-                                {formatRelative(h.timestamp)}
+                                {mounted ? formatRelative(h.timestamp) : "\u00a0"}
                             </div>
                         </div>
 

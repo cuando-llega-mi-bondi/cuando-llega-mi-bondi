@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import type { HistorialEntry } from "@features/history/types";
 import {
     clearHistorial,
@@ -10,9 +10,11 @@ import {
 } from "@features/history/storage/historial";
 
 export function useHistorial() {
-    const [historial, setHistorial] = useState<HistorialEntry[]>(() =>
-        getHistorial(),
-    );
+    const [historial, setHistorial] = useState<HistorialEntry[]>([]);
+
+    useEffect(() => {
+        setHistorial(getHistorial());
+    }, []);
 
     const refresh = useCallback(() => {
         setHistorial(getHistorial());

@@ -269,10 +269,16 @@ export function getTransitStaticModels(): Promise<{
             const agg = new Map<string, MutableStop>();
             const allSequences: StopSequence[] = [];
 
-            for (const linea of lineas) {
-                const row = linea.isManual
-                    ? await loadManualStaticLineDump(linea.CodigoLineaParada)
-                    : await getLineaData(linea.CodigoLineaParada);
+            const lineRows = await Promise.all(
+                lineas.map(async (linea) => ({
+                    linea,
+                    row: linea.isManual
+                        ? await loadManualStaticLineDump(linea.CodigoLineaParada)
+                        : await getLineaData(linea.CodigoLineaParada),
+                })),
+            );
+
+            for (const { linea, row } of lineRows) {
                 if (!row) continue;
                 const seq = mergeIntoAgg(agg, linea, row);
                 allSequences.push(...seq);

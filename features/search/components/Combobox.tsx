@@ -1,9 +1,29 @@
 "use client";
 
-import { useState, useEffect, useRef, useId, useCallback, useMemo } from "react";
+import {
+    useState,
+    useEffect,
+    useRef,
+    useId,
+    useCallback,
+    useMemo,
+    type ReactNode,
+    type RefObject,
+} from "react";
 import { createPortal } from "react-dom";
 import { IconChevron } from "@shared/icons/IconChevron";
 import { cn } from "@shared/utils";
+
+export type ComboboxTriggerRenderProps = {
+    open: boolean;
+    selectedLabel: string | null;
+    placeholder: string;
+    disabled: boolean;
+    loading: boolean;
+    onClick: () => void;
+    onKeyDown: (e: React.KeyboardEvent) => void;
+    ref: RefObject<HTMLButtonElement | null>;
+};
 
 export function Combobox({
     placeholder,
@@ -16,7 +36,7 @@ export function Combobox({
     "aria-labelledby": ariaLabelledby,
     "aria-label": ariaLabel,
     label,
-    renderTrigger,
+    children,
     triggerClassName,
 }: {
     placeholder: string;
@@ -31,17 +51,8 @@ export function Combobox({
     "aria-label"?: string;
     /** Optional label for the trigger when no value is selected */
     label?: string;
-    /** Optional custom trigger renderer */
-    renderTrigger?: (props: {
-        open: boolean;
-        selectedLabel: string | null;
-        placeholder: string;
-        disabled: boolean;
-        loading: boolean;
-        onClick: () => void;
-        onKeyDown: (e: React.KeyboardEvent) => void;
-        ref: React.RefObject<HTMLButtonElement | null>;
-    }) => React.ReactNode;
+    /** Custom trigger via render function (preferred over legacy renderTrigger) */
+    children?: (props: ComboboxTriggerRenderProps) => ReactNode;
     triggerClassName?: string;
 }) {
     const reactId = useId();
@@ -105,7 +116,8 @@ export function Combobox({
             if (
                 wrapperRef.current?.contains(target) ||
                 portalRef.current?.contains(target)
-            ) return;
+            )
+                return;
             close();
         };
         document.addEventListener("mousedown", handler);
@@ -117,8 +129,6 @@ export function Combobox({
         if (!open) return;
         const onScroll = (e: Event) => {
             if (portalRef.current?.contains(e.target as Node)) return;
-            // iOS scrolls the document when the keyboard opens; the scroll target is
-            // usually not inside the fixed portal, which would call close() and dismiss the keyboard.
             const ae = document.activeElement;
             if (showFilter && ae && portalRef.current?.contains(ae)) return;
             close();
@@ -158,7 +168,8 @@ export function Combobox({
     }, [safeActiveIndex, open]);
 
     useEffect(() => {
-        if (!autoSelectSingleFilterMatch || !open || !showFilter || disabled || loading) return;
+        if (!autoSelectSingleFilterMatch || !open || !showFilter || disabled || loading)
+            return;
         if (!query.trim() || singleFilteredValue == null) return;
 
         const tid = window.setTimeout(() => {
@@ -190,7 +201,7 @@ export function Combobox({
             close();
             triggerRef.current?.focus();
         },
-        [onChange, close]
+        [onChange, close],
     );
 
     const moveActive = useCallback(
@@ -204,7 +215,7 @@ export function Combobox({
                 return next;
             });
         },
-        [filtered.length]
+        [filtered.length],
     );
 
     const onTriggerKeyDown = (e: React.KeyboardEvent) => {
@@ -400,38 +411,44 @@ export function Combobox({
         disabled,
     };
 
+    const triggerRenderProps: ComboboxTriggerRenderProps = {
+        open,
+        selectedLabel: selected?.label ?? null,
+        placeholder,
+        disabled,
+        loading,
+        onClick: handleTriggerClick,
+        onKeyDown: onTriggerKeyDown,
+        ref: triggerRef,
+    };
+
+    let triggerNode: ReactNode;
+    if (children) {
+        triggerNode = children(triggerRenderProps);
+    } else {
+        triggerNode = (
+            <button
+                {...triggerProps}
+                className={cn(
+                    "input flex min-h-11 w-full items-center justify-between rounded-full border bg-input px-4 py-2.5 font-sans text-[15px] font-medium tracking-tight transition-colors",
+                    selected ? "text-foreground" : "text-muted-foreground",
+                    disabled
+                        ? "cursor-not-allowed border-border opacity-50"
+                        : open
+                          ? "cursor-pointer border-secondary shadow-[0_0_0_3px_rgba(29,117,112,0.25)]"
+                          : "cursor-pointer border-border hover:border-secondary",
+                    triggerClassName,
+                )}
+            >
+                <span>{loading ? "Cargando..." : selected?.label ?? placeholder}</span>
+                <IconChevron open={open} />
+            </button>
+        );
+    }
+
     return (
         <div ref={wrapperRef} className="relative w-full">
-            {renderTrigger ? (
-                renderTrigger({
-                    open,
-                    selectedLabel: selected?.label ?? null,
-                    placeholder,
-                    disabled,
-                    loading,
-                    onClick: handleTriggerClick,
-                    onKeyDown: onTriggerKeyDown,
-                    ref: triggerRef,
-                })
-            ) : (
-                <button
-                    {...triggerProps}
-                    className={cn(
-                        "input flex min-h-11 w-full items-center justify-between rounded-full border bg-input px-4 py-2.5 font-sans text-[15px] font-medium tracking-tight transition-colors",
-                        selected ? "text-foreground" : "text-muted-foreground",
-                        disabled
-                            ? "cursor-not-allowed border-border opacity-50"
-                            : open
-                              ? "cursor-pointer border-secondary shadow-[0_0_0_3px_rgba(29,117,112,0.25)]"
-                              : "cursor-pointer border-border hover:border-secondary",
-                        triggerClassName,
-                    )}
-                >
-                    <span>{loading ? "Cargando..." : selected?.label ?? placeholder}</span>
-                    <IconChevron open={open} />
-                </button>
-            )}
-
+            {triggerNode}
             {dropdown}
         </div>
     );

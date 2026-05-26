@@ -4,10 +4,9 @@ import dynamic from "next/dynamic";
 import { useRef } from "react";
 import { Sheet, type SheetRef } from "react-modal-sheet";
 import { useTransform } from "motion/react";
-import type { Arribo } from "@features/arrivals/types";
-import type { Linea, Parada } from "@shared/types";
-import type { LiveSharePoint } from "@features/live-sharing/hooks/useLiveBuses";
 import { IconX } from "@shared/icons/IconX";
+import type { ArrivalsOverlaySession } from "@features/arrivals/types/arrivalsSession";
+import { resolveArrivalsPanelView } from "@features/arrivals/types/arrivalsSession";
 import { ArrivalsPanel } from "./ArrivalsPanel";
 import { ErrorBanner } from "@features/search/components/ErrorBanner";
 import { TelegramShareCTA } from "@features/search/components/TelegramShareCTA";
@@ -17,64 +16,43 @@ const BusMap = dynamic(() => import("@shared/map/BusMap"), {
   loading: () => <div className="h-full w-full bg-muted" />,
 });
 
-interface ArrivalsOverlayProps {
-  // ... tus props se mantienen igual ...
-  lineaLabel: string | undefined;
+interface ArrivalsOverlayProps extends ArrivalsOverlaySession {
   isOpen: boolean;
   onClose: () => void;
-  codLinea: string;
-  paradaId: string;
-  selectedRamal: string;
-  setSelectedRamal: (value: string) => void;
-  isConsulting: boolean;
-  loadingArribos: boolean;
-  displayArribos: Arribo[];
-  paradaBanderaAbrevs: string[];
-  selectedParada?: Parada;
-  lastUpdate: Date | null;
-  fetchArribos: () => void;
-  calleLabel?: string;
-  interseccionLabel?: string;
-  handleFavFromArribos: (arribo: Arribo) => void;
-  otrasLineas?: Linea[];
-  loadingOtras?: boolean;
-  onSelectOtraLinea?: (linea: Linea) => void;
-  liveSharings?: LiveSharePoint[];
-  telegramUsername?: string;
-  error: string;
-  setError: (value: string) => void;
 }
 
 export function ArrivalsOverlay({
-  lineaLabel,
   isOpen,
   onClose,
-  codLinea,
-  paradaId,
-  selectedRamal,
-  setSelectedRamal,
-  isConsulting,
-  loadingArribos,
-  displayArribos,
-  paradaBanderaAbrevs,
-  selectedParada,
-  lastUpdate,
-  fetchArribos,
-  calleLabel,
-  interseccionLabel,
-  handleFavFromArribos,
-  otrasLineas = [],
-  loadingOtras = false,
-  onSelectOtraLinea,
-  liveSharings = [],
-  telegramUsername = "",
-  error,
-  setError,
+  consult,
+  arrivals,
+  telegramUsername,
 }: ArrivalsOverlayProps) {
   const sheetRef = useRef<SheetRef>(null);
+  const {
+    codLinea,
+    paradaId,
+    selectedRamal,
+    isConsulting,
+    lineaLabel,
+    calleLabel,
+    interseccionLabel,
+    selectedParada,
+    paradaBanderaAbrevs,
+    error,
+    setError,
+  } = consult;
+  const { displayArribos, loadingArribos } = arrivals;
 
   const paddingBottom = useTransform(() => {
     return sheetRef.current?.y.get() ?? 0;
+  });
+
+  const panelView = resolveArrivalsPanelView({
+    loadingArribos,
+    hasArribos: displayArribos.length > 0,
+    hasLiveSharings: arrivals.liveSharings.length > 0,
+    isConsulting,
   });
 
   return (
@@ -96,7 +74,7 @@ export function ArrivalsOverlay({
               ""
             }
             lineaCod={codLinea}
-            liveBuses={liveSharings}
+            liveBuses={arrivals.liveSharings}
             fillParent
           />
         </div>
@@ -144,35 +122,14 @@ export function ArrivalsOverlay({
             </Sheet.Header>
 
             <Sheet.Content
-              // 1. Permite arrastrar para CERRAR siempre que la lista esté arriba
               disableDrag={(state) => state.scrollPosition !== "top"}
-              // 2. NUEVO: Bloquea el scroll interno a menos que el panel esté al 100% (índice 3).
-              // Esto garantiza que cualquier gesto hacia arriba en los puntos 0.12 o 0.5 va a arrastrar el panel invariablemente.
               disableScroll={(state) => state.currentSnap !== 3}
               scrollStyle={{ paddingBottom }}
             >
               <div className="flex flex-col gap-3 pb-5">
-                {(loadingArribos ||
-                  displayArribos.length > 0 ||
-                  isConsulting) && (
-                  <ArrivalsPanel
-                    loadingArribos={loadingArribos}
-                    displayArribos={displayArribos}
-                    isConsulting={isConsulting}
-                    lastUpdate={lastUpdate}
-                    fetchArribos={fetchArribos}
-                    calleLabel={calleLabel}
-                    interseccionLabel={interseccionLabel}
-                    selectedRamal={selectedRamal}
-                    setSelectedRamal={setSelectedRamal}
-                    paradaId={paradaId}
-                    liveSharings={liveSharings}
-                    handleFavFromArribos={handleFavFromArribos}
-                    otrasLineas={otrasLineas}
-                    loadingOtras={loadingOtras}
-                    onSelectOtraLinea={onSelectOtraLinea}
-                  />
-                )}
+                {panelView !== "hidden" ? (
+                  <ArrivalsPanel consult={consult} arrivals={arrivals} />
+                ) : null}
                 <ErrorBanner
                   message={isConsulting ? error : ""}
                   onClose={() => setError("")}

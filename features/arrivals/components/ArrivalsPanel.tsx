@@ -1,53 +1,61 @@
+"use client";
+
 import { IconRefresh } from "@shared/icons/IconRefresh";
 import { ArriboCard } from "@features/arrivals/components/ArriboCard";
 import { OtrasLineasSuggestion } from "@features/arrivals/components/OtrasLineasSuggestion";
 import { ShareButton } from "@shared/layout/ShareButton";
-import type { Arribo } from "@features/arrivals/types";
-import type { Linea } from "@shared/types";
+import {
+    resolveArrivalsPanelView,
+    type ArrivalsDataSession,
+    type ArrivalsConsultSession,
+} from "@features/arrivals/types/arrivalsSession";
 import { ArrivalsEmpty } from "./ArrivalsEmpty";
 import { ArrivalsLoading } from "./ArrivalsLoading";
 import { LiveSharingBanner } from "./LiveSharingBanner";
 
 interface ArrivalsPanelProps {
-    loadingArribos: boolean;
-    displayArribos: Arribo[];
-    isConsulting: boolean;
-    lastUpdate: Date | null;
-    fetchArribos: () => void;
-    calleLabel?: string;
-    interseccionLabel?: string;
-    selectedRamal: string;
-    setSelectedRamal: (value: string) => void;
-    paradaId: string;
-    liveSharings: { lat: number; lng: number; ramal: string | null }[];
-    handleFavFromArribos: (arribo: Arribo) => void;
-    otrasLineas?: Linea[];
-    loadingOtras?: boolean;
-    onSelectOtraLinea?: (linea: Linea) => void;
+    consult: Pick<
+        ArrivalsConsultSession,
+        "isConsulting" | "selectedRamal" | "setSelectedRamal" | "paradaId"
+    >;
+    arrivals: ArrivalsDataSession;
 }
 
-export function ArrivalsPanel({
-    loadingArribos,
-    displayArribos,
-    isConsulting,
-    lastUpdate,
-    fetchArribos,
-    calleLabel,
-    interseccionLabel,
-    selectedRamal,
-    setSelectedRamal,
-    paradaId,
-    liveSharings,
-    handleFavFromArribos,
-    otrasLineas = [],
-    loadingOtras = false,
-    onSelectOtraLinea,
-}: ArrivalsPanelProps) {
+export function ArrivalsPanel({ consult, arrivals }: ArrivalsPanelProps) {
+    const {
+        isConsulting,
+        selectedRamal,
+        setSelectedRamal,
+        paradaId,
+    } = consult;
+    const {
+        displayArribos,
+        loadingArribos,
+        lastUpdate,
+        fetchArribos,
+        calleLabel,
+        interseccionLabel,
+        liveSharings,
+        handleFavFromArribos,
+        otrasLineas,
+        loadingOtras,
+        onSelectOtraLinea,
+    } = arrivals;
+
     const hasArribos = displayArribos.length > 0;
     const hasLiveSharings = liveSharings.length > 0;
     const showOtrasLineas =
         Boolean(onSelectOtraLinea) &&
         (otrasLineas.length > 0 || loadingOtras);
+
+    const view = resolveArrivalsPanelView({
+        loadingArribos,
+        hasArribos,
+        hasLiveSharings,
+        isConsulting,
+    });
+
+    if (view === "hidden") return null;
 
     return (
         <div className="mt-3">
@@ -82,11 +90,11 @@ export function ArrivalsPanel({
                 </div>
             </div>
 
-            {loadingArribos && !hasArribos && !hasLiveSharings ? (
+            {view === "loading" ? (
                 <ArrivalsLoading />
-            ) : !hasArribos && !hasLiveSharings ? (
+            ) : view === "empty" ? (
                 <ArrivalsEmpty
-                    isConsulting={isConsulting}
+                    mode={isConsulting ? "no-data" : "prompt"}
                     loadingArribos={loadingArribos}
                     selectedRamal={selectedRamal}
                     onRetry={fetchArribos}

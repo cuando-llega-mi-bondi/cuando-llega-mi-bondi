@@ -3,7 +3,8 @@ import { IconX } from "@shared/icons/IconX";
 import { IconStar } from "@shared/icons/IconStar";
 import { IconSearch } from "@shared/icons/IconSearch";
 import type { Favorito } from "@features/favorites/types";
-import { Button, Card } from "@shared/ui";
+import { Button } from "@shared/ui/Button";
+import { Card } from "@shared/ui/Card";
 
 interface FavoritesListProps {
     favoritos: Favorito[];

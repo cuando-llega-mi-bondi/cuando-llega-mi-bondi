@@ -1,5 +1,3 @@
-"use client";
-
 export function Footer() {
     return (
         <footer className="space-y-1 pb-2 pt-4 text-center mb-20">

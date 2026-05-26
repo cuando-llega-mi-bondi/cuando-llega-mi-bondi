@@ -13,7 +13,7 @@ import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import "@shared/map/leaflet.css";
 import type { ItineraryMapView } from "@features/trip-planner/lib/itineraryMapPayload";
-import { Button } from "@shared/ui";
+import { Button } from "@shared/ui/Button";
 import { cn } from "@shared/utils";
 
 const MDP_CENTER: [number, number] = [-38.0, -57.55];

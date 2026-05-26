@@ -1,55 +1,46 @@
-import { Combobox } from "./Combobox";
+"use client";
+
 import { memo, useId } from "react";
-import { Button } from "@shared/ui";
+import { Button } from "@shared/ui/Button";
+import { useSearchFlowContext } from "@features/search/context/SearchFlowContext";
 import { ErrorBanner } from "./ErrorBanner";
 import { StepField } from "./StepField";
 
 interface SearchFlowProps {
-    // State & Setters
-    codLinea: string;
-    setCodLinea: (v: string) => void;
-    codCalle: string;
-    setCodCalle: (v: string) => void;
-    codInterseccion: string;
-    setCodInterseccion: (v: string) => void;
-    paradaId: string;
-    setParadaId: (v: string) => void;
-    selectedRamal: string;
-    setSelectedRamal: (v: string) => void;
-    isConsulting: boolean;
-
-    // Arrays for options
-    lineaOptions: { value: string; label: string }[];
-    calles: { value: string; label: string }[];
-    interOptions: { value: string; label: string }[];
-    destinoOptions: { value: string; label: string }[];
-    ramalOptions: { value: string; label: string }[];
-    
-    // Loading/Error states
-    loadingLineas: boolean;
-    loadingCalles: boolean;
-    loadingInter: boolean;
     loadingArribos: boolean;
-    error: string;
-    setError: (v: string) => void;
-
-    // Actions
-    handleConsultar: () => void;
 }
 
 export const SearchFlow = memo(function SearchFlow({
-    codLinea, setCodLinea,
-    codCalle, setCodCalle,
-    codInterseccion, setCodInterseccion,
-    paradaId, setParadaId,
-    selectedRamal, setSelectedRamal,
-    isConsulting,
-    lineaOptions, calles, interOptions, destinoOptions, ramalOptions,
-    loadingLineas, loadingCalles, loadingInter, loadingArribos,
-    error, setError,
-    handleConsultar,
-
+    loadingArribos,
 }: SearchFlowProps) {
+    const { state, actions } = useSearchFlowContext();
+    const {
+        codLinea,
+        codCalle,
+        codInterseccion,
+        paradaId,
+        selectedRamal,
+        isConsulting,
+        lineaOptions,
+        calles,
+        interOptions,
+        destinoOptions,
+        ramalOptions,
+        loadingLineas,
+        loadingCalles,
+        loadingInter,
+        error,
+    } = state;
+    const {
+        handleLineaChange,
+        handleCalleChange,
+        handleInterseccionChange,
+        handleParadaChange,
+        handleSetSelectedRamal,
+        handleConsultar,
+        setError,
+    } = actions;
+
     const uid = useId();
     const labelLinea = `sf-linea${uid}`;
     const labelCalle = `sf-calle${uid}`;
@@ -65,11 +56,10 @@ export const SearchFlow = memo(function SearchFlow({
                 stepText="LÍNEA"
                 placeholder="Seleccioná la línea"
                 value={codLinea}
-                onChange={setCodLinea}
+                onChange={handleLineaChange}
                 options={lineaOptions}
                 loading={loadingLineas}
-                isActive={!codLinea}
-                isCompleted={!!codLinea}
+                stepStatus={!codLinea ? "active" : "completed"}
                 required
                 description="Seleccioná una línea"
             />
@@ -82,12 +72,13 @@ export const SearchFlow = memo(function SearchFlow({
                     stepText="CALLE"
                     placeholder="Seleccioná la calle"
                     value={codCalle}
-                    onChange={setCodCalle}
+                    onChange={handleCalleChange}
                     options={calles}
                     loading={loadingCalles}
                     disabled={loadingCalles}
-                    isActive={!!codLinea && !codCalle}
-                    isCompleted={!!codCalle}
+                    stepStatus={
+                        codLinea && !codCalle ? "active" : codCalle ? "completed" : "idle"
+                    }
                     required
                     description="Seleccioná una calle"
                 />
@@ -101,12 +92,17 @@ export const SearchFlow = memo(function SearchFlow({
                     stepText="INTERSECCIÓN"
                     placeholder="Elegí la esquina"
                     value={codInterseccion}
-                    onChange={setCodInterseccion}
+                    onChange={handleInterseccionChange}
                     options={interOptions}
                     loading={loadingInter}
                     disabled={loadingInter}
-                    isActive={!!codCalle && !codInterseccion}
-                    isCompleted={!!codInterseccion}
+                    stepStatus={
+                        codCalle && !codInterseccion
+                            ? "active"
+                            : codInterseccion
+                              ? "completed"
+                              : "idle"
+                    }
                     required
                     description="Seleccioná una intersección"
                 />
@@ -120,10 +116,15 @@ export const SearchFlow = memo(function SearchFlow({
                     stepText="PARADA"
                     placeholder="Seleccionar parada"
                     value={paradaId}
-                    onChange={setParadaId}
+                    onChange={handleParadaChange}
                     options={destinoOptions}
-                    isActive={!!codInterseccion && !paradaId}
-                    isCompleted={!!paradaId}
+                    stepStatus={
+                        codInterseccion && !paradaId
+                            ? "active"
+                            : paradaId
+                              ? "completed"
+                              : "idle"
+                    }
                     required
                     description="Seleccioná una opción"
                 />
@@ -137,10 +138,11 @@ export const SearchFlow = memo(function SearchFlow({
                     stepText="RAMAL"
                     placeholder="Elegí el ramal"
                     value={selectedRamal}
-                    onChange={setSelectedRamal}
+                    onChange={handleSetSelectedRamal}
                     options={ramalOptions}
-                    isActive={!!paradaId && selectedRamal === "TODOS"}
-                    isCompleted={selectedRamal !== "TODOS"}
+                    stepStatus={
+                        paradaId && selectedRamal === "TODOS" ? "active" : "idle"
+                    }
                     description="Opcional: filtrar por ramal"
                 />
             ) : null}

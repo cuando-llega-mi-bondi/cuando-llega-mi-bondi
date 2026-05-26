@@ -2,7 +2,8 @@
 
 import { useEffect, useRef } from "react";
 import { IconX } from "@shared/icons/IconX";
-import { Button, Modal } from "@shared/ui";
+import { Button } from "@shared/ui/Button";
+import { Modal } from "@shared/ui/Modal";
 
 interface FavoriteNameModalProps {
     isOpen: boolean;

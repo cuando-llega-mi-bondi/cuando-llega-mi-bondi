@@ -68,7 +68,14 @@ export async function post(accion: string, params: ActionParams = {}) {
             const q = new URLSearchParams({ accion, ...params }).toString();
             const origin = internalAppOrigin();
             const refUrl = `${origin || ""}/api/reference?${q}`;
-            const refRes = await fetch(refUrl, { method: "GET", cache: "no-store" });
+            // Sin `cache: "no-store"`: en el browser respeta Cache-Control del route;
+            // en el servidor, Data Cache alineada al s-maxage de /api/reference.
+            const refRes = await fetch(refUrl, {
+                method: "GET",
+                ...(typeof window === "undefined"
+                    ? { next: { revalidate: 86400 } }
+                    : {}),
+            });
             if (refRes.ok) {
                 return refRes.json();
             }

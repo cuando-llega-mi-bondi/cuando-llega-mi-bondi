@@ -10,6 +10,8 @@ function isStandalone(): boolean {
     );
 }
 
+let lastAppHeight = 0;
+
 /** Altura útil real; en la 1.ª pintura iOS a vece innerHeight y visualViewport difieren. */
 function syncAppHeight(): void {
     const ih = window.innerHeight;
@@ -21,6 +23,8 @@ function syncAppHeight(): void {
     // skip so the CSS `100%` fallback handles this frame.
     const sh = window.screen?.height ?? 0;
     if (sh && h < sh * 0.7) return;
+    if (h === lastAppHeight) return;
+    lastAppHeight = h;
     document.documentElement.style.setProperty("--app-height", `${h}px`);
     void document.documentElement.offsetHeight;
 }
@@ -54,7 +58,9 @@ export function PwaViewportSync() {
             requestAnimationFrame(bump);
         });
 
-        const timeouts = [0, 16, 50, 120, 280].map((ms) => window.setTimeout(bump, ms));
+        const timeouts = [0, 16, 50, 120, 280, 500].map((ms) =>
+            window.setTimeout(bump, ms),
+        );
 
         const onResize = () => bump();
         window.addEventListener("resize", onResize);

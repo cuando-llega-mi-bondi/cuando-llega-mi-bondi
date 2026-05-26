@@ -3,6 +3,12 @@ import { getLineaData, getLineas } from "@/lib/server/loadStaticDump";
 import { STATIC_REFERENCE_ACCIONES } from "@shared/api/staticReferenceAcciones";
 import { paradaLookupKey } from "@/lib/server/staticDumpTypes";
 
+/** Dump MGP estático: solo cambia con split-static + redeploy. */
+const STATIC_HEADERS = {
+    "Cache-Control":
+        "public, s-maxage=86400, stale-while-revalidate=604800",
+} as const;
+
 export async function GET(req: NextRequest) {
     const accion = req.nextUrl.searchParams.get("accion");
     if (!accion || !STATIC_REFERENCE_ACCIONES.has(accion)) {
@@ -24,7 +30,7 @@ export async function GET(req: NextRequest) {
                         { status: 404 },
                     );
                 }
-                return NextResponse.json({ lineas });
+                return NextResponse.json({ lineas }, { headers: STATIC_HEADERS });
             }
             case "RecuperarCallesPrincipalPorLinea": {
                 if (!codLinea) {
@@ -44,7 +50,7 @@ export async function GET(req: NextRequest) {
                     Codigo: c.value,
                     Descripcion: c.label,
                 }));
-                return NextResponse.json({ calles });
+                return NextResponse.json({ calles }, { headers: STATIC_HEADERS });
             }
             case "RecuperarInterseccionPorLineaYCalle": {
                 const codCalle = req.nextUrl.searchParams.get("codCalle") ?? "";
@@ -62,7 +68,7 @@ export async function GET(req: NextRequest) {
                     );
                 }
                 const calles = row.interseccionesByCalle[codCalle] ?? [];
-                return NextResponse.json({ calles });
+                return NextResponse.json({ calles }, { headers: STATIC_HEADERS });
             }
             case "RecuperarParadasConBanderaPorLineaCalleEInterseccion": {
                 const codCalle = req.nextUrl.searchParams.get("codCalle") ?? "";
@@ -85,7 +91,7 @@ export async function GET(req: NextRequest) {
                 }
                 const key = paradaLookupKey(codCalle, codInterseccion);
                 const paradas = row.paradasByCalleInterseccion[key] ?? [];
-                return NextResponse.json({ paradas });
+                return NextResponse.json({ paradas }, { headers: STATIC_HEADERS });
             }
             case "ResolverUbicacionFormularioPorParada": {
                 const parada = req.nextUrl.searchParams.get("parada") ?? "";
@@ -97,10 +103,10 @@ export async function GET(req: NextRequest) {
                 }
                 const row = await getLineaData(codLinea);
                 if (!row) {
-                    return NextResponse.json({
-                        codCalle: null,
-                        codInterseccion: null,
-                    });
+                    return NextResponse.json(
+                        { codCalle: null, codInterseccion: null },
+                        { headers: STATIC_HEADERS },
+                    );
                 }
                 for (const [key, lista] of Object.entries(
                     row.paradasByCalleInterseccion ?? {},
@@ -112,13 +118,16 @@ export async function GET(req: NextRequest) {
                     const codCalle = key.slice(0, tab);
                     const codInterseccion = key.slice(tab + 1);
                     if (codCalle && codInterseccion) {
-                        return NextResponse.json({ codCalle, codInterseccion });
+                        return NextResponse.json(
+                            { codCalle, codInterseccion },
+                            { headers: STATIC_HEADERS },
+                        );
                     }
                 }
-                return NextResponse.json({
-                    codCalle: null,
-                    codInterseccion: null,
-                });
+                return NextResponse.json(
+                    { codCalle: null, codInterseccion: null },
+                    { headers: STATIC_HEADERS },
+                );
             }
             case "RecuperarParadasConBanderaYDestinoPorLinea":
             case "RecuperarRecorridoParaMapaAbrevYAmpliPorEntidadYLinea": {
@@ -167,7 +176,10 @@ export async function GET(req: NextRequest) {
                         LongitudParada: String(p.lng),
                     }));
                 }
-                return NextResponse.json({ puntos, paradas });
+                return NextResponse.json(
+                    { puntos, paradas },
+                    { headers: STATIC_HEADERS },
+                );
             }
             default:
                 return NextResponse.json(

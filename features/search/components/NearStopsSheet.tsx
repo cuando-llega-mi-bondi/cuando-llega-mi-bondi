@@ -1,7 +1,9 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { Button, Modal, Spinner } from "@shared/ui";
+import { Button } from "@shared/ui/Button";
+import { Modal } from "@shared/ui/Modal";
+import { Spinner } from "@shared/ui/Spinner";
 import { cn } from "@shared/utils";
 
 type LineaChip = { codigoLineaParada: string; descripcion: string };

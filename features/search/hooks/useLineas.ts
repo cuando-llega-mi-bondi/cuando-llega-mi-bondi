@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect } from "react";
 import useSWR from "swr";
 import type { Linea } from "@shared/types";
 import { swrFetcher } from "@shared/api/client";
@@ -13,23 +14,28 @@ interface UseLineasOptions {
 }
 
 export function useLineas(options: UseLineasOptions = {}) {
-    const cachedLineas = getCache<Linea[]>(LINEAS_ACTION);
-
-    const { data, isLoading, error } = useSWR<{ lineas?: Linea[] }, Error>(
+    const { data, isLoading, error, mutate } = useSWR<{ lineas?: Linea[] }, Error>(
         [LINEAS_ACTION, {}],
         swrFetcher,
         {
             revalidateOnFocus: false,
             dedupingInterval: 60_000,
-            fallbackData: cachedLineas
-                ? { lineas: mergeLineasWithManual(cachedLineas) }
-                : undefined,
             onSuccess: (res) =>
                 setCache(LINEAS_ACTION, mergeLineasWithManual(res.lineas ?? [])),
             onError: (err) =>
                 options.onError?.(err?.message ?? "Error al cargar las líneas."),
         },
     );
+
+    useEffect(() => {
+        const cachedLineas = getCache<Linea[]>(LINEAS_ACTION);
+        if (cachedLineas) {
+            void mutate(
+                { lineas: mergeLineasWithManual(cachedLineas) },
+                { revalidate: false },
+            );
+        }
+    }, [mutate]);
 
     return {
         lineas: mergeLineasWithManual(data?.lineas ?? []),

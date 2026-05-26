@@ -20,7 +20,7 @@ import {
 import type { Favorito } from "@features/favorites/types";
 import type { HistorialEntry } from "@features/history/types";
 import { cn } from "@shared/utils";
-import { useSearchFlow } from "@/app/hooks/useSearchFlow";
+import { SearchFlowProvider, useSearchFlowContext } from "@features/search/context/SearchFlowContext";
 
 import { Header } from "@shared/layout/Header";
 import { BottomNav } from "@shared/layout/BottomNav";
@@ -31,8 +31,8 @@ import { SearchFlow } from "@features/search/components/SearchFlow";
 import { ArrivalsOverlay } from "@features/arrivals/components/ArrivalsOverlay";
 import { FavoriteNameModal } from "@features/favorites/components/FavoriteNameModal";
 import { ServiceDownModal } from "@shared/ui/ServiceDownModal";
-import { PageShell } from "@shared/layout";
-import { Button } from "@shared/ui";
+import { PageShell } from "@shared/layout/PageShell";
+import { Button } from "@shared/ui/Button";
 
 type NamingState =
   | { open: false }
@@ -42,33 +42,83 @@ type NamingState =
 const NAMING_CLOSED: NamingState = { open: false };
 
 export function HomeClient({ children }: { children?: ReactNode }) {
-  const router = useRouter();
   const [tab, setTab] = useState<"buscar" | "favoritos">("buscar");
+  const [sheetOpen, setSheetOpen] = useState(false);
+
+  return (
+    <SearchFlowProvider
+      tab={tab}
+      setTab={setTab}
+      onConsultOpen={() => setSheetOpen(true)}
+    >
+      <HomeClientContent
+        tab={tab}
+        setTab={setTab}
+        sheetOpen={sheetOpen}
+        setSheetOpen={setSheetOpen}
+      >
+        {children}
+      </HomeClientContent>
+    </SearchFlowProvider>
+  );
+}
+
+function HomeClientContent({
+  children,
+  tab,
+  setTab,
+  sheetOpen,
+  setSheetOpen,
+}: {
+  children?: ReactNode;
+  tab: "buscar" | "favoritos";
+  setTab: (tab: "buscar" | "favoritos") => void;
+  sheetOpen: boolean;
+  setSheetOpen: (open: boolean) => void;
+}) {
+  const router = useRouter();
+  const { state, actions, meta } = useSearchFlowContext();
   const [showServiceDownModal, setShowServiceDownModal] = useState(false);
   const [nearStopsOpen, setNearStopsOpen] = useState(false);
-  const [sheetOpen, setSheetOpen] = useState(false);
   const [naming, setNaming] = useState<NamingState>(NAMING_CLOSED);
 
-  const search = useSearchFlow({
-    tab,
-    setTab,
-    onConsultOpen: () => setSheetOpen(true),
-  });
+  const {
+    codLinea,
+    paradaId,
+    selectedRamal,
+    isConsulting,
+    error,
+  } = state;
+  const {
+    handleSetSelectedRamal,
+    setError,
+    setIsConsulting,
+    applySelection,
+    resetToParada,
+  } = actions;
+  const {
+    lineas,
+    lineaLabel,
+    calleLabel,
+    interseccionLabel,
+    paradaBanderaAbrevs,
+    selectedParada,
+  } = meta;
 
   const { arribos, loadingArribos, mutateArribos, lastUpdate } = useArribos({
-    isConsulting: search.isConsulting,
-    paradaId: search.paradaId,
-    codLinea: search.codLinea,
-    onSuccess: () => search.setError(""),
-    onError: search.setError,
+    isConsulting,
+    paradaId,
+    codLinea,
+    onSuccess: () => setError(""),
+    onError: setError,
   });
 
   const displayArribos = useMemo(
     () =>
-      search.selectedRamal === "TODOS"
+      selectedRamal === "TODOS"
         ? arribos
-        : arribos.filter((a) => a.DescripcionBandera === search.selectedRamal),
-    [arribos, search.selectedRamal],
+        : arribos.filter((a) => a.DescripcionBandera === selectedRamal),
+    [arribos, selectedRamal],
   );
 
   const {
@@ -84,31 +134,31 @@ export function HomeClient({ children }: { children?: ReactNode }) {
     removeHistorialEntry,
     clearHistorialEntries,
   } = useHistorial();
-  const { liveSharings } = useLiveBuses(search.codLinea);
+  const { liveSharings } = useLiveBuses(codLinea);
 
   const { otrasLineas, loadingOtras } = useOtrasLineas({
-    isConsulting: search.isConsulting,
-    paradaId: search.paradaId,
-    codLinea: search.codLinea,
-    lineas: search.lineas,
+    isConsulting,
+    paradaId,
+    codLinea,
+    lineas,
   });
 
   const savedHistRef = useAutoHistorial({
-    isConsulting: search.isConsulting,
-    paradaId: search.paradaId,
-    codLinea: search.codLinea,
+    isConsulting,
+    paradaId,
+    codLinea,
     arribos,
-    lineaLabel: search.lineaLabel,
-    calleLabel: search.calleLabel,
-    interseccionLabel: search.interseccionLabel,
+    lineaLabel,
+    calleLabel,
+    interseccionLabel,
     pushHistorialEntry,
   });
 
   const handleSelectOtraLinea = useOtrasLineasNavigation({
-    calleLabel: search.calleLabel,
-    interseccionLabel: search.interseccionLabel,
-    onNavigate: (partial) => search.applySelection(partial),
-    onConsultingChange: search.setIsConsulting,
+    calleLabel,
+    interseccionLabel,
+    onNavigate: (partial) => applySelection(partial),
+    onConsultingChange: setIsConsulting,
   });
 
   useEffect(() => {
@@ -132,27 +182,27 @@ export function HomeClient({ children }: { children?: ReactNode }) {
   const handleCloseSheet = useCallback(() => {
     withViewTransition(() => {
       setSheetOpen(false);
-      search.setIsConsulting(false);
+      setIsConsulting(false);
     });
-  }, [search]);
+  }, [setIsConsulting, setSheetOpen]);
 
   const handleFavFromArribos = useCallback(
     (arribo: Arribo) => {
-      const id = `${search.paradaId}_${arribo.CodigoLineaParada}`;
+      const id = `${paradaId}_${arribo.CodigoLineaParada}`;
       if (isFavoritoEntry(id)) {
         removeFavoritoEntry(id);
         return;
       }
       const lineaPart =
         arriboLineaDescripcion(arribo) ||
-        search.lineaLabel.trim() ||
+        lineaLabel.trim() ||
         arribo.CodigoLineaParada ||
         "";
       const banderaPart =
         arriboBanderaLabel(arribo) ||
-        search.selectedParada?.AbreviaturaBandera?.trim() ||
+        selectedParada?.AbreviaturaBandera?.trim() ||
         "";
-      const ubicacion = [search.calleLabel, search.interseccionLabel]
+      const ubicacion = [calleLabel, interseccionLabel]
         .filter(Boolean)
         .join(" e ");
       let nombre = "";
@@ -168,10 +218,10 @@ export function HomeClient({ children }: { children?: ReactNode }) {
         fav: {
           id,
           nombre,
-          identificadorParada: search.paradaId,
+          identificadorParada: paradaId,
           codigoLineaParada: arribo.CodigoLineaParada,
           lineaLabel:
-            search.lineaLabel.trim() ||
+            lineaLabel.trim() ||
             lineaPart ||
             arribo.CodigoLineaParada ||
             undefined,
@@ -180,7 +230,15 @@ export function HomeClient({ children }: { children?: ReactNode }) {
         },
       });
     },
-    [isFavoritoEntry, removeFavoritoEntry, search],
+    [
+      isFavoritoEntry,
+      removeFavoritoEntry,
+      paradaId,
+      lineaLabel,
+      selectedParada,
+      calleLabel,
+      interseccionLabel,
+    ],
   );
 
   const handleSaveNaming = useCallback(
@@ -200,35 +258,92 @@ export function HomeClient({ children }: { children?: ReactNode }) {
 
   const fetchFavArribos = useCallback(
     (fav: Favorito) => {
-      search.resetToParada(fav.identificadorParada, fav.codigoLineaParada, {
+      resetToParada(fav.identificadorParada, fav.codigoLineaParada, {
         consulting: true,
       });
       setSheetOpen(true);
     },
-    [search],
+    [resetToParada, setSheetOpen],
   );
 
   const fetchHistEntry = useCallback(
     (entry: HistorialEntry) => {
       savedHistRef.current = "";
-      search.resetToParada(entry.paradaId, entry.codLinea, { consulting: true });
+      resetToParada(entry.paradaId, entry.codLinea, { consulting: true });
       setSheetOpen(true);
     },
-    [savedHistRef, search],
+    [savedHistRef, resetToParada, setSheetOpen],
   );
 
   const handleNearPickLinea = useCallback(
-    (paradaId: string, codLinea: string) => {
-      const line = search.lineas.find((l) => l.CodigoLineaParada === codLinea);
+    (pickedParadaId: string, pickedCodLinea: string) => {
+      const line = lineas.find((l) => l.CodigoLineaParada === pickedCodLinea);
       if (line?.isManual) {
-        router.push(`/recorrido?linea=${encodeURIComponent(codLinea)}`);
+        router.push(`/recorrido?linea=${encodeURIComponent(pickedCodLinea)}`);
         return;
       }
       savedHistRef.current = "";
-      search.resetToParada(paradaId, codLinea, { consulting: true });
+      resetToParada(pickedParadaId, pickedCodLinea, { consulting: true });
       setSheetOpen(true);
     },
-    [router, savedHistRef, search],
+    [lineas, router, savedHistRef, resetToParada, setSheetOpen],
+  );
+
+  const overlaySession = useMemo(
+    () => ({
+      consult: {
+        codLinea,
+        paradaId,
+        selectedRamal,
+        setSelectedRamal: handleSetSelectedRamal,
+        isConsulting,
+        lineaLabel,
+        calleLabel,
+        interseccionLabel,
+        selectedParada,
+        paradaBanderaAbrevs,
+        error,
+        setError,
+      },
+      arrivals: {
+        displayArribos,
+        loadingArribos,
+        lastUpdate,
+        fetchArribos: mutateArribos,
+        calleLabel,
+        interseccionLabel,
+        otrasLineas,
+        loadingOtras,
+        onSelectOtraLinea: handleSelectOtraLinea,
+        liveSharings,
+        handleFavFromArribos,
+      },
+      telegramUsername:
+        process.env.NEXT_PUBLIC_TELEGRAM_BOT_USERNAME || "cuandollegamdp_bot",
+    }),
+    [
+      codLinea,
+      paradaId,
+      selectedRamal,
+      handleSetSelectedRamal,
+      isConsulting,
+      lineaLabel,
+      calleLabel,
+      interseccionLabel,
+      selectedParada,
+      paradaBanderaAbrevs,
+      error,
+      setError,
+      displayArribos,
+      loadingArribos,
+      lastUpdate,
+      mutateArribos,
+      otrasLineas,
+      loadingOtras,
+      handleSelectOtraLinea,
+      liveSharings,
+      handleFavFromArribos,
+    ],
   );
 
   return (
@@ -258,31 +373,7 @@ export function HomeClient({ children }: { children?: ReactNode }) {
                 Cómo llego
               </Link>
             </div>
-            <SearchFlow
-              codLinea={search.codLinea}
-              setCodLinea={search.handleLineaChange}
-              codCalle={search.codCalle}
-              setCodCalle={search.handleCalleChange}
-              codInterseccion={search.codInterseccion}
-              setCodInterseccion={search.handleInterseccionChange}
-              paradaId={search.paradaId}
-              setParadaId={search.handleParadaChange}
-              selectedRamal={search.selectedRamal}
-              setSelectedRamal={search.handleSetSelectedRamal}
-              isConsulting={search.isConsulting}
-              lineaOptions={search.lineaOptions}
-              calles={search.calles}
-              interOptions={search.interOptions}
-              destinoOptions={search.destinoOptions}
-              ramalOptions={search.ramalOptions}
-              loadingLineas={search.loadingLineas}
-              loadingCalles={search.loadingCalles}
-              loadingInter={search.loadingInter}
-              loadingArribos={loadingArribos}
-              error={search.error}
-              setError={search.setError}
-              handleConsultar={search.handleConsultar}
-            />
+            <SearchFlow loadingArribos={loadingArribos} />
           </>
         ) : (
           <>
@@ -307,31 +398,7 @@ export function HomeClient({ children }: { children?: ReactNode }) {
         <ArrivalsOverlay
           isOpen={sheetOpen}
           onClose={handleCloseSheet}
-          codLinea={search.codLinea}
-          paradaId={search.paradaId}
-          selectedRamal={search.selectedRamal}
-          setSelectedRamal={search.handleSetSelectedRamal}
-          isConsulting={search.isConsulting}
-          loadingArribos={loadingArribos}
-          lineaLabel={search.lineaLabel}
-          displayArribos={displayArribos}
-          paradaBanderaAbrevs={search.paradaBanderaAbrevs}
-          selectedParada={search.selectedParada}
-          lastUpdate={lastUpdate}
-          fetchArribos={mutateArribos}
-          calleLabel={search.calleLabel}
-          interseccionLabel={search.interseccionLabel}
-          handleFavFromArribos={handleFavFromArribos}
-          otrasLineas={otrasLineas}
-          loadingOtras={loadingOtras}
-          onSelectOtraLinea={handleSelectOtraLinea}
-          liveSharings={liveSharings}
-          telegramUsername={
-            process.env.NEXT_PUBLIC_TELEGRAM_BOT_USERNAME ||
-            "cuandollegamdp_bot"
-          }
-          error={search.error}
-          setError={search.setError}
+          {...overlaySession}
         />
       )}
 
