@@ -1,0 +1,20 @@
+import type { ReactNode } from "react";
+import { cn } from "@shared/utils";
+
+interface PageShellProps {
+    children: ReactNode;
+    className?: string;
+}
+
+export function PageShell({ children, className }: PageShellProps) {
+    return (
+        <main
+            className={cn(
+                "mx-auto w-full max-w-[520px] flex-1 px-[calc(20px+var(--safe-left))] pt-5 pb-nav pr-[calc(20px+var(--safe-right))] text-foreground",
+                className,
+            )}
+        >
+            {children}
+        </main>
+    );
+}

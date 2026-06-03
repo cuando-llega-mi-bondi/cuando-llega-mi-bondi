@@ -1,10 +1,12 @@
 import type { Metadata } from "next";
-import { AcercaClient } from "@/components/AcercaClient";
+import { AcercaClient } from "@/app/acerca/AcercaClient";
 
 export const metadata: Metadata = {
-    title: "Acerca de",
+    title: {
+        absolute: "¿Qué es BondiMDP? La app de colectivos de Mar del Plata",
+    },
     description:
-        "Conocé al equipo detrás de Bondi MDP. Información de colectivos en tiempo real para Mar del Plata.",
+        "BondiMDP es la app gratuita para seguir el bondi en tiempo real en Mar del Plata. Conocé cómo funciona, quién la hace y cómo reportar problemas.",
     alternates: {
         canonical: "/acerca",
     },
@@ -12,16 +14,16 @@ export const metadata: Metadata = {
         type: "website",
         locale: "es_AR",
         url: "https://www.bondimdp.com.ar/acerca",
-        title: "Acerca de | Bondi MDP",
+        title: "¿Qué es BondiMDP? La app de colectivos de Mar del Plata",
         description:
-            "Conocé al equipo detrás de Bondi MDP. Información de colectivos en tiempo real para Mar del Plata.",
+            "App gratuita para seguir el bondi en tiempo real en Mar del Plata. Conocé al equipo y cómo funciona.",
         siteName: "Bondi MDP",
     },
     twitter: {
         card: "summary",
-        title: "Acerca de | Bondi MDP",
+        title: "¿Qué es BondiMDP?",
         description:
-            "Conocé al equipo detrás de Bondi MDP.",
+            "La app gratuita para seguir el bondi en tiempo real en Mar del Plata.",
     },
 };
 

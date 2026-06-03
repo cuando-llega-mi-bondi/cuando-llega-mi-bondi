@@ -551,6 +551,12 @@ html.dark *::-webkit-scrollbar-thumb {
   pointer-events: none !important;
 }
 
+/* Cómo llego: mapa visible detrás del sheet (portal en body) */
+body.como-llego-sheet-open .react-modal-sheet-backdrop {
+  background-color: transparent !important;
+  pointer-events: none !important;
+}
+
 .react-modal-sheet-container {
   background: var(--background) !important;
   border-top: 1px solid var(--border) !important;
@@ -586,4 +592,28 @@ html.dark *::-webkit-scrollbar-thumb {
 body.arrivals-overlay-open {
   overflow: hidden;
   overscroll-behavior: none;
+}
+
+body.como-llego-overlay-open {
+  overflow: hidden;
+  overscroll-behavior: none;
+}
+
+/*
+ * View Transitions: animación cross-fade rápida cuando se revela/oculta el
+ * ArrivalsOverlay (HomeClient) o se cambia de línea en /recorrido. Disparado
+ * imperativamente por `lib/viewTransition.ts`. Browsers sin soporte
+ * (Firefox <= 138) ejecutan el cambio sin animación.
+ */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 220ms;
+  animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation-duration: 0.01ms;
+  }
 }

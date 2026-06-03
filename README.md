@@ -59,23 +59,19 @@ La aplicación está diseñada pensando en la performance y la facilidad de exte
 graph TD
   UI[UI Components] --> SWR[SWR Hooks]
   SWR --> Storage[(LocalStorage / Cache 24h)]
-  SWR --> Cuando["POST BASE_URL (lib/api/client.ts)"]
-  Cuando -->|NEXT_PUBLIC_CUANDO_API_URL vacío| Route["Route Handler /api/cuando"]
-  Cuando -->|NEXT_PUBLIC_CUANDO_API_URL seteado| Ext["URL absoluta propia (Worker/VPS)"]
-  Route --> Proxies["Proxies MGP (MGP_PROXY_*, MGP_ORACLE_*)"]
-  Ext --> Proxies
-  Proxies --> MGP[API Municipalidad vía proxy]
+  SWR -->|acciones de catálogo, USE_STATIC_REFERENCE=true| Ref["GET /api/reference (dump local)"]
+  SWR -->|resto de acciones| Cuando["POST NEXT_PUBLIC_CUANDO_API_URL (lib/api/client.ts)"]
+  Cuando --> Backend["Backend self-hosted (server/, cloudflared)"]
+  Backend --> MGP[API Municipalidad]
   UI --> Manual[lib/manualRoutes.ts]
   Manual --> GeoJSON[public/*.geojson]
 ```
 
-### Proxy municipal y offload del cliente
+### Backend self-hosted obligatorio
 
-El navegador **no** llama directo al origen municipal: siempre hace `POST` a `BASE_URL` (`lib/api/client.ts`). Por defecto eso es la ruta interna `/api/cuando` (`app/api/cuando/route.ts`), que a su vez reenvía el body a uno o más **proxies intermedios** configurados con variables de entorno (ver tabla más abajo). Si un proxy falla (red, sesión, 403/503), la ruta intenta el siguiente; ante sesión rota llama a `/init` del mismo host antes de reintentar.
+La API municipal bloquea el rango de IPs de Vercel, así que **este front no tiene proxy interno**: no existe `/api/cuando`. El cliente (`post()` en `lib/api/client.ts`) hace `POST` directo a `NEXT_PUBLIC_CUANDO_API_URL`, que apunta al backend self-hosted (ver `server/`, expuesto vía cloudflared/traefik). Si la env var no está configurada, `post()` tira un error explícito en el primer uso en lugar de pegarle a un endpoint inexistente.
 
-Si querés que el tráfico **no** pase por el Route Handler de Next (por ejemplo para ahorrar invocaciones o montar tu propio Worker), definí `NEXT_PUBLIC_CUANDO_API_URL` con la base HTTPS de tu endpoint compatible (mismo contrato: `POST` con `application/x-www-form-urlencoded` y el mismo cuerpo que hoy arma `post()`). El cliente deja de usar `/api/cuando` en build/runtime; igual necesitás que ese endpoint llegue al proxy municipal de tu infraestructura.
-
-Las respuestas de **datos de referencia** (líneas, calles, paradas, recorridos para mapa, etc.) se cachean en el servidor con `unstable_cache` unos **300 segundos**; `RecuperarProximosArribosW` (arribos en vivo) **no** se cachea.
+Las acciones de catálogo (líneas, calles, paradas, recorridos, banderas) las atiende `/api/reference` desde un dump estático en `data/mgp-static-dump.json` cuando `NEXT_PUBLIC_USE_STATIC_REFERENCE=true`. Esa ruta vive en Vercel sin riesgo: nunca toca la muni.
 
 ## 🚀 Empezar (Getting Started)
 
@@ -88,17 +84,12 @@ Estas instrucciones te permitirán obtener una copia del proyecto y ejecutarlo e
 
 ### Variables de entorno
 
-**Consulta municipal (obligatorio en servidor si usás `/api/cuando`):** el Route Handler necesita al menos una base de proxy. Podés definir `MGP_PROXY_URL` (y opcionalmente `MGP_PROXY_TOKEN`) y/o un segundo origen `MGP_ORACLE_URL` (y `MGP_ORACLE_TOKEN`). Si omitís el token, se usa un valor por defecto interno al código. Sin ninguna URL, `/api/cuando` responde error (no hay a dónde reenviar).
-
-**Alternativa en local:** apuntá el cliente a un proxy ya desplegado con `NEXT_PUBLIC_CUANDO_API_URL` (URL HTTPS absoluta o host sin esquema; ver `lib/api/client.ts`). Así el navegador no llama a tu `/api/cuando` y no necesitás `MGP_PROXY_*` en ese entorno de Next.
+**Consulta municipal (obligatorio):** `NEXT_PUBLIC_CUANDO_API_URL` apunta al backend self-hosted. Sin esa variable las acciones en vivo (arribos, banderas, etc.) fallan en el primer uso con un error explícito. La muni bloquea las IPs de Vercel; no hay fallback.
 
 | Variable                            | Uso                                                                 |
 | ----------------------------------- | ------------------------------------------------------------------- |
-| `MGP_PROXY_URL`                     | Base del proxy Termux (sin barra final); ej. `https://host.example` |
-| `MGP_PROXY_TOKEN`                   | Token enviado como `x-proxy-token` (opcional; hay default)          |
-| `MGP_ORACLE_URL`                    | Segundo proxy (Oracle); se deduplica si coincide con el primero     |
-| `MGP_ORACLE_TOKEN`                  | Token del segundo proxy (opcional)                                  |
-| `NEXT_PUBLIC_CUANDO_API_URL`        | Base externa para `post()`; si está vacío se usa `/api/cuando`       |
+| `NEXT_PUBLIC_CUANDO_API_URL`        | URL base del backend self-hosted (ej. `https://bondi.aeterna.red`)  |
+| `NEXT_PUBLIC_USE_STATIC_REFERENCE`  | `true` para servir catálogo desde `data/mgp-static-dump.json`        |
 | `NEXT_PUBLIC_TELEGRAM_BOT_USERNAME` | Usuario del bot (sin `@`) para enlaces `t.me/...`                   |
 | `TELEGRAM_BOT_TOKEN`                | Token del bot; el webhook responde con `sendMessage`               |
 | `NEXT_PUBLIC_SUPABASE_URL`          | URL del proyecto Supabase                                          |
@@ -106,7 +97,7 @@ Estas instrucciones te permitirán obtener una copia del proyecto y ejecutarlo e
 | `NEXT_PUBLIC_GA_MEASUREMENT_ID`     | Opcional: Google Analytics (layout)                                 |
 | `NEXT_PUBLIC_CLARITY_PROJECT_ID`    | Opcional: Microsoft Clarity                                        |
 
-Si no configurás Telegram ni Supabase, la consulta de arribos y el mapa estándar pueden funcionar igual; lo que no podés omitir (salvo el caso `NEXT_PUBLIC_CUANDO_API_URL`) es la cadena hasta el proxy municipal.
+Si no configurás Telegram ni Supabase, el resto de la app sigue funcionando; lo único realmente obligatorio es `NEXT_PUBLIC_CUANDO_API_URL` para que el cliente sepa a dónde mandar las acciones en vivo.
 
 ### Instalación
 
@@ -131,15 +122,11 @@ Si no configurás Telegram ni Supabase, la consulta de arribos y el mapa estánd
 
    La aplicación estará corriendo en [http://localhost:3000](http://localhost:3000).
 
-   Sin `NEXT_PUBLIC_CUANDO_API_URL`, asegurate de tener en `.env.local` al menos `MGP_PROXY_URL` o `MGP_ORACLE_URL` (ver arriba); si no, las consultas a la API municipal van a responder error.
+   Configurá `NEXT_PUBLIC_CUANDO_API_URL` en `.env.local` apuntando al backend self-hosted (local o tunelado vía cloudflared); si no, todas las acciones en vivo van a tirar error.
 
 ## 📡 API Reference
 
-El cliente (`post` en `lib/api/client.ts`) envía todas las acciones al mismo `BASE_URL`: por defecto **`POST /api/cuando`** relativo al sitio; si definís `NEXT_PUBLIC_CUANDO_API_URL`, ese mismo contrato aplica contra la URL absoluta configurada.
-
-**Endpoint interno (Next):** `POST /api/cuando`
-
-El body asume codificación `application/x-www-form-urlencoded`.
+El cliente (`post` en `lib/api/client.ts`) envía todas las acciones por `POST` con `application/x-www-form-urlencoded` a `NEXT_PUBLIC_CUANDO_API_URL`. Las acciones de catálogo (ver `lib/staticReferenceAcciones.ts`) se cortan antes con un `GET /api/reference?accion=...` que sirve el dump estático.
 
 ### Acciones comunes
 
@@ -152,7 +139,7 @@ El body asume codificación `application/x-www-form-urlencoded`.
 - `RecuperarBanderasAsociadasAParada`: banderas asociadas a una parada (cache).
 - `RecuperarProximosArribosW`: `identificadorParada`, `codigoLineaParada` → arribos GPS en vivo (**sin** cache servidor).
 
-_(El cliente está en `lib/api/client.ts` (`post`, `swrFetcher`); la lista exacta de acciones con cache en servidor coincide con `CACHEABLE_ACCIONES` en `app/api/cuando/route.ts`.)_
+_(El cliente está en `lib/api/client.ts` (`post`, `swrFetcher`); las acciones que se atienden desde el dump estático están listadas en `lib/staticReferenceAcciones.ts`.)_
 
 ## 🤝 Contribuir
 
