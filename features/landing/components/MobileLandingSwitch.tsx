@@ -1,6 +1,5 @@
 import { headers } from "next/headers";
-import { HomeClient } from "@/app/HomeClient";
-import { HomeIntro } from "@features/landing/components/HomeIntro";
+import { redirect } from "next/navigation";
 import { LandingPage } from "@features/landing/components/LandingPage";
 
 export async function MobileLandingSwitch() {
@@ -12,9 +11,5 @@ export async function MobileLandingSwitch() {
         return <LandingPage />;
     }
 
-    return (
-        <HomeClient>
-            <HomeIntro />
-        </HomeClient>
-    );
+    redirect("/consultar");
 }
