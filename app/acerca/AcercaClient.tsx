@@ -353,7 +353,7 @@ export function AcercaClient() {
         <Footer />
       </PageShell>
 
-      <BottomNav tab="buscar" setTab={() => {}} favCount={0} />
+      <BottomNav />
     </div>
   );
 }
