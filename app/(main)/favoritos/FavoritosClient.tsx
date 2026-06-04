@@ -112,6 +112,11 @@ export function FavoritosClient() {
   return (
     <>
       <PageShell>
+        <div className="mb-6">
+          <h1 className="font-display text-[24px] font-semibold tracking-[-0.04em] text-text">
+            Favoritos
+          </h1>
+        </div>
         <FavoritesList
           favoritos={favoritos}
           onView={fetchFavArribos}
