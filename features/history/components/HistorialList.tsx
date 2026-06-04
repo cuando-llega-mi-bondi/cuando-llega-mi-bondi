@@ -113,6 +113,7 @@ export const HistorialList = memo(function HistorialList({
     return (
         <div className="mt-8">
             {/* Header */}
+
             <div className="mb-3 flex items-center justify-between">
                 <div className="font-mono text-[10px] tracking-[1.4px] text-muted-foreground">
                     CONSULTAS RECIENTES
@@ -120,11 +121,10 @@ export const HistorialList = memo(function HistorialList({
 
                 <motion.button
                     onClick={onClear}
-                    className="cursor-pointer bg-transparent px-1.5 py-0.5 font-sans text-[12px] tracking-tight text-muted-foreground underline underline-offset-2"
-                    whileHover={{ color: "var(--destructive)" }}
+                    className="flex cursor-pointer items-center gap-1.5 rounded-full bg-destructive/10 px-3 py-1 font-sans text-[11px] font-semibold tracking-wide text-destructive transition-colors hover:bg-destructive/15 active:bg-destructive/25"
                     whileTap={{ scale: 0.95 }}
-                    transition={{ duration: 0.12 }}
                 >
+                    <IconTrash size={12} />
                     LIMPIAR
                 </motion.button>
             </div>
