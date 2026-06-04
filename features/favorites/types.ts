@@ -6,4 +6,6 @@ export interface Favorito {
     lineaLabel?: string;
     descripcionLinea: string;
     descripcionBandera: string;
+    calleLabel?: string;
+    interseccionLabel?: string;
 }

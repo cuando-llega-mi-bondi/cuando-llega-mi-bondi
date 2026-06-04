@@ -59,14 +59,22 @@ export const FavoritesList = memo(function FavoritesList({ favoritos, onView, on
                     <div className="min-w-14 flex-shrink-0 rounded-full border border-border bg-muted px-2.5 py-1 text-center font-display text-lg font-medium tracking-tight text-foreground">
                         {fav.lineaLabel?.trim() ||
                             fav.descripcionLinea?.trim() ||
-                            fav.codigoLineaParada}
+                            (fav.codigoLineaParada !== "undefined" && fav.codigoLineaParada) ||
+                            (() => { const c = fav.id.split("_")[1]; return c !== "undefined" ? c : "—"; })()}
                     </div>
-                    <div className="flex-1">
-                        <div className="mb-0.5 font-sans text-[15px] font-medium tracking-tight text-foreground">
+                    <div className="flex-1 min-w-0">
+                        <div className="mb-0.5 truncate font-sans text-[15px] font-medium tracking-tight text-foreground">
                             {fav.nombre}
                         </div>
-                        <div className="font-mono text-[11px] text-muted-foreground">
-                            {fav.identificadorParada}
+                        <div className="truncate font-mono text-[11px] text-muted-foreground">
+                            {fav.calleLabel || fav.interseccionLabel ? (
+                                <>
+                                    {fav.calleLabel}
+                                    {fav.interseccionLabel ? ` y ${fav.interseccionLabel}` : ""}
+                                </>
+                            ) : (
+                                fav.identificadorParada
+                            )}
                         </div>
                     </div>
                     <div className="flex gap-1.5">
