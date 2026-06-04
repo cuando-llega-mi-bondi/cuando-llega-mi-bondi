@@ -6,20 +6,16 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 interface UseUrlSyncParams {
   codLinea: string;
   paradaId: string;
-  tab?: "buscar" | "favoritos";
   setCodLinea: (value: string) => void;
   setParadaId: (value: string) => void;
-  setTab?: (value: "buscar" | "favoritos") => void;
   onHydratedSelection?: () => void;
 }
 
 export function useUrlSync({
   codLinea,
   paradaId,
-  tab,
   setCodLinea,
   setParadaId,
-  setTab,
   onHydratedSelection,
 }: UseUrlSyncParams) {
   const router = useRouter();
@@ -35,20 +31,13 @@ export function useUrlSync({
 
     const urlLinea = searchParams.get("linea");
     const urlParada = searchParams.get("parada");
-    const urlTab = searchParams.get("tab");
-
     if (urlLinea && urlParada) {
       skipUrlSync.current = true;
       setCodLinea(urlLinea);
       setParadaId(urlParada);
       onHydratedSelection?.();
     }
-
-    if (urlTab && setTab && (urlTab === "buscar" || urlTab === "favoritos")) {
-      skipUrlSync.current = true;
-      setTab(urlTab);
-    }
-  }, [onHydratedSelection, searchParams, setCodLinea, setParadaId, setTab]);
+  }, [onHydratedSelection, searchParams, setCodLinea, setParadaId]);
 
   useEffect(() => {
     if (!hydrated.current) return;
@@ -60,8 +49,6 @@ export function useUrlSync({
     const params = new URLSearchParams();
     if (codLinea) params.set("linea", codLinea);
     if (paradaId) params.set("parada", paradaId);
-    if (tab) params.set("tab", tab);
-
     const newSearch = params.toString();
     const currentSearch = searchParams.toString();
 
@@ -70,5 +57,5 @@ export function useUrlSync({
         scroll: false,
       });
     }
-  }, [codLinea, paradaId, pathname, router, searchParams, tab]);
+  }, [codLinea, paradaId, pathname, router, searchParams]);
 }

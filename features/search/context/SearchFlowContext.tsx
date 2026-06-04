@@ -69,19 +69,15 @@ type SearchFlowContextValue = {
 const SearchFlowContext = createContext<SearchFlowContextValue | null>(null);
 
 interface SearchFlowProviderProps {
-    tab: "buscar" | "favoritos";
-    setTab: (tab: "buscar" | "favoritos") => void;
     onConsultOpen?: () => void;
     children: ReactNode;
 }
 
 export function SearchFlowProvider({
-    tab,
-    setTab,
     onConsultOpen,
     children,
 }: SearchFlowProviderProps) {
-    const flow = useSearchFlow({ tab, setTab, onConsultOpen });
+    const flow = useSearchFlow({ onConsultOpen });
 
     const value = useMemo<SearchFlowContextValue>(
         () => ({

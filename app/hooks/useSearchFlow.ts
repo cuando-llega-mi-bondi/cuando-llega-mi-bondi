@@ -28,16 +28,12 @@ export const EMPTY_SELECTION: Selection = {
 };
 
 interface UseSearchFlowParams {
-  tab: "buscar" | "favoritos";
-  setTab: (tab: "buscar" | "favoritos") => void;
   onConsultOpen?: () => void;
 }
 
 export function useSearchFlow({
-  tab,
-  setTab,
   onConsultOpen,
-}: UseSearchFlowParams) {
+}: UseSearchFlowParams = {}) {
   const router = useRouter();
   const [sel, setSel] = useState<Selection>(EMPTY_SELECTION);
   const [isConsulting, setIsConsulting] = useState(false);
@@ -58,10 +54,8 @@ export function useSearchFlow({
   useUrlSync({
     codLinea,
     paradaId,
-    tab,
     setCodLinea: setUrlCodLinea,
     setParadaId: setUrlParadaId,
-    setTab,
     onHydratedSelection: setUrlConsulting,
   });
 
@@ -254,7 +248,6 @@ export function useSearchFlow({
   const resetToParada = useCallback(
     (parada: string, linea: string, options?: { consulting?: boolean }) => {
       withViewTransition(() => {
-        setTab("buscar");
         setSel({
           ...EMPTY_SELECTION,
           paradaId: parada,
@@ -263,7 +256,7 @@ export function useSearchFlow({
         if (options?.consulting) setIsConsulting(true);
       });
     },
-    [setTab],
+    [],
   );
 
   return {
