@@ -3,9 +3,9 @@ FROM oven/bun:1.1-alpine AS deps
 WORKDIR /app
 
 # Copiar archivos de configuración de paquetes
-COPY package*.json bun.lockb* ./
+COPY package*.json bun.lock* ./
 # Instala dependencias congelando las versiones
-RUN bun install --frozen-lockfile
+RUN bun install
 
 # === PASO 2: Compilar la aplicación ===
 FROM oven/bun:1.1-alpine AS builder
