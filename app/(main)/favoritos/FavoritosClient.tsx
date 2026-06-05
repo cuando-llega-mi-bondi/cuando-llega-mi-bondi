@@ -25,12 +25,14 @@ export function FavoritosClient() {
 
   const {
     favoritos,
+    addFavorito,
     removeFavorito: removeFavoritoEntry,
     renameFavorito,
   } = useFavoritos();
 
   const {
     historial,
+    pushHistorialEntry,
     removeHistorialEntry,
     clearHistorialEntries,
   } = useHistorial();
@@ -121,6 +123,7 @@ export function FavoritosClient() {
           favoritos={favoritos}
           onView={fetchFavArribos}
           onRemove={removeFavoritoEntry}
+          onUndoRemove={addFavorito}
           onRename={handleEditFavName}
           onGoToSearch={() => router.push("/consultar")}
         />
@@ -128,6 +131,7 @@ export function FavoritosClient() {
           historial={historial}
           onView={fetchHistEntry}
           onRemove={removeHistorialEntry}
+          onUndoRemove={pushHistorialEntry}
           onClear={clearHistorialEntries}
         />
       </PageShell>
