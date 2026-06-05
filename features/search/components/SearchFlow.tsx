@@ -21,6 +21,7 @@ export const SearchFlow = memo(function SearchFlow({
         paradaId,
         selectedRamal,
         isConsulting,
+        isResolving,
         lineaOptions,
         calles,
         interOptions,
@@ -74,8 +75,8 @@ export const SearchFlow = memo(function SearchFlow({
                     value={codCalle}
                     onChange={handleCalleChange}
                     options={calles}
-                    loading={loadingCalles}
-                    disabled={loadingCalles}
+                    loading={loadingCalles || isResolving}
+                    disabled={loadingCalles || isResolving}
                     stepStatus={
                         codLinea && !codCalle ? "active" : codCalle ? "completed" : "idle"
                     }
@@ -84,7 +85,7 @@ export const SearchFlow = memo(function SearchFlow({
                 />
             ) : null}
 
-            {codCalle ? (
+            {codCalle || isResolving ? (
                 <StepField
                     className="motion-step"
                     labelId={labelInter}
@@ -94,8 +95,8 @@ export const SearchFlow = memo(function SearchFlow({
                     value={codInterseccion}
                     onChange={handleInterseccionChange}
                     options={interOptions}
-                    loading={loadingInter}
-                    disabled={loadingInter}
+                    loading={loadingInter || isResolving}
+                    disabled={loadingInter || isResolving}
                     stepStatus={
                         codCalle && !codInterseccion
                             ? "active"
@@ -108,7 +109,7 @@ export const SearchFlow = memo(function SearchFlow({
                 />
             ) : null}
 
-            {codInterseccion && destinoOptions.length > 0 ? (
+            {(codInterseccion || isResolving) && (destinoOptions.length > 0 || isResolving) ? (
                 <StepField
                     className="motion-step"
                     labelId={labelDestino}
@@ -118,6 +119,8 @@ export const SearchFlow = memo(function SearchFlow({
                     value={paradaId}
                     onChange={handleParadaChange}
                     options={destinoOptions}
+                    loading={isResolving}
+                    disabled={isResolving}
                     stepStatus={
                         codInterseccion && !paradaId
                             ? "active"

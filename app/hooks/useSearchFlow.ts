@@ -173,12 +173,22 @@ export function useSearchFlow({
     setSel((p) => ({ ...p, paradaId: destinoOptions[0].value }));
   }, [codInterseccion, paradaId, loadingParadas, destinoOptions]);
 
+  const [isResolving, setIsResolving] = useState(false);
+
   useEffect(() => {
-    if (!codLinea || !paradaId || (codCalle && codInterseccion)) return;
+    if (!codLinea || !paradaId || (codCalle && codInterseccion)) {
+      setIsResolving(false);
+      return;
+    }
     let cancelled = false;
+    setIsResolving(true);
     void (async () => {
       const ubi = await resolveUbicacionFormularioPorParada(codLinea, paradaId);
-      if (cancelled || !ubi) return;
+      if (cancelled) return;
+      if (!ubi) {
+        setIsResolving(false);
+        return;
+      }
       setSel((p) => {
         if (p.codLinea !== codLinea || p.paradaId !== paradaId) return p;
         if (p.codCalle && p.codInterseccion) return p;
@@ -188,6 +198,7 @@ export function useSearchFlow({
           codInterseccion: ubi.codInterseccion,
         };
       });
+      setIsResolving(false);
     })();
     return () => {
       cancelled = true;
@@ -268,6 +279,7 @@ export function useSearchFlow({
     paradaId,
     selectedRamal,
     isConsulting,
+    isResolving,
     setIsConsulting,
     error,
     setError,

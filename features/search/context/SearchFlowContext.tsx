@@ -19,6 +19,7 @@ export type SearchFlowState = {
     paradaId: string;
     selectedRamal: string;
     isConsulting: boolean;
+    isResolving: boolean;
     error: string;
     lineaOptions: { value: string; label: string }[];
     calles: { value: string; label: string }[];
@@ -88,6 +89,7 @@ export function SearchFlowProvider({
                 paradaId: flow.paradaId,
                 selectedRamal: flow.selectedRamal,
                 isConsulting: flow.isConsulting,
+                isResolving: flow.isResolving,
                 error: flow.error,
                 lineaOptions: flow.lineaOptions,
                 calles: flow.calles,
@@ -127,6 +129,7 @@ export function SearchFlowProvider({
             flow.paradaId,
             flow.selectedRamal,
             flow.isConsulting,
+            flow.isResolving,
             flow.error,
             flow.lineaOptions,
             flow.calles,
