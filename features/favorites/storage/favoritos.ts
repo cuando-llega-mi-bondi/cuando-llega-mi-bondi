@@ -34,7 +34,3 @@ export function updateFavorito(id: string, name: string): void {
         ),
     );
 }
-
-export function isFavorito(id: string): boolean {
-    return getFavoritos().some((f) => f.id === id);
-}

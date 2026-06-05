@@ -4,7 +4,6 @@ import { useCallback, useEffect, useState } from "react";
 import type { Favorito } from "@features/favorites/types";
 import {
     getFavoritos,
-    isFavorito,
     removeFavorito,
     saveFavorito,
     updateFavorito,
@@ -51,6 +50,5 @@ export function useFavoritos() {
         addFavorito: add,
         removeFavorito: remove,
         renameFavorito: rename,
-        isFavorito,
     };
 }

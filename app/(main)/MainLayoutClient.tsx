@@ -93,7 +93,6 @@ function MainLayoutContent({
     addFavorito,
     removeFavorito: removeFavoritoEntry,
     renameFavorito,
-    isFavorito: isFavoritoEntry,
   } = useFavoritos();
 
   const {
@@ -168,7 +167,7 @@ function MainLayoutContent({
 
   const handleToggleFavCurrent = useCallback(() => {
     const id = `${paradaId}_${codLinea}`;
-    if (isFavoritoEntry(id)) {
+    if (isCurrentFavorito) {
       removeFavoritoEntry(id);
       return;
     }
@@ -204,7 +203,7 @@ function MainLayoutContent({
   }, [
     codLinea,
     paradaId,
-    isFavoritoEntry,
+    isCurrentFavorito,
     removeFavoritoEntry,
     lineaLabel,
     selectedParada,
