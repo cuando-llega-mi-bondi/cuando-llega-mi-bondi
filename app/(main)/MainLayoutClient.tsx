@@ -17,7 +17,6 @@ import { FavoriteNameModal } from "@features/favorites/components/FavoriteNameMo
 import { ServiceDownModal } from "@shared/ui/ServiceDownModal";
 import { withViewTransition } from "@shared/pwa/viewTransition";
 import type { Arribo } from "@features/arrivals/types";
-import { arriboBanderaLabel, arriboLineaDescripcion } from "@features/arrivals/utils";
 import type { Favorito } from "@features/favorites/types";
 
 type NamingState =
@@ -90,6 +89,7 @@ function MainLayoutContent({
   );
 
   const {
+    favoritos,
     addFavorito,
     removeFavorito: removeFavoritoEntry,
     renameFavorito,
@@ -161,62 +161,56 @@ function MainLayoutContent({
     });
   }, [setIsConsulting, setSheetOpen]);
 
-  const handleFavFromArribos = useCallback(
-    (arribo: Arribo) => {
-      const id = `${paradaId}_${arribo.CodigoLineaParada}`;
-      if (isFavoritoEntry(id)) {
-        removeFavoritoEntry(id);
-        return;
-      }
-      const lineaPart =
-        arriboLineaDescripcion(arribo) ||
-        lineaLabel.trim() ||
-        arribo.CodigoLineaParada ||
-        "";
-      const banderaPart =
-        arriboBanderaLabel(arribo) ||
-        selectedParada?.AbreviaturaBandera?.trim() ||
-        "";
-      const ubicacion = [calleLabel, interseccionLabel]
-        .filter(Boolean)
-        .join(" e ");
-      let nombre = "";
-      if (lineaPart && banderaPart) nombre = `${lineaPart} — ${banderaPart}`;
-      else if (lineaPart) nombre = lineaPart;
-      else if (banderaPart) nombre = banderaPart;
-      else if (ubicacion) nombre = ubicacion;
-      else nombre = "Parada favorita";
+  const isCurrentFavorito = useMemo(() => {
+    const targetId = `${paradaId}_${codLinea}`;
+    return favoritos.some(f => f.id === targetId);
+  }, [favoritos, paradaId, codLinea]);
 
-      setNaming({
+  const handleToggleFavCurrent = useCallback(() => {
+    const id = `${paradaId}_${codLinea}`;
+    if (isFavoritoEntry(id)) {
+      removeFavoritoEntry(id);
+      return;
+    }
+    
+    const lineaPart = lineaLabel.trim() || codLinea || "";
+    const banderaPart = selectedParada?.AbreviaturaBandera?.trim() || "";
+    const ubicacion = [calleLabel, interseccionLabel]
+        .filter(Boolean)
+        .join(" y ");
+        
+    let nombre = "";
+    if (lineaPart && banderaPart) nombre = `${lineaPart} — ${banderaPart}`;
+    else if (lineaPart) nombre = lineaPart;
+    else if (banderaPart) nombre = banderaPart;
+    else if (ubicacion) nombre = ubicacion;
+    else nombre = "Parada favorita";
+
+    setNaming({
         open: true,
         mode: "add",
         fav: {
-          id,
-          nombre,
-          identificadorParada: paradaId,
-          codigoLineaParada: arribo.CodigoLineaParada,
-          lineaLabel:
-            lineaLabel.trim() ||
-            lineaPart ||
-            arribo.CodigoLineaParada ||
-            undefined,
-          descripcionLinea: lineaPart || "—",
-          descripcionBandera: banderaPart || "—",
-          calleLabel,
-          interseccionLabel,
+            id,
+            nombre,
+            identificadorParada: paradaId,
+            codigoLineaParada: codLinea,
+            lineaLabel: lineaLabel.trim() || lineaPart || codLinea || undefined,
+            descripcionLinea: lineaPart || "—",
+            descripcionBandera: banderaPart || "—",
+            calleLabel,
+            interseccionLabel,
         },
-      });
-    },
-    [
-      isFavoritoEntry,
-      removeFavoritoEntry,
-      paradaId,
-      lineaLabel,
-      selectedParada,
-      calleLabel,
-      interseccionLabel,
-    ],
-  );
+    });
+  }, [
+    codLinea,
+    paradaId,
+    isFavoritoEntry,
+    removeFavoritoEntry,
+    lineaLabel,
+    selectedParada,
+    calleLabel,
+    interseccionLabel,
+  ]);
 
   const handleSaveNaming = useCallback(
     (name: string) => {
@@ -255,7 +249,8 @@ function MainLayoutContent({
         loadingOtras,
         onSelectOtraLinea: handleSelectOtraLinea,
         liveSharings,
-        handleFavFromArribos,
+        handleToggleFavCurrent,
+        isCurrentFavorito,
       },
       telegramUsername:
         process.env.NEXT_PUBLIC_TELEGRAM_BOT_USERNAME || "cuandollegamdp_bot",
@@ -281,7 +276,8 @@ function MainLayoutContent({
       loadingOtras,
       handleSelectOtraLinea,
       liveSharings,
-      handleFavFromArribos,
+      handleToggleFavCurrent,
+      isCurrentFavorito,
     ],
   );
 

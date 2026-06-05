@@ -1,23 +1,16 @@
 "use client";
 
-import { isFavorito } from "@features/favorites/storage/favoritos";
 import type { Arribo } from "@features/arrivals/types";
 import { getArriboColor } from "@features/arrivals/utils";
-import { IconStar } from "@shared/icons/IconStar";
 import { IconWheelchair } from "@shared/icons/IconWheelchair";
 import { cn } from "@shared/utils";
 
 export function ArriboCard({
   arribo,
-  onFav,
-  favId,
 }: {
   arribo: Arribo;
-  onFav: () => void;
-  favId: string;
 }) {
   const color = getArriboColor(arribo.Arribo);
-  const fav = isFavorito(favId);
   const isAdaptado = arribo.EsAdaptado === "True";
 
   const arriboColorClass =
@@ -53,16 +46,6 @@ export function ArriboCard({
           )}
         </div>
 
-        <button
-          onClick={onFav}
-          className={cn(
-            "cursor-pointer rounded-full border border-border bg-card p-2 transition-transform duration-150 hover:scale-110 hover:border-secondary",
-            fav ? "text-secondary" : "text-muted-foreground",
-          )}
-          title={fav ? "Quitar favorito" : "Guardar favorito"}
-        >
-          <IconStar filled={fav} />
-        </button>
       </div>
     </div>
   );
