@@ -9,6 +9,7 @@ export function useLeafletMapReady() {
     const [ready, setReady] = useState(false);
 
     useEffect(() => {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setReady(true);
         return () => setReady(false);
     }, []);

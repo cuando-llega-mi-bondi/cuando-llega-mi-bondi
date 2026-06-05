@@ -144,6 +144,7 @@ export function useSearchFlow() {
 
   useEffect(() => {
     if (!codLinea || codCalle || loadingCalles || calles.length !== 1) return;
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setSel((p) => ({ ...p, codCalle: calles[0].value }));
   }, [codLinea, codCalle, loadingCalles, calles]);
 
@@ -155,6 +156,7 @@ export function useSearchFlow() {
       interOptions.length !== 1
     )
       return;
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setSel((p) => ({ ...p, codInterseccion: interOptions[0].value }));
   }, [codCalle, codInterseccion, loadingInter, interOptions]);
 
@@ -166,6 +168,7 @@ export function useSearchFlow() {
       destinoOptions.length !== 1
     )
       return;
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setSel((p) => ({ ...p, paradaId: destinoOptions[0].value }));
   }, [codInterseccion, paradaId, loadingParadas, destinoOptions]);
 
@@ -173,6 +176,7 @@ export function useSearchFlow() {
 
   useEffect(() => {
     if (!codLinea || !paradaId || (codCalle && codInterseccion)) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setIsResolving(false);
       return;
     }

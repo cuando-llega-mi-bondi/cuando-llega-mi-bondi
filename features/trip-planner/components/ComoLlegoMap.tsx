@@ -202,6 +202,7 @@ export default function ComoLlegoMap({
     /** Evita init de Leaflet durante el doble mount de Strict Mode (react-leaflet v5). */
     const [mapReady, setMapReady] = useState(false);
     useEffect(() => {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setMapReady(true);
         return () => setMapReady(false);
     }, []);
