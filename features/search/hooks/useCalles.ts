@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import useSWR from "swr";
 import { swrFetcher } from "@shared/api/client";
 import { getCache, setCache } from "@shared/storage/localCache";
@@ -8,7 +8,7 @@ import { getCache, setCache } from "@shared/storage/localCache";
 const CALLES_ACTION = "RecuperarCallesPrincipalPorLinea";
 
 export function useCalles(codLinea: string) {
-    const callesParams = codLinea ? { codLinea } : undefined;
+    const callesParams = useMemo(() => (codLinea ? { codLinea } : undefined), [codLinea]);
 
     const { data, isLoading, mutate } = useSWR(
         codLinea ? [CALLES_ACTION, { codLinea }] : null,
