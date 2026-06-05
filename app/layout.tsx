@@ -9,7 +9,7 @@ import { InstallPwaPrompt } from "@shared/layout/InstallPwaPrompt";
 import { ThemeColorMeta } from "@shared/layout/ThemeColorMeta";
 import { ThemeProvider } from "@shared/layout/ThemeProvider";
 import { PwaViewportSync } from "@shared/layout/PwaViewportSync";
-import { ToastProvider } from "@shared/ui/Toast";
+import { Toaster } from "@shared/ui/Toast";
 import Script from "next/script";
 
 const inter = Inter({
@@ -116,9 +116,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                     <MicrosoftClarityDeferred />
                     <VercelAnalyticsDeferred />
                     <GoogleAnalyticsDeferred />
-                    <ToastProvider>
-                        {children}
-                    </ToastProvider>
+                    {children}
+                    <Toaster />
                     <InstallPwaPrompt />
                 </ThemeProvider>
             </body>

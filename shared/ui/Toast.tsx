@@ -1,6 +1,7 @@
 "use client";
 
-import React, { createContext, useContext, useState, useCallback, useEffect } from "react";
+import React, { useEffect } from "react";
+import { useToastStore } from "./store/useToastStore";
 import { motion, AnimatePresence } from "motion/react";
 import { X, CheckCircle, AlertCircle, Info, AlertTriangle } from "lucide-react";
 
@@ -18,19 +19,9 @@ export interface ToastMessage {
     };
 }
 
-interface ToastContextType {
-    toast: (message: Omit<ToastMessage, "id">) => void;
-    removeToast: (id: string) => void;
-}
-
-const ToastContext = createContext<ToastContextType | undefined>(undefined);
-
 export function useToast() {
-    const context = useContext(ToastContext);
-    if (!context) {
-        throw new Error("useToast must be used within a ToastProvider");
-    }
-    return context;
+    const { addToast, removeToast } = useToastStore();
+    return { toast: addToast, removeToast };
 }
 
 const ICONS = {
@@ -40,29 +31,17 @@ const ICONS = {
     warning: <AlertTriangle className="w-5 h-5 text-amarillo" />,
 };
 
-export function ToastProvider({ children }: { children: React.ReactNode }) {
-    const [toasts, setToasts] = useState<ToastMessage[]>([]);
-
-    const toast = useCallback((message: Omit<ToastMessage, "id">) => {
-        const id = Math.random().toString(36).substring(2, 9);
-        setToasts((prev) => [...prev, { ...message, id }]);
-    }, []);
-
-    const removeToast = useCallback((id: string) => {
-        setToasts((prev) => prev.filter((t) => t.id !== id));
-    }, []);
+export function Toaster() {
+    const { toasts, removeToast } = useToastStore();
 
     return (
-        <ToastContext.Provider value={{ toast, removeToast }}>
-            {children}
-            <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-[9999] flex flex-col gap-3 w-full max-w-md px-4 pointer-events-none pb-[env(safe-area-inset-bottom)]">
-                <AnimatePresence mode="popLayout">
-                    {toasts.map((t) => (
-                        <ToastItem key={t.id} toast={t} onRemove={() => removeToast(t.id)} />
-                    ))}
-                </AnimatePresence>
-            </div>
-        </ToastContext.Provider>
+        <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-[9999] flex flex-col gap-3 w-full max-w-md px-4 pointer-events-none pb-[env(safe-area-inset-bottom)]">
+            <AnimatePresence mode="popLayout">
+                {toasts.map((t) => (
+                    <ToastItem key={t.id} toast={t} onRemove={() => removeToast(t.id)} />
+                ))}
+            </AnimatePresence>
+        </div>
     );
 }
 
