@@ -1,17 +1,15 @@
-# === PASO 1: Instalar dependencias ===
+# === PASO 1: Instalar dependencias (Usamos Bun por velocidad y compatibilidad con tu bun.lock) ===
 FROM oven/bun:1.1-alpine AS deps
 WORKDIR /app
 
-# Copiar archivos de configuración de paquetes
 COPY package*.json bun.lock* ./
-# Instala dependencias congelando las versiones
 RUN bun install
 
-# === PASO 2: Compilar la aplicación ===
-FROM oven/bun:1.1-alpine AS builder
+# === PASO 2: Compilar la aplicación (Usamos Node para evitar los límites de worker_threads de Bun) ===
+FROM node:22-alpine AS builder
 WORKDIR /app
 
-# Nos traemos las node_modules instaladas del paso anterior
+# Nos traemos las node_modules de la etapa de Bun (ambos son Alpine, son totalmente compatibles)
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
@@ -19,7 +17,7 @@ COPY . .
 ENV NEXT_TELEMETRY_DISABLED 1
 ENV NODE_ENV production
 
-# ─── ÚNICAS variables necesarias en el Build (Inyectadas en el cliente) ───
+# ─── Variables necesarias en el Build ───
 ARG NEXT_PUBLIC_SUPABASE_URL
 ARG NEXT_PUBLIC_SUPABASE_ANON_KEY
 ARG NEXT_PUBLIC_TELEGRAM_BOT_USERNAME
@@ -40,10 +38,10 @@ ENV NEXT_PUBLIC_SUPABASE_URL=$NEXT_PUBLIC_SUPABASE_URL \
     NEXT_PUBLIC_BONDI_API_URL=$NEXT_PUBLIC_BONDI_API_URL \
     NEXT_PUBLIC_VAPID_PUBLIC=$NEXT_PUBLIC_VAPID_PUBLIC
 
-# Compilar Next.js (requiere output: 'standalone' en next.config.js)
-RUN bun run build
+# Compilar Next.js usando Node para que Turbopack corra nativo y sin errores
+RUN npx next build
 
-# === PASO 3: Imagen final de producción (Ultra liviana) ===
+# === PASO 3: Imagen final de producción (Ultra liviana con Bun) ===
 FROM oven/bun:1.1-alpine AS runner
 WORKDIR /app
 
@@ -52,12 +50,12 @@ ENV NEXT_TELEMETRY_DISABLED 1
 ENV PORT 3000
 ENV HOSTNAME "0.0.0.0"
 
-# Copiar únicamente los assets estáticos y el servidor standalone optimizado
+# Copiar assets estáticos y el build standalone
 COPY --from=builder /app/public ./public
 COPY --from=builder /app/.next/standalone ./
 COPY --from=builder /app/.next/static ./.next/static
 
 EXPOSE 3000
 
-# Ejecutar el servidor standalone directamente con Bun
+# Ejecutamos el resultado final con Bun para mantener el rendimiento al máximo
 CMD ["bun", "server.js"]
