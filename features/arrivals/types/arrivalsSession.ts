@@ -53,8 +53,6 @@ export type ArrivalsDataSession = {
     loadingOtras: boolean;
     onSelectOtraLinea?: (linea: Linea) => void;
     liveSharings: LiveSharePoint[];
-    handleToggleFavCurrent: () => void;
-    isCurrentFavorito: boolean;
 };
 
 export type ArrivalsOverlaySession = {

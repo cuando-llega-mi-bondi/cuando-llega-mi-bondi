@@ -27,13 +27,9 @@ export const EMPTY_SELECTION: Selection = {
   selectedRamal: "TODOS",
 };
 
-interface UseSearchFlowParams {
-  onConsultOpen?: () => void;
-}
+import { useUIStore } from "@shared/ui/store/useUIStore";
 
-export function useSearchFlow({
-  onConsultOpen,
-}: UseSearchFlowParams = {}) {
+export function useSearchFlow() {
   const router = useRouter();
   const [sel, setSel] = useState<Selection>(EMPTY_SELECTION);
   const [isConsulting, setIsConsulting] = useState(false);
@@ -242,9 +238,9 @@ export function useSearchFlow({
     if (!paradaId) return;
     withViewTransition(() => {
       setIsConsulting(true);
-      onConsultOpen?.();
+      useUIStore.getState().setSheetOpen(true);
     });
-  }, [onConsultOpen, paradaId]);
+  }, [paradaId]);
 
   const applySelection = useCallback(
     (partial: Partial<Selection>, options?: { consulting?: boolean }) => {

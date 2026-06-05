@@ -11,6 +11,10 @@ import {
     type ArrivalsDataSession,
     type ArrivalsConsultSession,
 } from "@features/arrivals/types/arrivalsSession";
+import { useFavoritos } from "@features/favorites/hooks/useFavoritos";
+import { useUIStore } from "@shared/ui/store/useUIStore";
+import { useCallback, useMemo } from "react";
+import type { Parada } from "@shared/types";
 import { ArrivalsEmpty } from "./ArrivalsEmpty";
 import { ArrivalsLoading } from "./ArrivalsLoading";
 import { LiveSharingBanner } from "./LiveSharingBanner";
@@ -29,21 +33,79 @@ export function ArrivalsPanel({ consult, arrivals }: ArrivalsPanelProps) {
         selectedRamal,
         setSelectedRamal,
         paradaId,
-    } = consult;
+        codLinea,
+        lineaLabel = "",
+        selectedParada,
+        calleLabel = "",
+        interseccionLabel = "",
+    } = consult as ArrivalsConsultSession & { codLinea: string; lineaLabel?: string; selectedParada?: Parada; calleLabel?: string; interseccionLabel?: string };
     const {
         displayArribos,
         loadingArribos,
         lastUpdate,
         fetchArribos,
-        calleLabel,
-        interseccionLabel,
+        calleLabel: arrivalsCalleLabel,
+        interseccionLabel: arrivalsInterseccionLabel,
         liveSharings,
-        handleToggleFavCurrent,
-        isCurrentFavorito,
         otrasLineas,
         loadingOtras,
         onSelectOtraLinea,
     } = arrivals;
+
+    const { favoritos, removeFavorito } = useFavoritos();
+    const setNamingModal = useUIStore(s => s.setNamingModal);
+
+    const isCurrentFavorito = useMemo(() => {
+        const targetId = `${paradaId}_${codLinea}`;
+        return favoritos.some(f => f.id === targetId);
+    }, [favoritos, paradaId, codLinea]);
+
+    const handleToggleFavCurrent = useCallback(() => {
+        const id = `${paradaId}_${codLinea}`;
+        if (isCurrentFavorito) {
+            removeFavorito(id);
+            return;
+        }
+        
+        const lineaPart = lineaLabel.trim() || codLinea || "";
+        const banderaPart = selectedParada?.AbreviaturaBandera?.trim() || "";
+        const ubicacion = [calleLabel, interseccionLabel]
+            .filter(Boolean)
+            .join(" y ");
+            
+        let nombre = "";
+        if (lineaPart && banderaPart) nombre = `${lineaPart} — ${banderaPart}`;
+        else if (lineaPart) nombre = lineaPart;
+        else if (banderaPart) nombre = banderaPart;
+        else if (ubicacion) nombre = ubicacion;
+        else nombre = "Parada favorita";
+
+        setNamingModal({
+            open: true,
+            mode: "add",
+            fav: {
+                id,
+                nombre,
+                identificadorParada: paradaId,
+                codigoLineaParada: codLinea,
+                lineaLabel: lineaLabel.trim() || lineaPart || codLinea || undefined,
+                descripcionLinea: lineaPart || "—",
+                descripcionBandera: banderaPart || "—",
+                calleLabel,
+                interseccionLabel,
+            },
+        });
+    }, [
+        codLinea,
+        paradaId,
+        isCurrentFavorito,
+        removeFavorito,
+        lineaLabel,
+        selectedParada,
+        calleLabel,
+        interseccionLabel,
+        setNamingModal
+    ]);
 
     const hasArribos = displayArribos.length > 0;
     const hasLiveSharings = liveSharings.length > 0;
@@ -78,8 +140,8 @@ export function ArrivalsPanel({ consult, arrivals }: ArrivalsPanelProps) {
                     ) : null}
                     <ShareButton
                         arribos={displayArribos}
-                        calleLabel={calleLabel}
-                        interseccionLabel={interseccionLabel}
+                        calleLabel={arrivalsCalleLabel}
+                        interseccionLabel={arrivalsInterseccionLabel}
                     />
                     <button
                         type="button"

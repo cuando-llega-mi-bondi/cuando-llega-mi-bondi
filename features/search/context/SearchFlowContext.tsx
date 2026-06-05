@@ -70,15 +70,13 @@ type SearchFlowContextValue = {
 const SearchFlowContext = createContext<SearchFlowContextValue | null>(null);
 
 interface SearchFlowProviderProps {
-    onConsultOpen?: () => void;
     children: ReactNode;
 }
 
 export function SearchFlowProvider({
-    onConsultOpen,
     children,
 }: SearchFlowProviderProps) {
-    const flow = useSearchFlow({ onConsultOpen });
+    const flow = useSearchFlow();
 
     const value = useMemo<SearchFlowContextValue>(
         () => ({
