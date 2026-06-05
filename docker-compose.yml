@@ -1,0 +1,45 @@
+version: '3.8'
+
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        - NEXT_PUBLIC_SUPABASE_URL=${NEXT_PUBLIC_SUPABASE_URL}
+        - NEXT_PUBLIC_SUPABASE_ANON_KEY=${NEXT_PUBLIC_SUPABASE_ANON_KEY}
+        - NEXT_PUBLIC_TELEGRAM_BOT_USERNAME=${NEXT_PUBLIC_TELEGRAM_BOT_USERNAME}
+        - NEXT_PUBLIC_CLARITY_PROJECT_ID=${NEXT_PUBLIC_CLARITY_PROJECT_ID}
+        - NEXT_PUBLIC_GA_MEASUREMENT_ID=${NEXT_PUBLIC_GA_MEASUREMENT_ID}
+        - NEXT_PUBLIC_USE_STATIC_REFERENCE=${NEXT_PUBLIC_USE_STATIC_REFERENCE}
+        - NEXT_PUBLIC_CUANDO_API_URL=${NEXT_PUBLIC_CUANDO_API_URL}
+        - NEXT_PUBLIC_BONDI_API_URL=${NEXT_PUBLIC_BONDI_API_URL}
+        - NEXT_PUBLIC_VAPID_PUBLIC=${NEXT_PUBLIC_VAPID_PUBLIC}
+    restart: always
+    ports:
+      - "3000:3000"
+    environment:
+      # Secretos privados en tiempo de ejecución (Runtime)
+      - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
+      - MGP_PROXY_URL=${MGP_PROXY_URL}
+      - MGP_PROXY_TOKEN=${MGP_PROXY_TOKEN}
+      - MGP_ORACLE_URL=${MGP_ORACLE_URL}
+      - MGP_ORACLE_TOKEN=${MGP_ORACLE_TOKEN}
+      - MGP_RSA_PUBKEY=${MGP_RSA_PUBKEY}
+      - MGP_SHARED_KEY=${MGP_SHARED_KEY}
+      - OSRM_URL=${OSRM_URL}
+
+  caddy:
+    image: caddy:latest
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile
+      - caddy_data:/data
+    depends_on:
+      - web
+
+volumes:
+  caddy_data:
