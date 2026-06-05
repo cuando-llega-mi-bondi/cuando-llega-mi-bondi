@@ -1,9 +1,10 @@
 "use client";
 
-import { memo } from "react";
+import { memo, useCallback } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import type { HistorialEntry } from "@features/history/types";
 import { SwipeableRow, type SwipeAction } from "@shared/gestures";
+import { useToast } from "@shared/ui";
 import { IconEye } from "@shared/icons/IconEye";
 import { IconTrash } from "@shared/icons/IconTrash";
 import { IconRoad } from "@shared/icons/IconRoad";
@@ -31,6 +32,7 @@ interface HistorialRowProps {
     entry: HistorialEntry;
     onView: (entry: HistorialEntry) => void;
     onRemove: (id: string) => void;
+    onUndoRemove?: (entry: HistorialEntry) => void;
     index: number;
 }
 
@@ -38,14 +40,28 @@ const HistorialRow = memo(function HistorialRow({
     entry,
     onView,
     onRemove,
+    onUndoRemove,
     index,
 }: HistorialRowProps) {
+    const { toast } = useToast();
+
+    const handleRemove = useCallback(() => {
+        onRemove(entry.id);
+        toast({
+            description: `Se eliminó "${entry.descripcionBandera}" del historial.`,
+            action: onUndoRemove ? {
+                label: "Deshacer",
+                onClick: () => onUndoRemove(entry)
+            } : undefined
+        });
+    }, [onRemove, onUndoRemove, entry, toast]);
+
     return (
         <SwipeableRow
             leftAction={LEFT_ACTION}
             rightAction={RIGHT_ACTION}
             onSwipeRight={() => onView(entry)}
-            onSwipeLeft={() => onRemove(entry.id)}
+            onSwipeLeft={handleRemove}
             onTap={() => onView(entry)}
             ariaLabel={`Ver ${entry.descripcionBandera}, línea ${entry.lineaLabel ?? entry.codLinea}`}
             index={index}
@@ -99,6 +115,7 @@ interface HistorialListProps {
     historial: HistorialEntry[];
     onView: (entry: HistorialEntry) => void;
     onRemove: (id: string) => void;
+    onUndoRemove?: (entry: HistorialEntry) => void;
     onClear: () => void;
 }
 
@@ -106,6 +123,7 @@ export const HistorialList = memo(function HistorialList({
     historial,
     onView,
     onRemove,
+    onUndoRemove,
     onClear,
 }: HistorialListProps) {
     if (historial.length === 0) return null;
@@ -138,6 +156,7 @@ export const HistorialList = memo(function HistorialList({
                             entry={h}
                             onView={onView}
                             onRemove={onRemove}
+                            onUndoRemove={onUndoRemove}
                             index={i}
                         />
                     ))}

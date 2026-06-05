@@ -124,7 +124,7 @@ async function staleWhileRevalidate(request, cacheName) {
     .catch(() => null);
 
   if (cached) {
-    networkPromise; // refresh in background
+    void networkPromise; // refresh in background
     return cached;
   }
 

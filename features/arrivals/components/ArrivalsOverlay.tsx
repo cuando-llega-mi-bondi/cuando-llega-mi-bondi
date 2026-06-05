@@ -31,7 +31,6 @@ export function ArrivalsOverlay({
   const sheetRef = useRef<SheetRef>(null);
   const {
     codLinea,
-    paradaId,
     selectedRamal,
     isConsulting,
     lineaLabel,

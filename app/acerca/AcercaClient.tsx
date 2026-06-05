@@ -16,7 +16,6 @@ import { PageShell } from "@shared/layout/PageShell";
 import { BrandLogo } from "@shared/ui/BrandLogo";
 import { Footer } from "@shared/layout/Footer";
 import { IconIg } from "@shared/icons/IconIg";
-import { IconX } from "@shared/icons/IconX";
 import { IconXBrand } from "@shared/icons/IconXBrand";
 // ── Data ────────────────────────────────────────────────────────────────────
 

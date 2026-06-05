@@ -1,51 +1,21 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
-import type { HistorialEntry } from "@features/history/types";
-import {
-    clearHistorial,
-    getHistorial,
-    pushHistorial,
-    removeHistorialEntry,
-} from "@features/history/storage/historial";
+import { useEffect, useState } from "react";
+import { useHistoryStore } from "../store/useHistoryStore";
 
 export function useHistorial() {
-    const [historial, setHistorial] = useState<HistorialEntry[]>([]);
+    const store = useHistoryStore();
+    const [isHydrated, setIsHydrated] = useState(false);
 
     useEffect(() => {
-        setHistorial(getHistorial());
-    }, []);
-
-    const refresh = useCallback(() => {
-        setHistorial(getHistorial());
-    }, []);
-
-    const push = useCallback(
-        (entry: HistorialEntry) => {
-            pushHistorial(entry);
-            refresh();
-        },
-        [refresh],
-    );
-
-    const remove = useCallback(
-        (id: string) => {
-            removeHistorialEntry(id);
-            refresh();
-        },
-        [refresh],
-    );
-
-    const clear = useCallback(() => {
-        clearHistorial();
-        setHistorial([]);
+        // eslint-disable-next-line react-hooks/set-state-in-effect
+        setIsHydrated(true);
     }, []);
 
     return {
-        historial,
-        refreshHistorial: refresh,
-        pushHistorialEntry: push,
-        removeHistorialEntry: remove,
-        clearHistorialEntries: clear,
+        historial: isHydrated ? store.historial : [],
+        pushHistorialEntry: store.pushHistorialEntry,
+        removeHistorialEntry: store.removeHistorialEntry,
+        clearHistorialEntries: store.clearHistorialEntries,
     };
 }

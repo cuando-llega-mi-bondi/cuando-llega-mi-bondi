@@ -35,7 +35,6 @@ export function Combobox({
     autoSelectSingleFilterMatch = true,
     "aria-labelledby": ariaLabelledby,
     "aria-label": ariaLabel,
-    label,
     children,
     triggerClassName,
 }: {
@@ -49,8 +48,6 @@ export function Combobox({
     autoSelectSingleFilterMatch?: boolean;
     "aria-labelledby"?: string;
     "aria-label"?: string;
-    /** Optional label for the trigger when no value is selected */
-    label?: string;
     /** Custom trigger via render function (preferred over legacy renderTrigger) */
     children?: (props: ComboboxTriggerRenderProps) => ReactNode;
     triggerClassName?: string;
@@ -424,6 +421,7 @@ export function Combobox({
 
     let triggerNode: ReactNode;
     if (children) {
+        // eslint-disable-next-line react-hooks/refs
         triggerNode = children(triggerRenderProps);
     } else {
         triggerNode = (

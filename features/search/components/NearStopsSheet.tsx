@@ -98,6 +98,7 @@ export function NearStopsSheet({ open, onClose, onPickLinea }: NearStopsSheetPro
 
     useEffect(() => {
         if (!open) {
+            // eslint-disable-next-line react-hooks/set-state-in-effect
             setPhase("idle");
             setItems([]);
             setErrorMsg("");

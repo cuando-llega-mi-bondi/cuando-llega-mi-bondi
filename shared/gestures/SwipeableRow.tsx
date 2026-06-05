@@ -63,6 +63,7 @@ export const SwipeableRow = memo(function SwipeableRow({
         pointerHandlers,
         transforms,
         triggerRemove,
+        close,
     } = useSwipeGesture({ onSwipeRight, onSwipeLeft });
 
     const {
@@ -94,6 +95,11 @@ export const SwipeableRow = memo(function SwipeableRow({
             {swipeDir === "right" && (
                 <div
                     aria-hidden="true"
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        onSwipeRight();
+                        close();
+                    }}
                     style={{
                         position: "absolute",
                         inset: 0,
@@ -106,6 +112,7 @@ export const SwipeableRow = memo(function SwipeableRow({
                             ? leftAction.commitColor
                             : leftAction.color,
                         transition: "background-color 0.15s",
+                        cursor: "pointer",
                     }}
                 >
                     <motion.span
@@ -139,6 +146,11 @@ export const SwipeableRow = memo(function SwipeableRow({
             {swipeDir === "left" && (
                 <div
                     aria-hidden="true"
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        onSwipeLeft();
+                        close();
+                    }}
                     style={{
                         position: "absolute",
                         inset: 0,
@@ -152,6 +164,7 @@ export const SwipeableRow = memo(function SwipeableRow({
                             ? rightAction.commitColor
                             : rightAction.color,
                         transition: "background-color 0.15s",
+                        cursor: "pointer",
                     }}
                 >
                     <motion.span
@@ -184,8 +197,16 @@ export const SwipeableRow = memo(function SwipeableRow({
             {/* ── Draggable card ── */}
             <motion.div
                 {...pointerHandlers}
-                onClick={() => {
-                    if (Math.abs(x.get()) < 4) onTap();
+                onClick={(e) => {
+                    const currentX = Math.abs(x.get());
+                    // If card is already snapped open, tapping it closes it.
+                    if (currentX > 20) {
+                        e.stopPropagation();
+                        close();
+                    } else if (currentX < 4) {
+                        // Regular tap
+                        onTap();
+                    }
                 }}
                 onKeyDown={(e) => {
                     // Let consumer intercept first
@@ -194,6 +215,7 @@ export const SwipeableRow = memo(function SwipeableRow({
 
                     if (e.key === "Enter" || e.key === " ") onTap();
                     if (e.key === "Delete" || e.key === "Backspace") triggerRemove();
+                    if (e.key === "Escape") close();
                 }}
                 tabIndex={0}
                 role="button"

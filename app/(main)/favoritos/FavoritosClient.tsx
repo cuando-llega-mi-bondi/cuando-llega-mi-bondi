@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { useFavoritos } from "@features/favorites/hooks/useFavoritos";
 import { useHistorial } from "@features/history/hooks/useHistorial";
@@ -8,47 +8,32 @@ import type { Favorito } from "@features/favorites/types";
 import type { HistorialEntry } from "@features/history/types";
 import { FavoritesList } from "@features/favorites/components/FavoritesList";
 import { HistorialList } from "@features/history/components/HistorialList";
-import { FavoriteNameModal } from "@features/favorites/components/FavoriteNameModal";
 import { PageShell } from "@shared/layout/PageShell";
 import { useSearchFlowContext } from "@features/search/context/SearchFlowContext";
-
-type NamingState =
-  | { open: false }
-  | { open: true; mode: "edit"; fav: Favorito };
-
-const NAMING_CLOSED: NamingState = { open: false };
+import { useUIStore } from "@shared/ui/store/useUIStore";
 
 export function FavoritosClient() {
   const router = useRouter();
   const { actions, meta } = useSearchFlowContext();
   const { resetToParada } = actions;
+  const setNamingModal = useUIStore((state) => state.setNamingModal);
 
   const {
     favoritos,
+    addFavorito,
     removeFavorito: removeFavoritoEntry,
-    renameFavorito,
   } = useFavoritos();
 
   const {
     historial,
+    pushHistorialEntry,
     removeHistorialEntry,
     clearHistorialEntries,
   } = useHistorial();
 
-  const [naming, setNaming] = useState<NamingState>(NAMING_CLOSED);
-
   const handleEditFavName = useCallback(
-    (fav: Favorito) => setNaming({ open: true, mode: "edit", fav }),
-    [],
-  );
-
-  const handleSaveNaming = useCallback(
-    (name: string) => {
-      if (!naming.open) return;
-      renameFavorito(naming.fav.id, name);
-      setNaming(NAMING_CLOSED);
-    },
-    [naming, renameFavorito],
+    (fav: Favorito) => setNamingModal({ open: true, mode: "edit", fav }),
+    [setNamingModal],
   );
 
   const { lineas } = meta;
@@ -110,35 +95,27 @@ export function FavoritosClient() {
   );
 
   return (
-    <>
-      <PageShell>
-        <div className="mb-6">
-          <h1 className="font-display text-[24px] font-semibold tracking-[-0.04em] text-text">
-            Favoritos
-          </h1>
-        </div>
-        <FavoritesList
-          favoritos={favoritos}
-          onView={fetchFavArribos}
-          onRemove={removeFavoritoEntry}
-          onRename={handleEditFavName}
-          onGoToSearch={() => router.push("/consultar")}
-        />
-        <HistorialList
-          historial={historial}
-          onView={fetchHistEntry}
-          onRemove={removeHistorialEntry}
-          onClear={clearHistorialEntries}
-        />
-      </PageShell>
-
-      <FavoriteNameModal
-        isOpen={naming.open}
-        onClose={() => setNaming(NAMING_CLOSED)}
-        onSave={handleSaveNaming}
-        initialName={naming.open ? naming.fav.nombre : ""}
-        title="Renombrar parada"
+    <PageShell>
+      <div className="mb-6">
+        <h1 className="font-display text-[24px] font-semibold tracking-[-0.04em] text-text">
+          Favoritos
+        </h1>
+      </div>
+      <FavoritesList
+        favoritos={favoritos}
+        onView={fetchFavArribos}
+        onRemove={removeFavoritoEntry}
+        onUndoRemove={addFavorito}
+        onRename={handleEditFavName}
+        onGoToSearch={() => router.push("/consultar")}
       />
-    </>
+      <HistorialList
+        historial={historial}
+        onView={fetchHistEntry}
+        onRemove={removeHistorialEntry}
+        onUndoRemove={pushHistorialEntry}
+        onClear={clearHistorialEntries}
+      />
+    </PageShell>
   );
 }

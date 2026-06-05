@@ -231,6 +231,7 @@ const BusMap = React.memo(function BusMap({
     }, [paradaLat, paradaLon, arribos, liveBuses]);
 
     /** Qué trazos del GeoJSON van en azul: un solo ramal preferido (ETA + bandera), pistas de parada, o el más cercano a la parada. */
+    // eslint-disable-next-line react-hooks/preserve-manual-memoization
     const activeDescripcionKeys = useMemo(() => {
         if (groupedRoutes.length === 0) return new Set<string>();
 

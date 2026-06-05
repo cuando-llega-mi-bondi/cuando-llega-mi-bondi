@@ -58,7 +58,7 @@ function estimateItineraryMins(it: Itinerary): number {
 function LineBadge({ label, size = "md" }: { label: string; size?: "sm" | "md" }) {
     const cleanLine = label.trim();
     let bg = "bg-sky-600";
-    let text = "text-white";
+    const text = "text-white";
     let extra = null;
     
     if (cleanLine.startsWith("511")) {
@@ -382,7 +382,6 @@ export function ComoLlegoClient() {
     }, [dest.coords, origin.coords]);
 
     const activeMapView = mapViews[selectedIdx] ?? null;
-    const tripActive = itineraries.length > 0;
 
     const uses221Selected = useMemo(() => {
         const it = itineraries[selectedIdx];

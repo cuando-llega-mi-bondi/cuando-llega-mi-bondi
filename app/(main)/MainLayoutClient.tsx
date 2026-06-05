@@ -1,7 +1,7 @@
 "use client";
 
 import type { ReactNode } from "react";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo } from "react";
 import { Header } from "@shared/layout/Header";
 import { BottomNav } from "@shared/layout/BottomNav";
 import { SearchFlowProvider, useSearchFlowContext } from "@features/search/context/SearchFlowContext";
@@ -16,39 +16,21 @@ import { ArrivalsOverlay } from "@features/arrivals/components/ArrivalsOverlay";
 import { FavoriteNameModal } from "@features/favorites/components/FavoriteNameModal";
 import { ServiceDownModal } from "@shared/ui/ServiceDownModal";
 import { withViewTransition } from "@shared/pwa/viewTransition";
-import type { Arribo } from "@features/arrivals/types";
-import type { Favorito } from "@features/favorites/types";
-
-type NamingState =
-  | { open: false }
-  | { open: true; mode: "add"; fav: Favorito }
-  | { open: true; mode: "edit"; fav: Favorito };
-
-const NAMING_CLOSED: NamingState = { open: false };
+import { useUIStore, NAMING_CLOSED } from "@shared/ui/store/useUIStore";
 
 export function MainLayoutClient({ children }: { children: ReactNode }) {
-  const [sheetOpen, setSheetOpen] = useState(false);
   return (
-    <SearchFlowProvider onConsultOpen={() => setSheetOpen(true)}>
-      <MainLayoutContent sheetOpen={sheetOpen} setSheetOpen={setSheetOpen}>
+    <SearchFlowProvider>
+      <MainLayoutContent>
         {children}
       </MainLayoutContent>
     </SearchFlowProvider>
   );
 }
 
-function MainLayoutContent({
-  children,
-  sheetOpen,
-  setSheetOpen,
-}: {
-  children: ReactNode;
-  sheetOpen: boolean;
-  setSheetOpen: (open: boolean) => void;
-}) {
+function MainLayoutContent({ children }: { children: ReactNode }) {
   const { state, actions, meta } = useSearchFlowContext();
-  const [naming, setNaming] = useState<NamingState>(NAMING_CLOSED);
-  const [showServiceDownModal, setShowServiceDownModal] = useState(false);
+  const { sheetOpen, setSheetOpen, namingModal: naming, setNamingModal: setNaming, showServiceDownModal, setShowServiceDownModal } = useUIStore();
 
   const {
     codLinea,
@@ -89,9 +71,7 @@ function MainLayoutContent({
   );
 
   const {
-    favoritos,
     addFavorito,
-    removeFavorito: removeFavoritoEntry,
     renameFavorito,
   } = useFavoritos();
 
@@ -139,12 +119,12 @@ function MainLayoutContent({
     const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
     const isDismissed = localStorage.getItem("service-down-dismissed") === "true";
     if (isIOS && !isDismissed) setShowServiceDownModal(true);
-  }, []);
+  }, [setShowServiceDownModal]);
 
   const handleCloseServiceDown = useCallback(() => {
     setShowServiceDownModal(false);
     localStorage.setItem("service-down-dismissed", "true");
-  }, []);
+  }, [setShowServiceDownModal]);
 
   useEffect(() => {
     document.body.classList.toggle("arrivals-overlay-open", sheetOpen);
@@ -160,57 +140,6 @@ function MainLayoutContent({
     });
   }, [setIsConsulting, setSheetOpen]);
 
-  const isCurrentFavorito = useMemo(() => {
-    const targetId = `${paradaId}_${codLinea}`;
-    return favoritos.some(f => f.id === targetId);
-  }, [favoritos, paradaId, codLinea]);
-
-  const handleToggleFavCurrent = useCallback(() => {
-    const id = `${paradaId}_${codLinea}`;
-    if (isCurrentFavorito) {
-      removeFavoritoEntry(id);
-      return;
-    }
-    
-    const lineaPart = lineaLabel.trim() || codLinea || "";
-    const banderaPart = selectedParada?.AbreviaturaBandera?.trim() || "";
-    const ubicacion = [calleLabel, interseccionLabel]
-        .filter(Boolean)
-        .join(" y ");
-        
-    let nombre = "";
-    if (lineaPart && banderaPart) nombre = `${lineaPart} — ${banderaPart}`;
-    else if (lineaPart) nombre = lineaPart;
-    else if (banderaPart) nombre = banderaPart;
-    else if (ubicacion) nombre = ubicacion;
-    else nombre = "Parada favorita";
-
-    setNaming({
-        open: true,
-        mode: "add",
-        fav: {
-            id,
-            nombre,
-            identificadorParada: paradaId,
-            codigoLineaParada: codLinea,
-            lineaLabel: lineaLabel.trim() || lineaPart || codLinea || undefined,
-            descripcionLinea: lineaPart || "—",
-            descripcionBandera: banderaPart || "—",
-            calleLabel,
-            interseccionLabel,
-        },
-    });
-  }, [
-    codLinea,
-    paradaId,
-    isCurrentFavorito,
-    removeFavoritoEntry,
-    lineaLabel,
-    selectedParada,
-    calleLabel,
-    interseccionLabel,
-  ]);
-
   const handleSaveNaming = useCallback(
     (name: string) => {
       if (!naming.open) return;
@@ -218,7 +147,7 @@ function MainLayoutContent({
       else addFavorito({ ...naming.fav, nombre: name });
       setNaming(NAMING_CLOSED);
     },
-    [addFavorito, naming, renameFavorito],
+    [addFavorito, naming, renameFavorito, setNaming],
   );
 
   const overlaySession = useMemo(
@@ -248,8 +177,6 @@ function MainLayoutContent({
         loadingOtras,
         onSelectOtraLinea: handleSelectOtraLinea,
         liveSharings,
-        handleToggleFavCurrent,
-        isCurrentFavorito,
       },
       telegramUsername:
         process.env.NEXT_PUBLIC_TELEGRAM_BOT_USERNAME || "cuandollegamdp_bot",
@@ -275,8 +202,6 @@ function MainLayoutContent({
       loadingOtras,
       handleSelectOtraLinea,
       liveSharings,
-      handleToggleFavCurrent,
-      isCurrentFavorito,
     ],
   );
 

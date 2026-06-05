@@ -6,6 +6,7 @@ import { IconStar } from "@shared/icons/IconStar";
 import { IconSearch } from "@shared/icons/IconSearch";
 import type { Favorito } from "@features/favorites/types";
 import { Button } from "@shared/ui/Button";
+import { useToast } from "@shared/ui";
 import { SwipeableRow, type SwipeAction } from "@shared/gestures";
 import { IconEdit } from "@shared/icons/IconEdit";
 import { IconTrash } from "@shared/icons/IconTrash";
@@ -34,6 +35,7 @@ interface FavoritoRowProps {
     fav: Favorito;
     onView: (fav: Favorito) => void;
     onRemove: (id: string) => void;
+    onUndoRemove?: (fav: Favorito) => void;
     onRename: (fav: Favorito) => void;
     index: number;
 }
@@ -42,9 +44,30 @@ const FavoritoRow = memo(function FavoritoRow({
     fav,
     onView,
     onRemove,
+    onUndoRemove,
     onRename,
     index,
 }: FavoritoRowProps) {
+    const { toast } = useToast();
+
+    // Strip redundant line prefix from nombre (e.g. "562 — AL HIPODROMO" → "Al Hipódromo")
+    const rawName = fav.nombre;
+    const prefixRe = /^\S+\s*[—\-–]\s*/;
+    const displayName = prefixRe.test(rawName)
+        ? rawName.replace(prefixRe, "").trim() || rawName
+        : rawName;
+
+    const handleRemove = useCallback(() => {
+        onRemove(fav.id);
+        toast({
+            description: `Se eliminó "${displayName}" de favoritos.`,
+            action: onUndoRemove ? {
+                label: "Deshacer",
+                onClick: () => onUndoRemove(fav)
+            } : undefined
+        });
+    }, [onRemove, onUndoRemove, fav, displayName, toast]);
+
     const handleExtraKey = useCallback(
         (e: React.KeyboardEvent) => {
             if (e.key === "e" || e.key === "E" || e.key === "F2") {
@@ -60,7 +83,7 @@ const FavoritoRow = memo(function FavoritoRow({
             leftAction={LEFT_ACTION}
             rightAction={RIGHT_ACTION}
             onSwipeRight={() => onRename(fav)}
-            onSwipeLeft={() => onRemove(fav.id)}
+            onSwipeLeft={handleRemove}
             onTap={() => onView(fav)}
             onExtraKeyDown={handleExtraKey}
             ariaLabel={`${fav.nombre}, línea ${fav.lineaLabel ?? fav.codigoLineaParada}. Deslizar derecha: editar, izquierda: borrar.`}
@@ -76,12 +99,6 @@ const FavoritoRow = memo(function FavoritoRow({
                     (() => { const c = fav.id.split("_")[1]; return c !== "undefined" ? c : "—"; })();
 
                 // Strip redundant line prefix from nombre (e.g. "562 — AL HIPODROMO" → "Al Hipódromo")
-                const rawName = fav.nombre;
-                const prefixRe = /^\S+\s*[—\-–]\s*/;
-                const displayName = prefixRe.test(rawName)
-                    ? rawName.replace(prefixRe, "").trim() || rawName
-                    : rawName;
-
                 return (
                     <div className="flex items-center gap-3">
                         {/* Line badge */}
@@ -125,6 +142,7 @@ interface FavoritesListProps {
     favoritos: Favorito[];
     onView: (fav: Favorito) => void;
     onRemove: (id: string) => void;
+    onUndoRemove?: (fav: Favorito) => void;
     onRename: (fav: Favorito) => void;
     onGoToSearch?: () => void;
 }
@@ -133,6 +151,7 @@ export const FavoritesList = memo(function FavoritesList({
     favoritos,
     onView,
     onRemove,
+    onUndoRemove,
     onRename,
     onGoToSearch,
 }: FavoritesListProps) {
@@ -175,6 +194,7 @@ export const FavoritesList = memo(function FavoritesList({
                         fav={fav}
                         onView={onView}
                         onRemove={onRemove}
+                        onUndoRemove={onUndoRemove}
                         onRename={onRename}
                         index={i}
                     />

@@ -306,6 +306,7 @@ export default function RouteMap({
     document.documentElement.appendChild(el);
     const rgb = getComputedStyle(el).color;
     document.documentElement.removeChild(el);
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setResolvedStroke(rgb && rgb !== "rgba(0, 0, 0, 0)" ? rgb : accentColor);
   }, [accentColor]);
 

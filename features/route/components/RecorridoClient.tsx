@@ -141,6 +141,7 @@ export default function RecorridoClient() {
       const data = Array.isArray(rawCache) ? rawCache : (rawCache.lineas ?? []);
       const merged = mergeLineasWithManual(data);
 
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setLines(merged);
       setLinesLoading(false);
       return;
@@ -293,6 +294,7 @@ export default function RecorridoClient() {
     const line = lines.find((l) => l.CodigoLineaParada === code);
     if (!line) return;
     deepLinkHandledRef.current = true;
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     void selectLine(line);
     router.replace("/recorrido", { scroll: false });
   }, [linesLoading, lines, searchParams, router]);
