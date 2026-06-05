@@ -173,7 +173,7 @@ export function useSwipeGesture({ onSwipeRight, onSwipeLeft }: UseSwipeGestureOp
         };
         window.addEventListener("pointercancel", cancel);
         return () => window.removeEventListener("pointercancel", cancel);
-    }, [x]);
+    }, [x, close]);
 
     // ── Programmatic remove (for keyboard shortcut) ───────────────────────────
 

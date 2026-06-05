@@ -119,12 +119,12 @@ function MainLayoutContent({ children }: { children: ReactNode }) {
     const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
     const isDismissed = localStorage.getItem("service-down-dismissed") === "true";
     if (isIOS && !isDismissed) setShowServiceDownModal(true);
-  }, []);
+  }, [setShowServiceDownModal]);
 
   const handleCloseServiceDown = useCallback(() => {
     setShowServiceDownModal(false);
     localStorage.setItem("service-down-dismissed", "true");
-  }, []);
+  }, [setShowServiceDownModal]);
 
   useEffect(() => {
     document.body.classList.toggle("arrivals-overlay-open", sheetOpen);
@@ -147,7 +147,7 @@ function MainLayoutContent({ children }: { children: ReactNode }) {
       else addFavorito({ ...naming.fav, nombre: name });
       setNaming(NAMING_CLOSED);
     },
-    [addFavorito, naming, renameFavorito],
+    [addFavorito, naming, renameFavorito, setNaming],
   );
 
   const overlaySession = useMemo(
