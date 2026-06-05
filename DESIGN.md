@@ -6,7 +6,7 @@ MDP es una plataforma de movilidad urbana accesible, precisa y orientada a la ac
 
 El color amarillo MDP (`#f9cd4a`) actúa como acento principal de CTA — enérgico, visible, de alta accesibilidad cuando se combina con texto oscuro (`#0f2d4a`). El turquesa (`#1d7570`) define los elementos interactivos: focus rings, íconos activos, bordes de inputs. El rosa (`#c93679`) se reserva para acciones destructivas o de alerta de alto impacto.
 
-La tipografía conserva la filosofía de compresión de Framer: GT Walsheim en display con tracking negativo agresivo, Inter en cuerpo con OpenType maximalist. La diferencia es el tono: donde Framer es nightclub, MDP es servicio público de primer nivel — confiable, claro, accesible, sin sacrificar personalidad.
+La tipografía usa **Inter Variable** en todos los niveles, con tracking negativo en titulares y OpenType features en cuerpo. El tono es de servicio público de primer nivel: confiable, claro y accesible, sin sacrificar personalidad.
 
 **Key Characteristics:**
 - Blanco cálido (`#f7f7f4`) en light / Azul petróleo (`#0f2d4a`) en dark — nunca grises neutros genéricos

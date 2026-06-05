@@ -1,102 +1,136 @@
 # Contribuir a Bondi MDP
 
-¡Gracias por tu interés en contribuir a este proyecto open-source! Para asegurarnos de que el proceso sea lo más transparente y sencillo posible, por favor lee las siguientes pautas.
+Gracias por tu interés en este proyecto open-source. Estas pautas mantienen el proceso claro para todos.
 
-## Proceso de Desarrollo (Setup)
+## Proceso de desarrollo
 
-1. **Haz un Fork** del repositorio a tu propia cuenta de GitHub.
-2. **Clona tu Fork** a tu máquina local:
+1. **Fork** del repositorio en tu cuenta de GitHub.
+2. **Clonar** tu fork:
    ```bash
    git clone https://github.com/TU_USUARIO/cuando-llega-mi-bondi.git
+   cd cuando-llega-mi-bondi
    ```
-3. **Crea una nueva rama (branch)** para tu funcionalidad o corrección:
+3. **Rama** para tu cambio:
    ```bash
    git checkout -b feature/mi-nueva-funcionalidad
    ```
-   *(Usa prefijos como `feature/`, `bugfix/`, `docs/`, `refactor/` para una mejor organización).*
-4. Instala las dependencias y corre el modo desarrollo:
+   Prefijos útiles: `feature/`, `bugfix/`, `docs/`, `refactor/`.
+4. **Entorno local:**
    ```bash
+   cp .env.example .env.local
+   # Completá NEXT_PUBLIC_CUANDO_API_URL y el resto según docs/env-reference.md
    npm install
    npm run dev
    ```
 
-## Estructura del Proyecto
+## Estructura del proyecto
 
-Para orientarte rápido, así está organizado el código hoy:
+Intentamos organizar el código con **Screaming Architecture**: las carpetas de `features/` nombran capacidades del producto (`arrivals`, `search`, `trip-planner`), no capas genéricas (`controllers`, `models`). Detalle y excepciones (`app/`, `shared/`): [docs/architecture.md — Screaming Architecture](docs/architecture.md#screaming-architecture-intención).
 
-- **`/app`**: rutas del [App Router](https://nextjs.org/docs/app) de Next.js.
-  - `layout.tsx`, `page.tsx`: shell y página principal.
-  - `/consultar`, `/recorrido`, `/acerca`: flujos de consulta, mapa de recorrido y página institucional.
-  - `/app/api/reference/route.ts`: sirve catálogo (líneas, calles, paradas) desde el dump estático en `data/mgp-static-dump.json`. Único path de datos MGP que vive en Vercel.
-  - `/app/api/telegram-webhook/route.ts`: webhook opcional del bot de Telegram (Supabase + token del bot).
-- **`/components`**: UI en React (`HomeClient`, `SearchFlow`, `RouteMap`, `Combobox`, carpeta `search/`, iconos, etc.).
-- **`/lib/api`**: cliente del proxy (`client.ts` con `post` / `swrFetcher`) y módulos por dominio (`lineas.ts`, `arribos.ts`, `recorrido.ts`, …).
-- **`/lib/hooks`**: hooks con SWR (`useLineas`, `useArribos`, `useCalles`, …).
-- **`/lib/storage`**: favoritos, historial y caché persistente (`localCache.ts`, TTL 24 h donde aplica).
-- **`/lib/types.ts`**: tipos compartidos (líneas, paradas, arribos, historial).
-- **`/lib/manualRoutes.ts`** y **`/public/*.geojson`**: líneas no expuestas por la API oficial.
-- **`/lib/liveSharePayload.ts`**: codificación del parámetro `start=` para deep links de Telegram.
-- **`/lib/supabaseClient.ts`**: cliente Supabase (solo necesario si probás ubicación en vivo / webhook).
-- **`/public`**: assets estáticos, PWA e **`sw.js`** (service worker).
+```
+app/                    # App Router de Next.js
+  (main)/               # Shell con navegación inferior (consultar, favoritos)
+  api/
+    reference/          # Catálogo MGP desde data/static/
+    geo/                # paradas-cercanas, nominatim, plan (Cómo llego)
+    telegram-webhook/   # Bot opcional
+  consultar/, recorrido/, acerca/, como-llego/, un-mes-en-numeros/
+features/               # Dominios de producto (UI + lógica + API por feature)
+  arrivals/             # Panel de arribos, tarjetas, otras líneas
+  favorites/            # Favoritos en LocalStorage
+  history/              # Historial de consultas
+  landing/              # Home y secciones de marketing
+  live-sharing/         # Telegram y buses en vivo
+  route/                # Mapa de recorrido, manualRoutes, RecorridoClient
+  search/               # Flujo línea → calle → intersección → parada
+  trip-planner/         # Cómo llego (planner + mapa)
+shared/                 # Código transversal
+  api/client.ts         # post(), swrFetcher, integración MGP
+  layout/, ui/, icons/, map/, geo/, analytics/, pwa/
+lib/
+  server/               # Carga de dump estático, modelos de grafo para planner
+  types.ts              # Tipos legacy compartidos con scripts (preferir @shared/types)
+data/
+  mgp-static-dump.json  # Fuente canónica (generada con dump-static)
+  static/               # Catálogo partido en runtime (generada con split-static)
+public/                 # Assets, PWA, GeoJSON de líneas manuales, sw.js
+scripts/                # dump-static-reference.ts, split-static-dump.ts
+```
 
-La guía Diátaxis del repo está en [`docs/DIATAXIS.md`](docs/DIATAXIS.md).
+Alias de importación (`tsconfig.json`): `@/*`, `@features/*`, `@shared/*`.
 
-## 🚌 Cómo agregar una línea manual (GeoJSON)
+Mapa Diátaxis del repo: [`docs/DIATAXIS.md`](docs/DIATAXIS.md).
 
-Si una línea no está disponible en la API oficial de la Municipalidad, podés integrarla manualmente:
+## Cómo agregar una línea manual (GeoJSON)
 
-1. **Obtené el GeoJSON:** El archivo debe contener un `LineString` con las coordenadas del recorrido. Guardalo en `/public/nombre-linea.geojson`.
-2. **Configurá la ruta:** Editá `lib/manualRoutes.ts` y agregá un objeto al array `MANUAL_ROUTES`:
+Para líneas que no están en la API municipal:
+
+1. **GeoJSON:** `LineString` en `public/` (ej. `/mi-linea.geojson`). Podés definir varios **ramales** (ida/vuelta) con archivos distintos.
+2. **Configuración:** editá `features/route/manualRoutes.ts`:
+
    ```typescript
    {
      line: {
        CodigoLineaParada: "ID_UNICO",
-       Descripcion: "NOMBRE DE LA LINEA",
+       Descripcion: "NOMBRE DE LA LÍNEA",
        CodigoEntidad: "MANUAL",
        CodigoEmpresa: 0,
        isManual: true,
      },
-     geoJsonPath: "/nombre-linea.geojson",
+     ramales: [
+       {
+         key: "ida",
+         label: "Ida",
+         geoJsonPath: "/mi-linea-ida.geojson",
+       },
+       {
+         key: "vuelta",
+         label: "Vuelta",
+         geoJsonPath: "/mi-linea-vuelta.geojson",
+       },
+     ],
+     // Alternativa simple: un solo geoJsonPath sin ramales
    }
    ```
-3. **Validación:** Una vez agregado, la línea aparecerá automáticamente en el buscador principal y el mapa cargará el recorrido desde el archivo local sin consultar el backend.
 
-## Variables de entorno (desarrollo avanzado)
+3. **Validación:** la línea aparece en el buscador (`mergeLineasWithManual`) y el mapa carga el recorrido local. Tras cambios al catálogo API, regenerá el dump si necesitás que el planificador incluya paradas de esa línea en el grafo estático.
 
-Para acciones en vivo (arribos, banderas) tenés que definir **`NEXT_PUBLIC_CUANDO_API_URL`** apuntando al backend self-hosted (`server/`). No hay proxy interno en este front: la muni bloquea las IPs de Vercel, así que el cliente pega directo a esa URL. Sin la env var, `post()` tira un error explícito en el primer uso. El detalle de cada variable está en el README.
+## Scripts de datos estáticos
 
-Para **Telegram** y **ubicación en vivo** (mapa + webhook), además necesitás `NEXT_PUBLIC_TELEGRAM_BOT_USERNAME`, `TELEGRAM_BOT_TOKEN`, `NEXT_PUBLIC_SUPABASE_URL` y `NEXT_PUBLIC_SUPABASE_ANON_KEY`.
+| Comando | Qué hace |
+| ------- | -------- |
+| `npm run dump-static` | Descarga referencia MGP al backend y escribe `data/mgp-static-dump.json` |
+| `npm run split-static` | Parte el dump en `data/static/lineas.json` y `data/static/linea/<cod>.json` |
 
-## Convenciones de Código
+Requisitos: `NEXT_PUBLIC_CUANDO_API_URL` (o `DUMP_MGP_URL`) apuntando al backend. Opcional: `DUMP_DELAY_MS`, `STATIC_REFERENCE_DUMP_PATH`.
 
-- **Tipado fuerte:** Evitá `any`. Tipos de dominio en `lib/types.ts`; si extendés respuestas de la API, mantené los contratos alineados con los módulos en `lib/api/`.
-- **Estilos:** **Tailwind CSS 4** para utilidades; tokens y variables globales en `app/globals.css` (`@import "tailwindcss"`, bloque `@theme inline`). Mantené coherencia con lo existente antes de introducir patrones nuevos.
-- **Componentes modulares:** Un componente debe hacer una sola cosa. Si supera ~200 líneas, valorá extraer UI o lógica a archivos más chicos.
+## Variables de entorno
 
-## Enviar tus Cambios (Pull Request)
+Resumen en el [README](README.md). Tabla completa: [docs/env-reference.md](docs/env-reference.md).
 
-1. Revisá tus cambios localmente y asegurate de que **no rompen el build**:
+- **Obligatoria para arribos en vivo:** `NEXT_PUBLIC_CUANDO_API_URL`
+- **Telegram + mapa en vivo:** `TELEGRAM_BOT_TOKEN`, `NEXT_PUBLIC_TELEGRAM_BOT_USERNAME`, `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+
+## Convenciones de código
+
+- **Tipos:** evitá `any`. Dominio compartido en `@shared/types`; tipos por feature en `features/*/types.ts`.
+- **Estilos:** Tailwind 4 y tokens en `app/globals.css`. Seguí [DESIGN.md](DESIGN.md) para UI nueva.
+- **Componentes:** una responsabilidad clara; si supera ~200 líneas, extraé subcomponentes o hooks.
+- **Features nuevas:** preferí carpeta bajo `features/<nombre>/` con `components/`, `hooks/`, `api/` según haga falta.
+
+## Pull request
+
+1. Verificá build y lint:
    ```bash
    npm run build
    npm run lint
    ```
-2. Realizá tus commits con **mensajes descriptivos y atómicos** (si usás [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/), aún mejor).
-3. Push de tu rama a GitHub:
-   ```bash
-   git push origin feature/mi-nueva-funcionalidad
-   ```
-4. Abrí un **Pull Request (PR)** en el repositorio original.
-5. En la descripción del PR, explicá brevemente:
-   - ¿Qué problema resuelve este código?
-   - ¿Por qué esta implementación concreta?
-   - Screenshots si hubo cambios visuales.
+2. Commits descriptivos (Conventional Commits recomendado).
+3. Push y abrí el PR contra `main`.
+4. En la descripción: problema que resuelve, enfoque elegido, capturas si hay cambios visuales.
 
-## Reportar Bugs e Issues
+## Reportar bugs
 
-Abrí una issue en GitHub si encontrás un bug. Incluí, si es posible:
+Abrí una issue con pasos para reproducir, navegador/dispositivo y comportamiento esperado vs actual.
 
-- Pasos para reproducirlo.
-- Navegador / dispositivo.
-- Comportamiento esperado.
-
-¡Agradecemos cualquier ayuda para mantener la aplicación rápida, moderna y sin errores!
+¡Gracias por ayudar a mantener la app rápida y confiable!

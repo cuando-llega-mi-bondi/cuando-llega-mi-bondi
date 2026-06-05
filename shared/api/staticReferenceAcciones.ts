@@ -1,4 +1,4 @@
-/** Acciones servidas desde el dump vía `GET /api/reference` (ver `lib/api/client.ts`). */
+/** Acciones servidas desde el dump vía `GET /api/reference` (ver `shared/api/client.ts`). */
 export const STATIC_REFERENCE_ACCIONES = new Set<string>([
     "RecuperarLineaPorCuandoLlega",
     "RecuperarCallesPrincipalPorLinea",
