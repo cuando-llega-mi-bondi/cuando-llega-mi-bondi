@@ -4,8 +4,6 @@
  * `NEXT_PUBLIC_CUANDO_API_URL` apuntando al backend self-hosted (no hay ruta
  * interna en este repo: la muni bloquea las IPs de Vercel).
  * 
- * test dockploy 
- * 
  * Uso: npm run dump-static
  */
 
