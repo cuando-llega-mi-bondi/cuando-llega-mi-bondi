@@ -1,54 +1,20 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
-import type { Favorito } from "@features/favorites/types";
-import {
-    getFavoritos,
-    removeFavorito,
-    saveFavorito,
-    updateFavorito,
-} from "@features/favorites/storage/favoritos";
+import { useEffect, useState } from "react";
+import { useFavoritesStore } from "../store/useFavoritesStore";
 
 export function useFavoritos() {
-    const [favoritos, setFavoritos] = useState<Favorito[]>([]);
+    const store = useFavoritesStore();
+    const [isHydrated, setIsHydrated] = useState(false);
 
     useEffect(() => {
-        setFavoritos(getFavoritos());
+        setIsHydrated(true);
     }, []);
-
-    const refresh = useCallback(() => {
-        setFavoritos(getFavoritos());
-    }, []);
-
-    const add = useCallback(
-        (fav: Favorito) => {
-            saveFavorito(fav);
-            refresh();
-        },
-        [refresh],
-    );
-
-    const remove = useCallback(
-        (id: string) => {
-            removeFavorito(id);
-            refresh();
-        },
-        [refresh],
-    );
-
-    const rename = useCallback(
-        (id: string, name: string) => {
-            updateFavorito(id, name);
-            refresh();
-        },
-        [refresh],
-    );
 
     return {
-        favoritos,
-        refreshFavoritos: refresh,
-        addFavorito: add,
-        removeFavorito: remove,
-        renameFavorito: rename,
+        favoritos: isHydrated ? store.favoritos : [],
+        addFavorito: store.addFavorito,
+        removeFavorito: store.removeFavorito,
+        renameFavorito: store.renameFavorito,
     };
 }
