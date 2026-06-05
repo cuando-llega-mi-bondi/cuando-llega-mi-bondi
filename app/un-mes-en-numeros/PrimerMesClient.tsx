@@ -1,6 +1,7 @@
 "use client";
+/* eslint-disable @next/next/no-img-element */
 
-import { useEffect, useRef, useState, useMemo } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 
 

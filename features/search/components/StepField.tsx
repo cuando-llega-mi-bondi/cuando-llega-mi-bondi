@@ -73,7 +73,6 @@ export function StepField({
                             disabled && "cursor-not-allowed opacity-50",
                         )}
                         aria-current={isActive ? "step" : undefined}
-                        aria-required={required}
                         aria-label={`${stepText}: ${selectedLabel || "Sin seleccionar"}. ${required ? "Requerido." : ""}`}
                     >
                         <div
