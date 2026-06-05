@@ -29,13 +29,23 @@ export function useAutoHistorial({
   interseccionLabel,
   pushHistorialEntry,
 }: UseAutoHistorialParams) {
-  const savedRef = useRef("");
+  const savedRef = useRef({ id: "", hasLabels: false });
 
   useEffect(() => {
     if (!isConsulting || !paradaId || !codLinea || codLinea === "undefined" || arribos.length === 0) return;
+    
     const entryId = `${paradaId}_${codLinea}`;
-    if (savedRef.current === entryId) return;
-    savedRef.current = entryId;
+    const hasLabels = Boolean(calleLabel && interseccionLabel);
+    
+    if (savedRef.current.id === entryId) {
+        // Si ya guardamos esta consulta y ya teníamos los labels, no hacer nada.
+        // O si ya la guardamos y todavía NO tenemos labels, tampoco hacer nada.
+        if (savedRef.current.hasLabels || !hasLabels) {
+            return;
+        }
+    }
+    
+    savedRef.current = { id: entryId, hasLabels };
     const first = arribos[0];
     const historialLineaLabel =
       lineaLabel.trim() ||
