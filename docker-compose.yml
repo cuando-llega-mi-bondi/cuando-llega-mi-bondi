@@ -1,45 +1,31 @@
-version: '3.8'
-
 services:
   web:
     build:
       context: .
       dockerfile: Dockerfile
+      # Pasamos las variables como argumentos de construcción (Build Args)
+      # Docker Compose las va a tomar automáticamente de tu archivo .env
       args:
-        - NEXT_PUBLIC_SUPABASE_URL=${NEXT_PUBLIC_SUPABASE_URL}
-        - NEXT_PUBLIC_SUPABASE_ANON_KEY=${NEXT_PUBLIC_SUPABASE_ANON_KEY}
-        - NEXT_PUBLIC_TELEGRAM_BOT_USERNAME=${NEXT_PUBLIC_TELEGRAM_BOT_USERNAME}
-        - NEXT_PUBLIC_CLARITY_PROJECT_ID=${NEXT_PUBLIC_CLARITY_PROJECT_ID}
-        - NEXT_PUBLIC_GA_MEASUREMENT_ID=${NEXT_PUBLIC_GA_MEASUREMENT_ID}
-        - NEXT_PUBLIC_USE_STATIC_REFERENCE=${NEXT_PUBLIC_USE_STATIC_REFERENCE}
-        - NEXT_PUBLIC_CUANDO_API_URL=${NEXT_PUBLIC_CUANDO_API_URL}
-        - NEXT_PUBLIC_BONDI_API_URL=${NEXT_PUBLIC_BONDI_API_URL}
-        - NEXT_PUBLIC_VAPID_PUBLIC=${NEXT_PUBLIC_VAPID_PUBLIC}
+        - NEXT_PUBLIC_SUPABASE_URL
+        - NEXT_PUBLIC_SUPABASE_ANON_KEY
+        - NEXT_PUBLIC_TELEGRAM_BOT_USERNAME
+        - NEXT_PUBLIC_CLARITY_PROJECT_ID
+        - NEXT_PUBLIC_GA_MEASUREMENT_ID
+        - NEXT_PUBLIC_USE_STATIC_REFERENCE
+        - NEXT_PUBLIC_CUANDO_API_URL
+        - NEXT_PUBLIC_BONDI_API_URL
+        - NEXT_PUBLIC_VAPID_PUBLIC
     restart: always
-    ports:
-      - "3000:3000"
-    environment:
-      # Secretos privados en tiempo de ejecución (Runtime)
-      - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
-      - MGP_PROXY_URL=${MGP_PROXY_URL}
-      - MGP_PROXY_TOKEN=${MGP_PROXY_TOKEN}
-      - MGP_ORACLE_URL=${MGP_ORACLE_URL}
-      - MGP_ORACLE_TOKEN=${MGP_ORACLE_TOKEN}
-      - MGP_RSA_PUBKEY=${MGP_RSA_PUBKEY}
-      - MGP_SHARED_KEY=${MGP_SHARED_KEY}
-      - OSRM_URL=${OSRM_URL}
+    # Usamos 'expose' en lugar de 'ports' para que el puerto 3000 quede oculto del mundo
+    expose:
+      - "3000"
+    env_file:
+      - .env
 
-  caddy:
-    image: caddy:latest
+  cloudflared:
+    image: cloudflare/cloudflared:latest
     restart: always
-    ports:
-      - "80:80"
-      - "443:443"
-    volumes:
-      - ./Caddyfile:/etc/caddy/Caddyfile
-      - caddy_data:/data
+    # REEMPLAZA el token de acá abajo por el choclo de letras y números de tu panel de Cloudflare
+    command: tunnel --no-autoupdate run --token ${TUNNEL_TOKEN}
     depends_on:
       - web
-
-volumes:
-  caddy_data:
