@@ -1,98 +1,64 @@
 "use client";
 
-import { useCallback, useMemo } from "react";
-import { useRouter, usePathname } from "next/navigation";
+import { useMemo } from "react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { IconSearch } from "@shared/icons/IconSearch";
 import { IconStar } from "@shared/icons/IconStar";
 import { IconMap } from "@shared/icons/IconMap";
 import { IconInfo } from "@shared/icons/IconInfo";
 import { cn } from "@shared/utils";
 
-interface BottomNavProps {
-    tab: "buscar" | "favoritos";
-    setTab: (t: "buscar" | "favoritos") => void;
-    favCount: number;
-}
+type NavTab = "consultar" | "recorrido" | "favoritos" | "acerca";
 
-type NavTab = "buscar" | "favoritos" | "recorrido" | "acerca";
+const NAV_ITEMS: { id: NavTab; label: string; href: string; icon: (active: boolean) => React.ReactNode }[] = [
+    {
+        id: "consultar",
+        label: "Consultar",
+        href: "/consultar",
+        icon: () => <IconSearch className="h-[22px] w-[22px]" />,
+    },
+    {
+        id: "recorrido",
+        label: "Recorridos",
+        href: "/recorrido",
+        icon: () => <IconMap className="h-[22px] w-[22px]" />,
+    },
+    {
+        id: "favoritos",
+        label: "Favoritos",
+        href: "/favoritos",
+        icon: (active) => <IconStar filled={active} className="h-[22px] w-[22px]" />,
+    },
+    {
+        id: "acerca",
+        label: "Acerca de",
+        href: "/acerca",
+        icon: () => <IconInfo className="h-[22px] w-[22px]" />,
+    },
+];
 
-export function BottomNav({ tab, setTab, favCount }: BottomNavProps) {
-    const router = useRouter();
+export function BottomNav() {
     const pathname = usePathname();
 
     const activeTab = useMemo((): NavTab => {
-        if (pathname === "/recorrido") return "recorrido";
-        if (pathname === "/acerca") return "acerca";
-        return tab;
-    }, [pathname, tab]);
-
-    const handleConsultarTab = useCallback(
-        (t: "buscar" | "favoritos") => {
-            if (activeTab === "recorrido" || activeTab === "acerca") {
-                router.push(`/consultar/?tab=${t}`);
-            } else {
-                setTab(t);
-            }
-        },
-        [activeTab, router, setTab]
-    );
-
-    const goToRecorrido = useCallback(() => router.push("/recorrido"), [router]);
-    const goToAcerca = useCallback(() => router.push("/acerca"), [router]);
-
-    const items = useMemo(
-        () => [
-            {
-                id: "buscar" as NavTab,
-                label: "Consultar",
-                icon: <IconSearch className="h-[22px] w-[22px]" />,
-                onClick: () => handleConsultarTab("buscar"),
-            },
-            {
-                id: "recorrido" as NavTab,
-                label: "Recorridos",
-                icon: <IconMap className="h-[22px] w-[22px]" />,
-                onClick: goToRecorrido,
-            },
-            {
-                id: "favoritos" as NavTab,
-                label: "Favoritos",
-                icon: (
-                    <div className="relative">
-                        <IconStar
-                            filled={activeTab === "favoritos"}
-                            className="h-[22px] w-[22px]"
-                        />
-                        {favCount > 0 && (
-                            <span className="absolute -right-2 -top-1 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-primary px-1 font-mono text-[9px] font-bold text-primary-foreground">
-                                {favCount > 99 ? "99+" : favCount}
-                            </span>
-                        )}
-                    </div>
-                ),
-                onClick: () => handleConsultarTab("favoritos"),
-            },
-            {
-                id: "acerca" as NavTab,
-                label: "Acerca de",
-                icon: <IconInfo className="h-[22px] w-[22px]" />,
-                onClick: goToAcerca,
-            },
-        ],
-        [activeTab, favCount, handleConsultarTab, goToRecorrido, goToAcerca]
-    );
+        if (pathname.startsWith("/favoritos")) return "favoritos";
+        if (pathname.startsWith("/recorrido")) return "recorrido";
+        if (pathname.startsWith("/acerca")) return "acerca";
+        return "consultar";
+    }, [pathname]);
 
     return (
         <nav
             className="fixed bottom-0 left-0 z-[100] w-full border-t border-border bg-background/90 backdrop-blur-xl pb-safe-area-bottom"
         >
             <div className="mx-auto flex max-w-[520px] items-stretch justify-around">
-                {items.map(({ id, label, icon, onClick }) => {
+                {NAV_ITEMS.map(({ id, label, href, icon }) => {
                     const isActive = activeTab === id;
                     return (
-                        <button
+                        <Link
                             key={id}
-                            onClick={onClick}
+                            href={href}
                             aria-label={label}
                             aria-current={isActive ? "page" : undefined}
                             className={cn(
@@ -109,11 +75,11 @@ export function BottomNav({ tab, setTab, favCount }: BottomNavProps) {
                                     isActive ? "opacity-100" : "opacity-0"
                                 )}
                             />
-                            {icon}
+                            {icon(isActive)}
                             <span className="font-sans text-[11px] font-medium tracking-tight">
                                 {label}
                             </span>
-                        </button>
+                        </Link>
                     );
                 })}
             </div>

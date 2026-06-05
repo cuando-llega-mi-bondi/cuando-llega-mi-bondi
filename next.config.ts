@@ -29,6 +29,20 @@ const nextConfig: NextConfig = {
   outputFileTracingIncludes: {
     "/api/reference": ["./data/static/**/*.json"],
   },
+
+  /**
+   * Compatibilidad: links viejos con ?tab=favoritos redirigen a /favoritos
+   */
+  async redirects() {
+    return [
+      {
+        source: "/consultar",
+        has: [{ type: "query", key: "tab", value: "favoritos" }],
+        destination: "/favoritos",
+        permanent: false,
+      },
+    ];
+  },
 };
 
 export default nextConfig;

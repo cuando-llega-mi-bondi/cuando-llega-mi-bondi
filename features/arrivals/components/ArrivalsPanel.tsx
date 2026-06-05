@@ -1,9 +1,11 @@
 "use client";
 
 import { IconRefresh } from "@shared/icons/IconRefresh";
+import { IconStar } from "@shared/icons/IconStar";
 import { ArriboCard } from "@features/arrivals/components/ArriboCard";
 import { OtrasLineasSuggestion } from "@features/arrivals/components/OtrasLineasSuggestion";
 import { ShareButton } from "@shared/layout/ShareButton";
+import { cn } from "@shared/utils";
 import {
     resolveArrivalsPanelView,
     type ArrivalsDataSession,
@@ -36,7 +38,8 @@ export function ArrivalsPanel({ consult, arrivals }: ArrivalsPanelProps) {
         calleLabel,
         interseccionLabel,
         liveSharings,
-        handleFavFromArribos,
+        handleToggleFavCurrent,
+        isCurrentFavorito,
         otrasLineas,
         loadingOtras,
         onSelectOtraLinea,
@@ -108,8 +111,6 @@ export function ArrivalsPanel({ consult, arrivals }: ArrivalsPanelProps) {
                             <ArriboCard
                                 key={`${a.CodigoLineaParada}-${a.Arribo}-${i}`}
                                 arribo={a}
-                                favId={`${paradaId}_${a.CodigoLineaParada}`}
-                                onFav={() => handleFavFromArribos(a)}
                             />
                         ))
                     ) : (
@@ -132,8 +133,22 @@ export function ArrivalsPanel({ consult, arrivals }: ArrivalsPanelProps) {
             ) : null}
 
             {isConsulting && !loadingArribos ? (
-                <div className="mt-2 text-center font-mono text-[10px] text-muted-foreground">
-                    Actualización automática cada 30s
+                <div className="mt-6 flex flex-col gap-4">
+                    <button
+                        onClick={handleToggleFavCurrent}
+                        className={cn(
+                            "flex w-full items-center justify-center gap-2 rounded-xl py-3.5 font-sans text-[15px] font-bold transition-all active:scale-[0.98]",
+                            isCurrentFavorito 
+                                ? "bg-secondary/10 text-secondary border border-secondary/20"
+                                : "bg-card border border-border text-foreground hover:bg-muted/50"
+                        )}
+                    >
+                        <IconStar filled={isCurrentFavorito} />
+                        {isCurrentFavorito ? "Quitar de favoritos" : "Guardar en favoritos"}
+                    </button>
+                    <div className="text-center font-mono text-[10px] text-muted-foreground">
+                        Actualización automática cada 30s
+                    </div>
                 </div>
             ) : null}
         </div>

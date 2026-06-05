@@ -32,7 +32,7 @@ export function useAutoHistorial({
   const savedRef = useRef("");
 
   useEffect(() => {
-    if (!isConsulting || !paradaId || !codLinea || arribos.length === 0) return;
+    if (!isConsulting || !paradaId || !codLinea || codLinea === "undefined" || arribos.length === 0) return;
     const entryId = `${paradaId}_${codLinea}`;
     if (savedRef.current === entryId) return;
     savedRef.current = entryId;

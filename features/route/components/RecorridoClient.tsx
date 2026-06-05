@@ -19,7 +19,6 @@ import {
   MapErrorOverlay,
   MapLoadingOverlay,
 } from "@features/route/components";
-import { useFavoritos } from "@features/favorites/hooks/useFavoritos";
 import { BottomNav } from "@shared/layout/BottomNav";
 
 // Leaflet can't run on the server — dynamic import with ssr:false is mandatory
@@ -69,7 +68,6 @@ export default function RecorridoClient() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const deepLinkHandledRef = useRef(false);
-  const { favoritos } = useFavoritos();
   // ── Line selector state ──────────────────────────────────────────────────────
   const [step, setStep] = useState<Step>("selector");
   const [lines, setLines] = useState<Linea[]>([]);
@@ -446,7 +444,7 @@ export default function RecorridoClient() {
             ))
           )}
         </div>
-        <BottomNav tab="buscar" setTab={() => { }} favCount={favoritos.length} />
+        <BottomNav />
       </div>
     );
   }
@@ -549,7 +547,7 @@ export default function RecorridoClient() {
           />
         )}
       </div>
-      <BottomNav tab="buscar" setTab={() => { }} favCount={favoritos.length} />
+      <BottomNav />
     </div>
   );
 }
