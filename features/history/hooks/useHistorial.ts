@@ -1,21 +1,19 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { usePersistHydration } from "@shared/hooks/usePersistHydration";
 import { useHistoryStore } from "../store/useHistoryStore";
 
 export function useHistorial() {
-    const store = useHistoryStore();
-    const [isHydrated, setIsHydrated] = useState(false);
-
-    useEffect(() => {
-        // eslint-disable-next-line react-hooks/set-state-in-effect
-        setIsHydrated(true);
-    }, []);
+    const hydrated = usePersistHydration(useHistoryStore);
+    const historial = useHistoryStore((s) => s.historial);
+    const pushHistorialEntry = useHistoryStore((s) => s.pushHistorialEntry);
+    const removeHistorialEntry = useHistoryStore((s) => s.removeHistorialEntry);
+    const clearHistorialEntries = useHistoryStore((s) => s.clearHistorialEntries);
 
     return {
-        historial: isHydrated ? store.historial : [],
-        pushHistorialEntry: store.pushHistorialEntry,
-        removeHistorialEntry: store.removeHistorialEntry,
-        clearHistorialEntries: store.clearHistorialEntries,
+        historial: hydrated ? historial : [],
+        pushHistorialEntry,
+        removeHistorialEntry,
+        clearHistorialEntries,
     };
 }

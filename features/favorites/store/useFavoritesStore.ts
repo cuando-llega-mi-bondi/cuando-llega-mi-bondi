@@ -9,15 +9,28 @@ interface FavoritesState {
     renameFavorito: (id: string, name: string) => void;
 }
 
+function mergeFavoritos(
+    fromStorage: Favorito[],
+    inMemory: Favorito[],
+): Favorito[] {
+    const byId = new Map(fromStorage.map((f) => [f.id, f]));
+    for (const fav of inMemory) {
+        byId.set(fav.id, fav);
+    }
+    return Array.from(byId.values());
+}
+
 export const useFavoritesStore = create<FavoritesState>()(
     persist(
-        (set, get) => ({
+        (set) => ({
             favoritos: [],
             addFavorito: (fav) => {
-                const { favoritos } = get();
-                if (!favoritos.some((f) => f.id === fav.id)) {
-                    set({ favoritos: [...favoritos, fav] });
-                }
+                set((state) => {
+                    if (state.favoritos.some((f) => f.id === fav.id)) {
+                        return state;
+                    }
+                    return { favoritos: [...state.favoritos, fav] };
+                });
             },
             removeFavorito: (id) => {
                 set((state) => ({
@@ -34,6 +47,17 @@ export const useFavoritesStore = create<FavoritesState>()(
         }),
         {
             name: "cuandollega_favoritos",
+            partialize: (state) => ({ favoritos: state.favoritos }),
+            merge: (persisted, current) => {
+                const stored = persisted as Partial<FavoritesState> | undefined;
+                return {
+                    ...current,
+                    favoritos: mergeFavoritos(
+                        stored?.favoritos ?? [],
+                        current.favoritos,
+                    ),
+                };
+            },
         }
     )
 );

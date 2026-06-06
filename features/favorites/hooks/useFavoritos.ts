@@ -1,25 +1,20 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { usePersistHydration } from "@shared/hooks/usePersistHydration";
 import { useFavoritesStore } from "../store/useFavoritesStore";
 
 export function useFavoritos() {
-    const favoritos = useFavoritesStore(s => s.favoritos);
-    const addFavorito = useFavoritesStore(s => s.addFavorito);
-    const removeFavorito = useFavoritesStore(s => s.removeFavorito);
-    const renameFavorito = useFavoritesStore(s => s.renameFavorito);
-    
-    const [isHydrated, setIsHydrated] = useState(false);
-
-    useEffect(() => {
-        // eslint-disable-next-line react-hooks/set-state-in-effect
-        setIsHydrated(true);
-    }, []);
+    const hydrated = usePersistHydration(useFavoritesStore);
+    const favoritos = useFavoritesStore((s) => s.favoritos);
+    const addFavorito = useFavoritesStore((s) => s.addFavorito);
+    const removeFavorito = useFavoritesStore((s) => s.removeFavorito);
+    const renameFavorito = useFavoritesStore((s) => s.renameFavorito);
 
     return {
-        favoritos: isHydrated ? favoritos : [],
+        favoritos: hydrated ? favoritos : [],
         addFavorito,
         removeFavorito,
         renameFavorito,
+        isHydrated: hydrated,
     };
 }

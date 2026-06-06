@@ -17,6 +17,7 @@ import { FavoriteNameModal } from "@features/favorites/components/FavoriteNameMo
 import { ServiceDownModal } from "@shared/ui/ServiceDownModal";
 import { withViewTransition } from "@shared/pwa/viewTransition";
 import { useUIStore, NAMING_CLOSED } from "@shared/ui/store/useUIStore";
+import { toast } from "@shared/ui/store/useToastStore";
 
 export function MainLayoutClient({ children }: { children: ReactNode }) {
   return (
@@ -143,8 +144,13 @@ function MainLayoutContent({ children }: { children: ReactNode }) {
   const handleSaveNaming = useCallback(
     (name: string) => {
       if (!naming.open) return;
-      if (naming.mode === "edit") renameFavorito(naming.fav.id, name);
-      else addFavorito({ ...naming.fav, nombre: name });
+      if (naming.mode === "edit") {
+        renameFavorito(naming.fav.id, name);
+        toast({ description: "Favorito renombrado." });
+      } else {
+        addFavorito({ ...naming.fav, nombre: name });
+        toast({ description: "Guardado en favoritos." });
+      }
       setNaming(NAMING_CLOSED);
     },
     [addFavorito, naming, renameFavorito, setNaming],
