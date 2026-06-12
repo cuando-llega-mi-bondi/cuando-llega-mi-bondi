@@ -21,7 +21,7 @@ import { join, resolve } from "node:path";
 import { haversineMeters } from "../shared/geo/haversine";
 import {
     buildPolylineGeometry,
-    projectStopOntoPolyline,
+    scoreStopsAlongPolyline,
     stopsOfRamal,
 } from "../lib/server/transitGraph";
 import type { StaticLineDump } from "../lib/server/staticDumpTypes";
@@ -52,23 +52,8 @@ function auditRamal(
     const segs = buildPolylineGeometry(ramal.puntos);
     const byId = new Map(paradas.map((p) => [p.id, p]));
 
-    const scored = paradas
-        .map((p) => {
-            if (p.lat === 0 && p.lng === 0) return null;
-            const proj = projectStopOntoPolyline(p.lat, p.lng, segs);
-            if (!proj || proj.perpMeters > maxPerp) return null;
-            return { id: p.id, arc: proj.arcMeters };
-        })
-        .filter((x): x is { id: string; arc: number } => x != null)
-        .sort((a, b) => (a.arc === b.arc ? a.id.localeCompare(b.id) : a.arc - b.arc));
-
-    const seen = new Set<string>();
-    const ordered: { id: string; arc: number }[] = [];
-    for (const s of scored) {
-        if (seen.has(s.id)) continue;
-        seen.add(s.id);
-        ordered.push(s);
-    }
+    // La misma función con la que producción ordena las secuencias.
+    const ordered = scoreStopsAlongPolyline(paradas, segs, maxPerp);
     if (ordered.length < 2) return null;
 
     let impossiblePairs = 0;
@@ -127,8 +112,12 @@ function main(): void {
 
         offenders.sort((a, b) => b.impossiblePairs - a.impossiblePairs);
         console.log(`\n=== maxPerp=${maxPerp}m ===`);
+        const pct =
+            totalPairs > 0
+                ? `${((totalImpossible / totalPairs) * 100).toFixed(2)}%`
+                : "sin pares";
         console.log(
-            `pares imposibles: ${totalImpossible}/${totalPairs} (${((totalImpossible / totalPairs) * 100).toFixed(2)}%)  | paradas en secuencias: ${totalStops}`,
+            `pares imposibles: ${totalImpossible}/${totalPairs} (${pct})  | paradas en secuencias: ${totalStops}`,
         );
         for (const o of offenders.slice(0, 8)) {
             console.log(

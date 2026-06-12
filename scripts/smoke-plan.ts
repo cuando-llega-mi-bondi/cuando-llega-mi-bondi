@@ -83,7 +83,12 @@ async function main(): Promise<void> {
             p.identificador !== centro.identificador &&
             Math.abs(p.lat - centro.lat) < 0.006 &&
             Math.abs(p.lng - centro.lng) < 0.006,
-    )!;
+    );
+    if (!cercana) {
+        throw new Error(
+            "no hay otra parada cerca del centro: ¿data/static/ incompleto?",
+        );
+    }
 
     const cases: { name: string; from: ParadaGeo; to: ParadaGeo }[] = [
         { name: "corto (centro)", from: centro, to: cercana },

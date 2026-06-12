@@ -19,7 +19,13 @@ import type {
 } from "@features/trip-planner/types";
 
 const WALK_RADIUS_METERS = 300;
-const GRID_CELL_DEG = 0.003;
+/**
+ * La búsqueda de vecinos mira la grilla 3×3, así que cada celda debe medir al
+ * menos WALK_RADIUS_METERS en su eje más angosto (longitud, que se contrae con
+ * cos(lat)): 0.004° ≈ 345 m a lat -39. Con celdas más chicas se pierden
+ * vecinos reales según dónde caigan respecto del borde de celda.
+ */
+const GRID_CELL_DEG = 0.004;
 
 /**
  * Paradas a más de esta distancia de la polilínea no pertenecen al ramal: el
@@ -39,7 +45,7 @@ type MutableStop = {
     lineasMap: Map<string, string>;
 };
 
-type SegGeom = {
+export type SegGeom = {
     aLat: number;
     aLng: number;
     /** Vector del segmento en metros (x = este, y = norte). */
@@ -103,14 +109,17 @@ export function stopsOfRamal(paradas: ParadaMapa[], ramal: RamalData): ParadaMap
     );
 }
 
-export function orderStopsAlongPolyline(
+/**
+ * Paradas proyectadas sobre la polilínea: ordenadas por longitud de arco,
+ * deduplicadas, sin las (0,0) ni las que superan el umbral perpendicular.
+ * `scripts/audit-stop-order.ts` reusa esta misma función para que la auditoría
+ * mida exactamente el ordenamiento de producción.
+ */
+export function scoreStopsAlongPolyline(
     paradas: ParadaMapa[],
-    ramal: RamalData,
+    segs: SegGeom[],
     maxPerpMeters: number = MAX_STOP_TO_POLYLINE_METERS,
-): string[] {
-    if (ramal.puntos.length < 2) return [];
-    const segs = buildPolylineGeometry(ramal.puntos);
-
+): { id: string; arc: number }[] {
     const scored = paradas
         .map((p) => {
             if (p.lat === 0 && p.lng === 0) return null;
@@ -121,14 +130,24 @@ export function orderStopsAlongPolyline(
         .filter((x): x is { id: string; arc: number } => x != null)
         .sort((a, b) => (a.arc === b.arc ? a.id.localeCompare(b.id) : a.arc - b.arc));
 
-    const out: string[] = [];
+    const out: { id: string; arc: number }[] = [];
     const seen = new Set<string>();
-    for (const { id } of scored) {
-        if (seen.has(id)) continue;
-        seen.add(id);
-        out.push(id);
+    for (const s of scored) {
+        if (seen.has(s.id)) continue;
+        seen.add(s.id);
+        out.push(s);
     }
     return out;
+}
+
+export function orderStopsAlongPolyline(
+    paradas: ParadaMapa[],
+    ramal: RamalData,
+    maxPerpMeters: number = MAX_STOP_TO_POLYLINE_METERS,
+): string[] {
+    if (ramal.puntos.length < 2) return [];
+    const segs = buildPolylineGeometry(ramal.puntos);
+    return scoreStopsAlongPolyline(paradas, segs, maxPerpMeters).map((s) => s.id);
 }
 
 function cellKey(lat: number, lng: number): string {
