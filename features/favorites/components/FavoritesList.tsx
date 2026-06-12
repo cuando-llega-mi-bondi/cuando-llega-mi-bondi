@@ -6,7 +6,7 @@ import { IconStar } from "@shared/icons/IconStar";
 import { IconSearch } from "@shared/icons/IconSearch";
 import type { Favorito } from "@features/favorites/types";
 import { Button } from "@shared/ui/Button";
-import { useToast } from "@shared/ui";
+import { toast } from "@shared/ui/store/useToastStore";
 import { SwipeableRow, type SwipeAction } from "@shared/gestures";
 import { IconEdit } from "@shared/icons/IconEdit";
 import { IconTrash } from "@shared/icons/IconTrash";
@@ -48,8 +48,6 @@ const FavoritoRow = memo(function FavoritoRow({
     onRename,
     index,
 }: FavoritoRowProps) {
-    const { toast } = useToast();
-
     // Strip redundant line prefix from nombre (e.g. "562 — AL HIPODROMO" → "Al Hipódromo")
     const rawName = fav.nombre;
     const prefixRe = /^\S+\s*[—\-–]\s*/;
@@ -66,7 +64,7 @@ const FavoritoRow = memo(function FavoritoRow({
                 onClick: () => onUndoRemove(fav)
             } : undefined
         });
-    }, [onRemove, onUndoRemove, fav, displayName, toast]);
+    }, [onRemove, onUndoRemove, fav, displayName]);
 
     const handleExtraKey = useCallback(
         (e: React.KeyboardEvent) => {

@@ -1,51 +1,52 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
+import { useShallow } from "zustand/react/shallow";
 import { resolveUbicacionFormularioPorParada } from "@features/search/api/resolveUbicacion";
+import { useSearchFlowStore } from "@features/search/store/useSearchFlowStore";
 import { useCalles } from "@features/search/hooks/useCalles";
 import { useIntersecciones } from "@features/search/hooks/useIntersecciones";
 import { useLineas } from "@features/search/hooks/useLineas";
 import { useParadas } from "@features/search/hooks/useParadas";
 import { useUrlSync } from "@shared/hooks/useUrlSync";
-import { withViewTransition } from "@shared/pwa/viewTransition";
 import { cleanLabel } from "@shared/utils";
 
-export type Selection = {
-  codLinea: string;
-  codCalle: string;
-  codInterseccion: string;
-  paradaId: string;
-  selectedRamal: string;
-};
-
-export const EMPTY_SELECTION: Selection = {
-  codLinea: "",
-  codCalle: "",
-  codInterseccion: "",
-  paradaId: "",
-  selectedRamal: "TODOS",
-};
-
-import { useUIStore } from "@shared/ui/store/useUIStore";
-
+/**
+ * Hook de cableado del flujo de búsqueda. Se monta UNA sola vez (en
+ * SearchFlowProvider): conecta la selección del store de zustand con los
+ * fetches SWR, los efectos de auto-avance y la sincronización de URL, y
+ * computa las opciones/labels derivadas que expone el context.
+ *
+ * El estado vive en useSearchFlowStore — los componentes lo leen con
+ * selectores; acá solo se deriva data.
+ */
 export function useSearchFlow() {
   const router = useRouter();
-  const [sel, setSel] = useState<Selection>(EMPTY_SELECTION);
-  const [isConsulting, setIsConsulting] = useState(false);
-  const [error, setError] = useState("");
 
-  const { codLinea, codCalle, codInterseccion, paradaId, selectedRamal } = sel;
+  const { codLinea, codCalle, codInterseccion, paradaId } = useSearchFlowStore(
+    useShallow((s) => ({
+      codLinea: s.codLinea,
+      codCalle: s.codCalle,
+      codInterseccion: s.codInterseccion,
+      paradaId: s.paradaId,
+    })),
+  );
+
+  const setError = useSearchFlowStore((s) => s.setError);
 
   const setUrlCodLinea = useCallback(
-    (v: string) => setSel({ ...EMPTY_SELECTION, codLinea: v }),
+    (v: string) => useSearchFlowStore.getState().resetSelection({ codLinea: v }),
     [],
   );
   const setUrlParadaId = useCallback(
-    (v: string) => setSel((p) => ({ ...p, paradaId: v })),
+    (v: string) => useSearchFlowStore.getState().applySelection({ paradaId: v }),
     [],
   );
-  const setUrlConsulting = useCallback(() => setIsConsulting(true), []);
+  const setUrlConsulting = useCallback(
+    () => useSearchFlowStore.getState().setIsConsulting(true),
+    [],
+  );
 
   useUrlSync({
     codLinea,
@@ -54,11 +55,6 @@ export function useSearchFlow() {
     setParadaId: setUrlParadaId,
     onHydratedSelection: setUrlConsulting,
   });
-
-  const handleSetSelectedRamal = useCallback(
-    (v: string) => setSel((p) => ({ ...p, selectedRamal: v })),
-    [],
-  );
 
   const { lineas, loadingLineas } = useLineas({ onError: setError });
   const { callesRaw, loadingCalles } = useCalles(codLinea);
@@ -142,10 +138,10 @@ export function useSearchFlow() {
   const lineaLabel =
     lineas.find((l) => l.CodigoLineaParada === codLinea)?.Descripcion ?? "";
 
+  // Auto-avance: cuando un paso tiene una única opción, se selecciona sola.
   useEffect(() => {
     if (!codLinea || codCalle || loadingCalles || calles.length !== 1) return;
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setSel((p) => ({ ...p, codCalle: calles[0].value }));
+    useSearchFlowStore.getState().applySelection({ codCalle: calles[0].value });
   }, [codLinea, codCalle, loadingCalles, calles]);
 
   useEffect(() => {
@@ -156,8 +152,9 @@ export function useSearchFlow() {
       interOptions.length !== 1
     )
       return;
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setSel((p) => ({ ...p, codInterseccion: interOptions[0].value }));
+    useSearchFlowStore
+      .getState()
+      .applySelection({ codInterseccion: interOptions[0].value });
   }, [codCalle, codInterseccion, loadingInter, interOptions]);
 
   useEffect(() => {
@@ -168,43 +165,35 @@ export function useSearchFlow() {
       destinoOptions.length !== 1
     )
       return;
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setSel((p) => ({ ...p, paradaId: destinoOptions[0].value }));
+    useSearchFlowStore
+      .getState()
+      .applySelection({ paradaId: destinoOptions[0].value });
   }, [codInterseccion, paradaId, loadingParadas, destinoOptions]);
 
-  const [isResolving, setIsResolving] = useState(false);
-
+  // Resolución inversa: con línea+parada (deep link / favorito) completa
+  // calle e intersección para que el formulario quede consistente.
   useEffect(() => {
+    const store = useSearchFlowStore.getState();
     if (!codLinea || !paradaId || (codCalle && codInterseccion)) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setIsResolving(false);
+      store.setIsResolving(false);
       return;
     }
     let cancelled = false;
-    setIsResolving(true);
+    store.setIsResolving(true);
     void (async () => {
       const ubi = await resolveUbicacionFormularioPorParada(codLinea, paradaId);
       if (cancelled) return;
-      if (!ubi) {
-        setIsResolving(false);
-        return;
-      }
-      setSel((p) => {
-        if (p.codLinea !== codLinea || p.paradaId !== paradaId) return p;
-        if (p.codCalle && p.codInterseccion) return p;
-        return {
-          ...p,
-          codCalle: ubi.codCalle,
-          codInterseccion: ubi.codInterseccion,
-        };
-      });
-      setIsResolving(false);
+      const s = useSearchFlowStore.getState();
+      if (ubi) s.applyResolvedUbicacion(codLinea, paradaId, ubi);
+      s.setIsResolving(false);
     })();
     return () => {
       cancelled = true;
     };
   }, [codLinea, paradaId, codCalle, codInterseccion]);
 
+  // Necesita lineas (para detectar líneas manuales) y router: vive acá y no
+  // en el store.
   const handleLineaChange = useCallback(
     (v: string) => {
       const line = lineas.find((l) => l.CodigoLineaParada === v);
@@ -212,77 +201,12 @@ export function useSearchFlow() {
         router.push(`/recorrido?linea=${encodeURIComponent(v)}`);
         return;
       }
-      setSel({ ...EMPTY_SELECTION, codLinea: v });
-      setIsConsulting(false);
+      useSearchFlowStore.getState().selectLinea(v);
     },
     [lineas, router],
   );
 
-  const handleCalleChange = useCallback((v: string) => {
-    setSel((p) => ({ ...EMPTY_SELECTION, codLinea: p.codLinea, codCalle: v }));
-    setIsConsulting(false);
-  }, []);
-
-  const handleInterseccionChange = useCallback((v: string) => {
-    setSel((p) => ({
-      ...EMPTY_SELECTION,
-      codLinea: p.codLinea,
-      codCalle: p.codCalle,
-      codInterseccion: v,
-    }));
-    setIsConsulting(false);
-  }, []);
-
-  const handleParadaChange = useCallback((v: string) => {
-    setSel((p) => ({ ...p, paradaId: v, selectedRamal: "TODOS" }));
-    setIsConsulting(false);
-  }, []);
-
-  const handleConsultar = useCallback(() => {
-    if (!paradaId) return;
-    withViewTransition(() => {
-      setIsConsulting(true);
-      useUIStore.getState().setSheetOpen(true);
-    });
-  }, [paradaId]);
-
-  const applySelection = useCallback(
-    (partial: Partial<Selection>, options?: { consulting?: boolean }) => {
-      setSel((p) => ({ ...p, ...partial }));
-      if (options?.consulting !== undefined) {
-        setIsConsulting(options.consulting);
-      }
-    },
-    [],
-  );
-
-  const resetToParada = useCallback(
-    (parada: string, linea: string, options?: { consulting?: boolean }) => {
-      withViewTransition(() => {
-        setSel({
-          ...EMPTY_SELECTION,
-          paradaId: parada,
-          codLinea: linea,
-        });
-        if (options?.consulting) setIsConsulting(true);
-      });
-    },
-    [],
-  );
-
   return {
-    sel,
-    setSel,
-    codLinea,
-    codCalle,
-    codInterseccion,
-    paradaId,
-    selectedRamal,
-    isConsulting,
-    isResolving,
-    setIsConsulting,
-    error,
-    setError,
     lineas,
     lineaOptions,
     calles,
@@ -298,13 +222,6 @@ export function useSearchFlow() {
     loadingCalles,
     loadingInter,
     loadingParadas,
-    handleSetSelectedRamal,
     handleLineaChange,
-    handleCalleChange,
-    handleInterseccionChange,
-    handleParadaChange,
-    handleConsultar,
-    applySelection,
-    resetToParada,
   };
 }

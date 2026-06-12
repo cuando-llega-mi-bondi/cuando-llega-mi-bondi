@@ -3,24 +3,39 @@ import { post } from "@shared/api/client";
 
 type BanderaParada = { DescripcionCorta?: string; DescripcionLinea?: string };
 
+/** Índices por código exacto y por código numérico para resolver banderas en O(1). */
+type CatalogIndex = {
+    byExactCode: Map<string, Linea>;
+    byNumericCode: Map<number, Linea>;
+};
+
+function buildCatalogIndex(catalog: Linea[]): CatalogIndex {
+    const byExactCode = new Map<string, Linea>();
+    const byNumericCode = new Map<number, Linea>();
+    for (const l of catalog) {
+        const cod = l.CodigoLineaParada.trim();
+        if (!byExactCode.has(cod)) byExactCode.set(cod, l);
+        const n = parseInt(cod, 10);
+        if (!Number.isNaN(n) && !byNumericCode.has(n)) byNumericCode.set(n, l);
+    }
+    return { byExactCode, byNumericCode };
+}
+
 /** MGP devuelve el número de línea en `DescripcionLinea`; el catálogo usa `CodigoLineaParada` (a veces distinto como string). */
 function resolveLineaFromBandera(
     descripcionLinea: string,
     catalog: Linea[],
+    index: CatalogIndex,
 ): Linea | undefined {
     const raw = descripcionLinea.trim();
     if (!raw) return undefined;
 
-    const exact = catalog.find((l) => l.CodigoLineaParada.trim() === raw);
+    const exact = index.byExactCode.get(raw);
     if (exact) return exact;
 
     const nApi = parseInt(raw, 10);
     if (!Number.isNaN(nApi)) {
-        const byNum = catalog.find((l) => {
-            const cod = l.CodigoLineaParada.trim();
-            const n = parseInt(cod, 10);
-            return !Number.isNaN(n) && n === nApi;
-        });
+        const byNum = index.byNumericCode.get(nApi);
         if (byNum) return byNum;
     }
 
@@ -54,6 +69,7 @@ export async function findOtrasLineasEnParada(
     const banderas = data?.banderas as BanderaParada[] | undefined;
     if (!Array.isArray(banderas) || banderas.length === 0) return [];
 
+    const index = buildCatalogIndex(todasLasLineas);
     const seen = new Set<string>();
     const result: Linea[] = [];
 
@@ -61,7 +77,7 @@ export async function findOtrasLineasEnParada(
         const label = String(b?.DescripcionLinea ?? "").trim();
         if (!label) continue;
 
-        const linea = resolveLineaFromBandera(label, todasLasLineas);
+        const linea = resolveLineaFromBandera(label, todasLasLineas, index);
         if (!linea || linea.isManual) continue;
 
         if (

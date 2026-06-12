@@ -4,7 +4,7 @@ import { memo, useCallback } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import type { HistorialEntry } from "@features/history/types";
 import { SwipeableRow, type SwipeAction } from "@shared/gestures";
-import { useToast } from "@shared/ui";
+import { toast } from "@shared/ui/store/useToastStore";
 import { IconEye } from "@shared/icons/IconEye";
 import { IconTrash } from "@shared/icons/IconTrash";
 import { IconRoad } from "@shared/icons/IconRoad";
@@ -43,8 +43,6 @@ const HistorialRow = memo(function HistorialRow({
     onUndoRemove,
     index,
 }: HistorialRowProps) {
-    const { toast } = useToast();
-
     const handleRemove = useCallback(() => {
         onRemove(entry.id);
         toast({
@@ -54,7 +52,7 @@ const HistorialRow = memo(function HistorialRow({
                 onClick: () => onUndoRemove(entry)
             } : undefined
         });
-    }, [onRemove, onUndoRemove, entry, toast]);
+    }, [onRemove, onUndoRemove, entry]);
 
     return (
         <SwipeableRow

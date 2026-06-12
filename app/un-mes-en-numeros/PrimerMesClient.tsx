@@ -1,7 +1,7 @@
 "use client";
 /* eslint-disable @next/next/no-img-element */
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 
 
@@ -329,14 +329,15 @@ function CohortChart() {
 // ─── Main Client Component ───────────────────────────────────────────────────
 
 export default function PrimerMesClient() {
-    // Reading progress state
-    const [progress, setProgress] = useState(0);
+    // Reading progress escrito directo al DOM: con useState cada tick de
+    // scroll re-renderizaría el artículo completo solo para mover la barra.
+    const progressRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
         const handleScroll = () => {
             const docH = document.documentElement.scrollHeight - window.innerHeight;
-            if (docH > 0) {
-                setProgress(Math.round((window.scrollY / docH) * 100));
+            if (docH > 0 && progressRef.current) {
+                progressRef.current.style.width = `${Math.round((window.scrollY / docH) * 100)}%`;
             }
         };
 
@@ -348,7 +349,8 @@ export default function PrimerMesClient() {
         <div className="bg-background text-foreground font-sans antialiased min-h-screen">
             {/* Reading progress bar */}
             <div
-                style={{ width: `${progress}%` }}
+                ref={progressRef}
+                style={{ width: "0%" }}
                 className="fixed top-0 left-0 h-[3px] bg-primary z-[9999] transition-all duration-100 ease-out"
                 aria-hidden="true"
             />

@@ -74,9 +74,9 @@ export function Combobox({
     const showFilter = options.length > 8;
 
     const filtered = useMemo(() => {
-        return query
-            ? options.filter((o) => o.label.toLowerCase().includes(query.toLowerCase())).slice(0, 40)
-            : options.slice(0, 80);
+        if (!query) return options.slice(0, 80);
+        const q = query.toLowerCase();
+        return options.filter((o) => o.label.toLowerCase().includes(q)).slice(0, 40);
     }, [options, query]);
 
     const singleFilteredValue =
@@ -106,8 +106,11 @@ export function Combobox({
         setActiveIndex(idx >= 0 ? idx : 0);
     }, [disabled, options, value, computeRect]);
 
-    // Close on outside click — must check both wrapper and portal
+    // Close on outside click — must check both wrapper and portal.
+    // Only listen while open: with several Combobox mounted, idle instances
+    // shouldn't each keep a global document listener.
     useEffect(() => {
+        if (!open) return;
         const handler = (e: MouseEvent) => {
             const target = e.target as Node;
             if (
@@ -119,7 +122,7 @@ export function Combobox({
         };
         document.addEventListener("mousedown", handler);
         return () => document.removeEventListener("mousedown", handler);
-    }, [close]);
+    }, [open, close]);
 
     // Close and recompute position on scroll/resize
     useEffect(() => {

@@ -2,7 +2,8 @@
 
 import { memo, useId } from "react";
 import { Button } from "@shared/ui/Button";
-import { useSearchFlowContext } from "@features/search/context/SearchFlowContext";
+import { useSearchFlowData } from "@features/search/context/SearchFlowContext";
+import { useSearchFlowStore } from "@features/search/store/useSearchFlowStore";
 import { ErrorBanner } from "./ErrorBanner";
 import { StepField } from "./StepField";
 
@@ -13,15 +14,7 @@ interface SearchFlowProps {
 export const SearchFlow = memo(function SearchFlow({
     loadingArribos,
 }: SearchFlowProps) {
-    const { state, actions } = useSearchFlowContext();
     const {
-        codLinea,
-        codCalle,
-        codInterseccion,
-        paradaId,
-        selectedRamal,
-        isConsulting,
-        isResolving,
         lineaOptions,
         calles,
         interOptions,
@@ -30,17 +23,24 @@ export const SearchFlow = memo(function SearchFlow({
         loadingLineas,
         loadingCalles,
         loadingInter,
-        error,
-    } = state;
-    const {
         handleLineaChange,
-        handleCalleChange,
-        handleInterseccionChange,
-        handleParadaChange,
-        handleSetSelectedRamal,
-        handleConsultar,
-        setError,
-    } = actions;
+    } = useSearchFlowData();
+
+    const codLinea = useSearchFlowStore((s) => s.codLinea);
+    const codCalle = useSearchFlowStore((s) => s.codCalle);
+    const codInterseccion = useSearchFlowStore((s) => s.codInterseccion);
+    const paradaId = useSearchFlowStore((s) => s.paradaId);
+    const selectedRamal = useSearchFlowStore((s) => s.selectedRamal);
+    const isConsulting = useSearchFlowStore((s) => s.isConsulting);
+    const isResolving = useSearchFlowStore((s) => s.isResolving);
+    const error = useSearchFlowStore((s) => s.error);
+
+    const selectCalle = useSearchFlowStore((s) => s.selectCalle);
+    const selectInterseccion = useSearchFlowStore((s) => s.selectInterseccion);
+    const selectParada = useSearchFlowStore((s) => s.selectParada);
+    const setSelectedRamal = useSearchFlowStore((s) => s.setSelectedRamal);
+    const consultar = useSearchFlowStore((s) => s.consultar);
+    const setError = useSearchFlowStore((s) => s.setError);
 
     const uid = useId();
     const labelLinea = `sf-linea${uid}`;
@@ -73,7 +73,7 @@ export const SearchFlow = memo(function SearchFlow({
                     stepText="CALLE"
                     placeholder="Seleccioná la calle"
                     value={codCalle}
-                    onChange={handleCalleChange}
+                    onChange={selectCalle}
                     options={calles}
                     loading={loadingCalles || isResolving}
                     disabled={loadingCalles || isResolving}
@@ -93,7 +93,7 @@ export const SearchFlow = memo(function SearchFlow({
                     stepText="INTERSECCIÓN"
                     placeholder="Elegí la esquina"
                     value={codInterseccion}
-                    onChange={handleInterseccionChange}
+                    onChange={selectInterseccion}
                     options={interOptions}
                     loading={loadingInter || isResolving}
                     disabled={loadingInter || isResolving}
@@ -117,7 +117,7 @@ export const SearchFlow = memo(function SearchFlow({
                     stepText="PARADA"
                     placeholder="Seleccionar parada"
                     value={paradaId}
-                    onChange={handleParadaChange}
+                    onChange={selectParada}
                     options={destinoOptions}
                     loading={isResolving}
                     disabled={isResolving}
@@ -141,7 +141,7 @@ export const SearchFlow = memo(function SearchFlow({
                     stepText="RAMAL"
                     placeholder="Elegí el ramal"
                     value={selectedRamal}
-                    onChange={handleSetSelectedRamal}
+                    onChange={setSelectedRamal}
                     options={ramalOptions}
                     stepStatus={
                         paradaId && selectedRamal === "TODOS" ? "active" : "idle"
@@ -150,11 +150,11 @@ export const SearchFlow = memo(function SearchFlow({
                 />
             ) : null}
 
-            {paradaId && (
+            {paradaId ? (
                 <div className="motion-step mt-2 px-1">
                     <Button
                         type="button"
-                        onClick={handleConsultar}
+                        onClick={consultar}
                         disabled={loadingArribos}
                         variant="primary"
                         size="lg"
@@ -163,7 +163,7 @@ export const SearchFlow = memo(function SearchFlow({
                         {loadingArribos ? "CONSULTANDO..." : "VER CUANDO LLEGA"}
                     </Button>
                 </div>
-            )}
+            ) : null}
 
             <ErrorBanner message={!isConsulting ? error : ""} onClose={() => setError("")} />
         </div>

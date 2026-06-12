@@ -9,13 +9,14 @@ import type { HistorialEntry } from "@features/history/types";
 import { FavoritesList } from "@features/favorites/components/FavoritesList";
 import { HistorialList } from "@features/history/components/HistorialList";
 import { PageShell } from "@shared/layout/PageShell";
-import { useSearchFlowContext } from "@features/search/context/SearchFlowContext";
+import { useSearchFlowData } from "@features/search/context/SearchFlowContext";
+import { useSearchFlowStore } from "@features/search/store/useSearchFlowStore";
 import { useUIStore } from "@shared/ui/store/useUIStore";
 
 export function FavoritosClient() {
   const router = useRouter();
-  const { actions, meta } = useSearchFlowContext();
-  const { resetToParada } = actions;
+  const { lineas } = useSearchFlowData();
+  const resetToParada = useSearchFlowStore((s) => s.resetToParada);
   const setNamingModal = useUIStore((state) => state.setNamingModal);
 
   const {
@@ -35,8 +36,6 @@ export function FavoritosClient() {
     (fav: Favorito) => setNamingModal({ open: true, mode: "edit", fav }),
     [setNamingModal],
   );
-
-  const { lineas } = meta;
 
   /** Build a quick lookup: Descripcion → CodigoLineaParada */
   const descripcionToCode = useMemo(() => {

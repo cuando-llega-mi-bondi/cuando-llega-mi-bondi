@@ -130,11 +130,11 @@ function isBetter(candidate: Arrival, current: Arrival | undefined): boolean {
 function runOnce(
     graph: RoutingGraph,
     q: Query,
+    originStops: [string, number][],
+    destStops: Map<string, number>,
     bannedSequences: Set<string>,
     requireFirstLine: string | null,
 ): Itinerary | null {
-    const originStops = walkableStops(graph, q.originLat, q.originLng);
-    const destStops = new Map(walkableStops(graph, q.destLat, q.destLng));
     if (originStops.length === 0 || destStops.size === 0) return null;
 
     const direct = Math.round(
@@ -372,7 +372,12 @@ export function planMany(
     const baseQuery: Query = { originLat, originLng, destLat, destLng, maxRides };
     const results: Itinerary[] = [];
 
-    const first = runOnce(graph, baseQuery, new Set(), null);
+    // Paradas caminables desde origen/destino: una sola pasada sobre el grafo,
+    // compartida por todas las corridas de runOnce de esta búsqueda.
+    const originStops = walkableStops(graph, originLat, originLng);
+    const destStops = new Map(walkableStops(graph, destLat, destLng));
+
+    const first = runOnce(graph, baseQuery, originStops, destStops, new Set(), null);
     if (!first) return [];
 
     results.push(first);
@@ -382,7 +387,7 @@ export function planMany(
 
     for (const banned of seqIdsInBase) {
         if (results.length >= max) break;
-        const variant = runOnce(graph, baseQuery, new Set([banned]), null);
+        const variant = runOnce(graph, baseQuery, originStops, destStops, new Set([banned]), null);
         if (variant) addIfNew(results, variant);
     }
 
@@ -393,7 +398,7 @@ export function planMany(
                 .filter((s) => s.codLinea === lineToBan)
                 .map((s) => `${s.codLinea}|${s.ramalKey}`),
         );
-        const variant = runOnce(graph, baseQuery, bannedSeqs, null);
+        const variant = runOnce(graph, baseQuery, originStops, destStops, bannedSeqs, null);
         if (variant) addIfNew(results, variant);
     }
 
@@ -403,13 +408,12 @@ export function planMany(
                 .filter((s) => lineIdsInBase.has(s.codLinea))
                 .map((s) => `${s.codLinea}|${s.ramalKey}`),
         );
-        const variant = runOnce(graph, baseQuery, bannedSeqs, null);
+        const variant = runOnce(graph, baseQuery, originStops, destStops, bannedSeqs, null);
         if (variant) addIfNew(results, variant);
     }
 
-    const originStopsAll = new Set(walkableStops(graph, originLat, originLng).map(([id]) => id));
     const linesNearOrigin = new Set<string>();
-    for (const stopId of originStopsAll) {
+    for (const [stopId] of originStops) {
         const refs = graph.sequencesByParada.get(stopId);
         if (!refs) continue;
         for (const ref of refs) {
@@ -424,7 +428,7 @@ export function planMany(
             return fr && fr.kind === "ride" && fr.codLinea === line;
         });
         if (alreadyAsFirst) continue;
-        const variant = runOnce(graph, baseQuery, new Set(), line);
+        const variant = runOnce(graph, baseQuery, originStops, destStops, new Set(), line);
         if (variant) addIfNew(results, variant);
     }
 

@@ -4,7 +4,8 @@ import type { ReactNode } from "react";
 import { useCallback, useEffect, useMemo } from "react";
 import { Header } from "@shared/layout/Header";
 import { BottomNav } from "@shared/layout/BottomNav";
-import { SearchFlowProvider, useSearchFlowContext } from "@features/search/context/SearchFlowContext";
+import { SearchFlowProvider, useSearchFlowData } from "@features/search/context/SearchFlowContext";
+import { useSearchFlowStore } from "@features/search/store/useSearchFlowStore";
 import { useArribos } from "@features/arrivals/hooks/useArribos";
 import { useFavoritos } from "@features/favorites/hooks/useFavoritos";
 import { useHistorial } from "@features/history/hooks/useHistorial";
@@ -30,22 +31,6 @@ export function MainLayoutClient({ children }: { children: ReactNode }) {
 }
 
 function MainLayoutContent({ children }: { children: ReactNode }) {
-  const { state, actions, meta } = useSearchFlowContext();
-  const { sheetOpen, setSheetOpen, namingModal: naming, setNamingModal: setNaming, showServiceDownModal, setShowServiceDownModal } = useUIStore();
-
-  const {
-    codLinea,
-    paradaId,
-    selectedRamal,
-    isConsulting,
-    error,
-  } = state;
-  const {
-    handleSetSelectedRamal,
-    setError,
-    setIsConsulting,
-    applySelection,
-  } = actions;
   const {
     lineas,
     lineaLabel,
@@ -53,7 +38,19 @@ function MainLayoutContent({ children }: { children: ReactNode }) {
     interseccionLabel,
     paradaBanderaAbrevs,
     selectedParada,
-  } = meta;
+  } = useSearchFlowData();
+  const { sheetOpen, setSheetOpen, namingModal: naming, setNamingModal: setNaming, showServiceDownModal, setShowServiceDownModal } = useUIStore();
+
+  const codLinea = useSearchFlowStore((s) => s.codLinea);
+  const paradaId = useSearchFlowStore((s) => s.paradaId);
+  const selectedRamal = useSearchFlowStore((s) => s.selectedRamal);
+  const isConsulting = useSearchFlowStore((s) => s.isConsulting);
+  const error = useSearchFlowStore((s) => s.error);
+
+  const handleSetSelectedRamal = useSearchFlowStore((s) => s.setSelectedRamal);
+  const setError = useSearchFlowStore((s) => s.setError);
+  const setIsConsulting = useSearchFlowStore((s) => s.setIsConsulting);
+  const applySelection = useSearchFlowStore((s) => s.applySelection);
 
   const { arribos, loadingArribos, mutateArribos, lastUpdate } = useArribos({
     isConsulting,
@@ -217,13 +214,13 @@ function MainLayoutContent({ children }: { children: ReactNode }) {
       {children}
       <BottomNav />
 
-      {sheetOpen && (
+      {sheetOpen ? (
         <ArrivalsOverlay
           isOpen={sheetOpen}
           onClose={handleCloseSheet}
           {...overlaySession}
         />
-      )}
+      ) : null}
 
       <FavoriteNameModal
         isOpen={naming.open}

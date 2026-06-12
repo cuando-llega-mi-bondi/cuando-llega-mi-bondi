@@ -19,11 +19,6 @@ export interface ToastMessage {
     };
 }
 
-export function useToast() {
-    const { addToast, removeToast } = useToastStore();
-    return { toast: addToast, removeToast };
-}
-
 const ICONS = {
     default: <Info className="w-5 h-5 text-turquesa" />,
     success: <CheckCircle className="w-5 h-5 text-success" />,
