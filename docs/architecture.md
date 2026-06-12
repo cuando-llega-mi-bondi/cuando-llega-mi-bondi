@@ -72,7 +72,7 @@ El backend (no incluido aquí) traduce, autentica y consulta la API municipal de
 | `/api/geo/plan` | Planificador multimodal (`features/trip-planner`) |
 | `/api/telegram-webhook` | Integración opcional con Supabase |
 
-El planificador construye un grafo desde `lib/server/transitStaticModels.ts` (paradas, secuencias de recorrido, líneas manuales con GeoJSON) y devuelve itinerarios con caminata + hasta N colectivos.
+El planificador construye un grafo desde `lib/server/transitStaticModels.ts` (paradas, secuencias de recorrido, líneas manuales con GeoJSON) y devuelve itinerarios con caminata + hasta N colectivos. Algoritmo (RAPTOR por rondas), modelo de costos en minutos, orden de paradas sobre la polilínea y scripts de diagnóstico: [docs/trip-planner.md](trip-planner.md).
 
 ## Persistencia en el cliente
 

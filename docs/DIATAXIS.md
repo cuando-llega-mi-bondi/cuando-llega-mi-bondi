@@ -22,6 +22,7 @@ Recetas para un problema concreto.
 | [CONTRIBUTING — Línea manual](../CONTRIBUTING.md#cómo-agregar-una-línea-manual-geojson) | Agregar GeoJSON y entrada en `manualRoutes.ts` |
 | [CONTRIBUTING — Setup y PR](../CONTRIBUTING.md) | Fork, ramas, convenciones, checklist de PR |
 | [CONTRIBUTING — Scripts estáticos](../CONTRIBUTING.md#scripts-de-datos-estáticos) | Actualizar `data/static/` desde la API |
+| [CONTRIBUTING — Diagnóstico del planner](../CONTRIBUTING.md#scripts-de-diagnóstico-del-planner) | Correr `smoke-plan` y `audit-stop-order` |
 | [README — Docker](../README.md#-docker-opcional) | Compose + cloudflared |
 
 ## 3. Referencia (información técnica)
@@ -45,6 +46,7 @@ Contexto, arquitectura y decisiones.
 | Documento | Tema |
 | --------- | ---- |
 | [docs/architecture.md](architecture.md) | Flujo de datos, Screaming Architecture, capas, backend externo |
+| [docs/trip-planner.md](trip-planner.md) | Planner «Cómo llego»: grafo de transit, modelo de costos, RAPTOR, poda |
 | [README — Arquitectura](../README.md#-arquitectura-y-stack) | Stack y diagrama Mermaid |
 | [DESIGN.md](../DESIGN.md) | Sistema visual MDP y accesibilidad |
 

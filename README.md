@@ -29,7 +29,7 @@
 
 - **Tiempo real (GPS):** Arribos en vivo vía backend self-hosted que consulta la API de la Municipalidad de Gral. Pueyrredón.
 - **Rutas manuales (GeoJSON):** Líneas fuera de la API oficial (ej. 221 Costa Azul) con uno o más ramales en `public/*.geojson`.
-- **Cómo llego:** Planificador multimodal (caminata + colectivo) sobre el grafo estático de paradas y recorridos.
+- **Cómo llego:** Planificador multimodal (caminata + colectivo) sobre el grafo estático de paradas y recorridos. Algoritmo y modelo de costos: [docs/trip-planner.md](docs/trip-planner.md).
 - **Paradas cercanas:** Búsqueda por geolocalización usando el catálogo en `data/static/`.
 - **Favoritos:** Paradas con nombre personalizado (ej. «Casa», «Trabajo»).
 - **Historial:** Últimas paradas consultadas, persistidas en el dispositivo.

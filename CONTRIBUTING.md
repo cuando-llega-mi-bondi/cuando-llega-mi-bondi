@@ -104,6 +104,17 @@ Para líneas que no están en la API municipal:
 
 Requisitos: `NEXT_PUBLIC_CUANDO_API_URL` (o `DUMP_MGP_URL`) apuntando al backend. Opcional: `DUMP_DELAY_MS`, `STATIC_REFERENCE_DUMP_PATH`.
 
+### Scripts de diagnóstico del planner
+
+Corren fuera de Next, sobre `data/static/`. No están en `package.json` (no son parte del build); se ejecutan con `tsx`:
+
+| Comando | Qué hace |
+| ------- | -------- |
+| `npx tsx scripts/smoke-plan.ts` | Construye el grafo real e imprime itinerarios para pares deterministas, con tiempos. Verificación a ojo tras tocar el planner |
+| `npx tsx scripts/audit-stop-order.ts [--verbose]` | Mide pares de paradas «imposibles» por umbral de proyección; con esto se eligió `MAX_STOP_TO_POLYLINE_METERS` |
+
+Contexto del algoritmo, modelo de costos y grafo: [docs/trip-planner.md](docs/trip-planner.md).
+
 ## Variables de entorno
 
 Resumen en el [README](README.md). Tabla completa: [docs/env-reference.md](docs/env-reference.md).
