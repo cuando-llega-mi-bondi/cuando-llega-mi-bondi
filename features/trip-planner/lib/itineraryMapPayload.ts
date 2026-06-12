@@ -1,11 +1,10 @@
 import type { Itinerary, RoutingGraph } from "@features/trip-planner/types";
+import { RIDE_COLORS } from "@features/trip-planner/lib/rideColors";
 import {
     buildSegLensAndCum,
     projectLatLngOntoPolylineArc,
     slicePolylineBetweenArcs,
 } from "@shared/geo/polylineSlice";
-
-const RIDE_COLORS = ["#0ea5e9", "#a855f7", "#f59e0b", "#10b981"];
 export type ItineraryMapSegment = {
     kind: "walk" | "ride";
     color: string;

@@ -4,9 +4,8 @@ import { useMemo } from "react";
 import { Sheet } from "react-modal-sheet";
 import type { Itinerary, RouteLegRide, RouteLegWalk } from "@features/trip-planner/types";
 import { estimateLegMins } from "@features/trip-planner/lib/costModel";
+import { RIDE_COLORS } from "@features/trip-planner/lib/rideColors";
 import { cn } from "@shared/utils";
-
-const RIDE_COLORS = ["#0ea5e9", "#a855f7", "#f59e0b", "#10b981"];
 
 function formatArrivalTime(minsFromNow: number): string {
     return new Date(Date.now() + minsFromNow * 60_000).toLocaleTimeString("es-AR", {
