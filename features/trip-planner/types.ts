@@ -65,6 +65,8 @@ export type RouteLegRide = {
     fromEsquinaLabel: string | null;
     toEsquinaLabel: string | null;
     paradaIdsAlong: string[];
+    /** Metros recorridos arriba del colectivo en este tramo. */
+    meters: number;
 };
 
 export type RouteLeg = RouteLegWalk | RouteLegRide;

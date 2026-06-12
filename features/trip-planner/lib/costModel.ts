@@ -43,26 +43,15 @@ export function estimateMins(
     return travelMins(walkMeters, rideMeters) + rides * BOARDING_OVERHEAD_MINS;
 }
 
-/**
- * Minutos estimados por tramo (para la UI). Los tramos de bondi no traen
- * metros propios, así que `totalRideMeters` se reparte proporcional a la
- * cantidad de paradas.
- */
+/** Minutos estimados por tramo (para la UI), con los metros reales de cada leg. */
 export function estimateLegMins(it: Itinerary): number[] {
-    const totalRideStops = it.legs.reduce(
-        (acc, leg) =>
-            acc + (leg.kind === "ride" ? Math.max(1, leg.paradaIdsAlong.length - 1) : 0),
-        0,
-    );
     return it.legs.map((leg) => {
         if (leg.kind === "walk") {
             return Math.max(1, Math.round(leg.meters / WALK_METERS_PER_MIN));
         }
-        const stops = Math.max(1, leg.paradaIdsAlong.length - 1);
-        const meters = totalRideStops > 0 ? (it.totalRideMeters * stops) / totalRideStops : 0;
         return Math.max(
             1,
-            Math.round(meters / RIDE_METERS_PER_MIN + BOARDING_OVERHEAD_MINS),
+            Math.round(leg.meters / RIDE_METERS_PER_MIN + BOARDING_OVERHEAD_MINS),
         );
     });
 }

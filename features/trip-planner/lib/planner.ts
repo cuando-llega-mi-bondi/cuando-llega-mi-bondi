@@ -360,6 +360,15 @@ function reconstruct(
         } else {
             const seq = graph.sequences[via.sequenceIdx]!;
             const fromId = seq.paradaIds[via.fromPosition]!;
+            const along = seq.paradaIds.slice(via.fromPosition, via.toPosition + 1);
+            let rideMeters = 0;
+            for (let i = 0; i < along.length - 1; i++) {
+                const a = graph.paradas.get(along[i]!);
+                const b = graph.paradas.get(along[i + 1]!);
+                if (a && b) {
+                    rideMeters += Math.round(haversineMeters(a.lat, a.lng, b.lat, b.lng));
+                }
+            }
             legs.push({
                 kind: "ride",
                 sequenceIdx: via.sequenceIdx,
@@ -371,7 +380,8 @@ function reconstruct(
                 toParadaId: cur.paradaId,
                 fromEsquinaLabel: esquinaOf(graph, fromId),
                 toEsquinaLabel: esquinaOf(graph, cur.paradaId),
-                paradaIdsAlong: seq.paradaIds.slice(via.fromPosition, via.toPosition + 1),
+                paradaIdsAlong: along,
+                meters: rideMeters,
             });
         }
         cur = cur.parent;
@@ -380,17 +390,7 @@ function reconstruct(
     legs.reverse();
     const totalRides = legs.filter((l) => l.kind === "ride").length;
     const totalWalk = legs.reduce((s, l) => s + (l.kind === "walk" ? l.meters : 0), 0);
-    let totalRide = 0;
-    for (const l of legs) {
-        if (l.kind !== "ride") continue;
-        for (let i = 0; i < l.paradaIdsAlong.length - 1; i++) {
-            const a = graph.paradas.get(l.paradaIdsAlong[i]!);
-            const b = graph.paradas.get(l.paradaIdsAlong[i + 1]!);
-            if (a && b) {
-                totalRide += Math.round(haversineMeters(a.lat, a.lng, b.lat, b.lng));
-            }
-        }
-    }
+    const totalRide = legs.reduce((s, l) => s + (l.kind === "ride" ? l.meters : 0), 0);
     return { legs, totalRides, totalWalkMeters: totalWalk, totalRideMeters: totalRide };
 }
 
