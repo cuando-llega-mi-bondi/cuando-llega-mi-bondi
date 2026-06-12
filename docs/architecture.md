@@ -45,8 +45,8 @@ La regla al contribuir: **código nuevo de producto → `features/<dominio>/`**.
 
 ### 1. Catálogo estático (seguro en Vercel)
 
-1. Un operador corre `npm run dump-static` contra el backend self-hosted → `data/mgp-static-dump.json`.
-2. `npm run split-static` genera `data/static/lineas.json` y `data/static/linea/<codLinea>.json`.
+1. Un operador corre `bun run dump-static` contra el backend self-hosted → `data/mgp-static-dump.json`.
+2. `bun run split-static` genera `data/static/lineas.json` y `data/static/linea/<codLinea>.json`.
 3. En runtime, `GET /api/reference?accion=...` (`app/api/reference/route.ts`) lee esos archivos con caché larga (`s-maxage=86400`).
 4. El navegador llama a `/api/reference` a través de `post()` en `shared/api/client.ts` cuando la acción está en `STATIC_REFERENCE_ACCIONES`.
 

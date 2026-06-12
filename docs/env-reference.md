@@ -26,7 +26,7 @@ Sin Telegram ni Supabase, consultas de arribos y catálogo estático siguen func
 
 | Variable | Uso |
 | -------- | --- |
-| `DUMP_MGP_URL` | Alternativa a `NEXT_PUBLIC_CUANDO_API_URL` solo en `npm run dump-static` |
+| `DUMP_MGP_URL` | Alternativa a `NEXT_PUBLIC_CUANDO_API_URL` solo en `bun run dump-static` |
 | `DUMP_DELAY_MS` | Pausa entre requests al generar el dump (default ~150 ms) |
 | `STATIC_REFERENCE_DUMP_PATH` | Ruta al JSON monolítico para `split-static` o carga custom |
 

@@ -19,8 +19,8 @@ Gracias por tu interés en este proyecto open-source. Estas pautas mantienen el 
    ```bash
    cp .env.example .env.local
    # Completá NEXT_PUBLIC_CUANDO_API_URL y el resto según docs/env-reference.md
-   npm install
-   npm run dev
+   bun install
+   bun run dev
    ```
 
 ## Estructura del proyecto
@@ -99,8 +99,8 @@ Para líneas que no están en la API municipal:
 
 | Comando | Qué hace |
 | ------- | -------- |
-| `npm run dump-static` | Descarga referencia MGP al backend y escribe `data/mgp-static-dump.json` |
-| `npm run split-static` | Parte el dump en `data/static/lineas.json` y `data/static/linea/<cod>.json` |
+| `bun run dump-static` | Descarga referencia MGP al backend y escribe `data/mgp-static-dump.json` |
+| `bun run split-static` | Parte el dump en `data/static/lineas.json` y `data/static/linea/<cod>.json` |
 
 Requisitos: `NEXT_PUBLIC_CUANDO_API_URL` (o `DUMP_MGP_URL`) apuntando al backend. Opcional: `DUMP_DELAY_MS`, `STATIC_REFERENCE_DUMP_PATH`.
 
@@ -110,8 +110,8 @@ Corren fuera de Next, sobre `data/static/`. No están en `package.json` (no son 
 
 | Comando | Qué hace |
 | ------- | -------- |
-| `npx tsx scripts/smoke-plan.ts` | Construye el grafo real e imprime itinerarios para pares deterministas, con tiempos. Verificación a ojo tras tocar el planner |
-| `npx tsx scripts/audit-stop-order.ts [--verbose]` | Mide pares de paradas «imposibles» por umbral de proyección; con esto se eligió `MAX_STOP_TO_POLYLINE_METERS` |
+| `bunx tsx scripts/smoke-plan.ts` | Construye el grafo real e imprime itinerarios para pares deterministas, con tiempos. Verificación a ojo tras tocar el planner |
+| `bunx tsx scripts/audit-stop-order.ts [--verbose]` | Mide pares de paradas «imposibles» por umbral de proyección; con esto se eligió `MAX_STOP_TO_POLYLINE_METERS` |
 
 Contexto del algoritmo, modelo de costos y grafo: [docs/trip-planner.md](docs/trip-planner.md).
 
@@ -133,8 +133,8 @@ Resumen en el [README](README.md). Tabla completa: [docs/env-reference.md](docs/
 
 1. Verificá build y lint:
    ```bash
-   npm run build
-   npm run lint
+   bun run build
+   bun run lint
    ```
 2. Commits descriptivos (Conventional Commits recomendado).
 3. Push y abrí el PR contra `main`.

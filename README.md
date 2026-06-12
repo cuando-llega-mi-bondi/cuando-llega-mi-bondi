@@ -82,8 +82,8 @@ El catálogo (líneas, calles, paradas, recorridos) se sirve desde **`GET /api/r
 
 ### Prerrequisitos
 
-- **Node.js** v20.x (recomendado)
-- **npm** (o pnpm, si ya lo usás en el proyecto)
+- **Node.js** v20.x (recomendado; runtime de Next)
+- **Bun** v1.x (gestor de paquetes y runner de scripts)
 
 ### Variables de entorno
 
@@ -108,13 +108,13 @@ Telegram, Supabase, analytics y el resto: [docs/env-reference.md](docs/env-refer
 2. **Dependencias:**
 
    ```bash
-   npm install
+   bun install
    ```
 
 3. **Desarrollo:**
 
    ```bash
-   npm run dev
+   bun run dev
    ```
 
    Abrí [http://localhost:3000](http://localhost:3000).
@@ -126,8 +126,8 @@ Telegram, Supabase, analytics y el resto: [docs/env-reference.md](docs/env-refer
 Con el backend accesible:
 
 ```bash
-npm run dump-static    # genera data/mgp-static-dump.json
-npm run split-static   # parte en data/static/lineas.json y data/static/linea/*.json
+bun run dump-static    # genera data/mgp-static-dump.json
+bun run split-static   # parte en data/static/lineas.json y data/static/linea/*.json
 ```
 
 ## 📡 API (referencia breve)

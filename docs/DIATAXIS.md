@@ -8,7 +8,7 @@ Guían a alguien sin contexto previo hacia un primer resultado.
 
 | Documento | Contenido |
 | --------- | --------- |
-| [README — Empezar](../README.md#-empezar-getting-started) | Clonar, `.env.local`, `npm run dev` |
+| [README — Empezar](../README.md#-empezar-getting-started) | Clonar, `.env.local`, `bun run dev` |
 | [README — Regenerar catálogo](../README.md#regenerar-catálogo-estático) | `dump-static` + `split-static` |
 
 **Meta:** tener la PWA corriendo en local y entender qué variable es imprescindible.

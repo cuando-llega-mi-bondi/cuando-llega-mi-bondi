@@ -178,7 +178,7 @@ ejecutan directo con `tsx`.
 ### Smoke test del planner
 
 ```bash
-npx tsx scripts/smoke-plan.ts
+bunx tsx scripts/smoke-plan.ts
 ```
 
 Construye el grafo real e imprime itinerarios para pares origen/destino
@@ -189,7 +189,7 @@ ojo que el planner no rompió tras tocar el grafo o el modelo de costos.
 ### Auditar el orden de paradas
 
 ```bash
-npx tsx scripts/audit-stop-order.ts [--verbose]
+bunx tsx scripts/audit-stop-order.ts [--verbose]
 ```
 
 Para varios umbrales de distancia perpendicular máxima parada→polilínea
