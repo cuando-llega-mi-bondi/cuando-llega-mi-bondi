@@ -713,6 +713,8 @@ export function ComoLlegoClient() {
                     selectedIdx={selectedIdx}
                     onSelect={setSelectedIdx}
                     onNewTrip={resetTrip}
+                    originLabel={origin.text}
+                    destLabel={dest.text}
                 />
             ) : null}
 

@@ -2,23 +2,39 @@
 
 import { useMemo } from "react";
 import { Sheet } from "react-modal-sheet";
-import type { Itinerary, RouteLeg, RouteLegRide } from "@features/trip-planner/types";
+import type { Itinerary, RouteLegRide, RouteLegWalk } from "@features/trip-planner/types";
+import { estimateLegMins } from "@features/trip-planner/lib/costModel";
 import { cn } from "@shared/utils";
 
 const RIDE_COLORS = ["#0ea5e9", "#a855f7", "#f59e0b", "#10b981"];
 
-/** Estimates trip duration in minutes using walking and riding speed heuristics. */
-function estimateItineraryMins(it: Itinerary): number {
-    const walkSpeedMins = 70; // 70 meters per minute (approx 4.2 km/h)
-    const busSpeedMins = 320; // 320 meters per minute (approx 19.2 km/h)
+function formatArrivalTime(minsFromNow: number): string {
+    return new Date(Date.now() + minsFromNow * 60_000).toLocaleTimeString("es-AR", {
+        hour: "2-digit",
+        minute: "2-digit",
+    });
+}
 
-    const walkMins = it.totalWalkMeters / walkSpeedMins;
-    const rideMins = it.totalRideMeters / busSpeedMins;
+function formatWalkDistance(meters: number): string {
+    return meters >= 1000 ? `${(meters / 1000).toFixed(1)} km` : `${meters} m`;
+}
 
-    // Boarding overhead: 3 mins per bus ride
-    const overhead = it.totalRides * 3;
+function IconWalk({ size = 14, className }: { size?: number; className?: string }) {
+    return (
+        <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" className={className} aria-hidden>
+            <circle cx="12" cy="4" r="2" />
+            <path d="M12 7.5V13l-3 4M15 13l-1.5-4-1.5-1.5" />
+            <path d="M10 9.5l2-1.5 3 2.5" />
+        </svg>
+    );
+}
 
-    return Math.round(walkMins + rideMins + overhead);
+function SeqArrow() {
+    return (
+        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3.5" strokeLinecap="round" className="text-muted-foreground/30" aria-hidden>
+            <polyline points="9 18 15 12 9 6" />
+        </svg>
+    );
 }
 
 /** Renders a custom badge for Mar del Plata lines based on official colors/brand styling. */
@@ -53,63 +69,76 @@ function LineBadge({ label, size = "md" }: { label: string; size?: "sm" | "md" }
 
     return (
         <span className={cn(
-            "relative overflow-hidden font-sans font-extrabold flex items-center justify-center select-none shadow-sm rounded-lg shrink-0",
-            isSm ? "h-6 px-1.5 text-[10px]" : "h-11 w-11 text-base",
+            "relative overflow-hidden font-sans font-extrabold flex items-center justify-center select-none shadow-sm shrink-0",
+            isSm ? "h-7 min-w-7 rounded-md px-1.5 text-[11px]" : "h-9 min-w-9 rounded-lg px-2 text-sm",
             bg,
             text
         )}>
-            <span className={isSm ? "mb-0" : "mb-0.5"}>{cleanLine}</span>
+            <span className="mb-0.5">{cleanLine}</span>
             {extra}
         </span>
     );
 }
 
-function LegBlock({ leg, rideColor }: { leg: RouteLeg; rideColor: string }) {
-    if (leg.kind === "walk") {
-        return (
-            <div className="flex gap-3 items-center py-2.5 px-3 rounded-xl bg-muted/40 dark:bg-slate-800/40 text-sm text-foreground/80">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" className="text-muted-foreground shrink-0" aria-hidden>
-                    <circle cx="12" cy="4" r="2" />
-                    <path d="M12 7.5V13l-3 4M15 13l-1.5-4-1.5-1.5" />
-                    <path d="M10 9.5l2-1.5 3 2.5" />
-                </svg>
-                <span>Caminá <strong className="font-bold">{leg.meters} m</strong></span>
-            </div>
-        );
-    }
-    const numParadas = leg.paradaIdsAlong.length - 1;
-    const subi =
-        leg.fromEsquinaLabel != null && leg.fromEsquinaLabel.length > 0
-            ? `Subí en ${leg.fromEsquinaLabel}`
-            : `Subí en parada ${leg.fromParadaId}`;
-    const baja =
-        leg.toEsquinaLabel != null && leg.toEsquinaLabel.length > 0
-            ? `Bajate en ${leg.toEsquinaLabel}`
-            : `Bajate después de ${numParadas} paradas`;
+/*
+ * Timeline vertical del detalle: cada fila reserva `pl-8` de canaletera y los
+ * marcadores absolutos se centran en x=10px para que la línea sea continua.
+ */
+
+function TimelinePoint({ dotClass, label }: { dotClass: string; label: string }) {
+    return (
+        <div className="relative py-1 pl-8">
+            <span className={cn("absolute left-1 top-1/2 h-3 w-3 -translate-y-1/2 rounded-full", dotClass)} aria-hidden />
+            <p className="truncate text-sm font-bold text-foreground">{label}</p>
+        </div>
+    );
+}
+
+function TimelineWalk({ leg, mins }: { leg: RouteLegWalk; mins: number }) {
+    return (
+        <div className="relative py-3.5 pl-8">
+            <span className="absolute bottom-0 left-[9px] top-0 border-l-2 border-dashed border-muted-foreground/40" aria-hidden />
+            <p className="flex items-center gap-1.5 text-xs text-foreground/80">
+                <IconWalk className="shrink-0 text-muted-foreground" />
+                <span>
+                    Caminá <strong className="font-bold">{leg.meters} m</strong> · {mins} min
+                </span>
+            </p>
+        </div>
+    );
+}
+
+function TimelineRide({ leg, mins, rideColor }: { leg: RouteLegRide; mins: number; rideColor: string }) {
+    const numParadas = Math.max(1, leg.paradaIdsAlong.length - 1);
+    const subi = leg.fromEsquinaLabel?.trim()
+        ? `Subí en ${leg.fromEsquinaLabel}`
+        : `Subí en la parada ${leg.fromParadaId}`;
+    const baja = leg.toEsquinaLabel?.trim()
+        ? `Bajate en ${leg.toEsquinaLabel}`
+        : `Bajate en la parada ${leg.toParadaId}`;
 
     return (
-        <div
-            className="flex gap-3 rounded-xl p-3 bg-muted/50 dark:bg-slate-850/50 border border-border/50"
-            style={{ borderLeftColor: rideColor, borderLeftWidth: 4 }}
-        >
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" style={{ color: rideColor }} className="shrink-0 mt-0.5" aria-hidden>
-                <rect x="4" y="4" width="16" height="16" rx="2" />
-                <path d="M4 9h16M9 13h6M8 4v5M16 4v5M6 20v2M18 20v2" />
-                <circle cx="8" cy="16" r="1" />
-                <circle cx="16" cy="16" r="1" />
-            </svg>
-            <div className="min-w-0 flex-1 text-xs text-foreground/80 space-y-1">
-                <p className="font-bold text-sm text-foreground">
-                    Tomá {leg.lineaLabel?.trim() || `Línea ${leg.codLinea}`}
-                </p>
-                {leg.ramalLabel?.trim() ? (
-                    <p className="text-xs text-muted-foreground">Ramal {leg.ramalLabel}</p>
-                ) : null}
-                <div className="pt-1.5 mt-1 border-t border-border/40 space-y-0.5">
-                    <p className="text-[11px]"><span className="text-emerald-500 font-bold mr-1">●</span> {subi}</p>
-                    <p className="text-[11px]"><span className="text-red-500 font-bold mr-1">●</span> {baja} · {numParadas} paradas</p>
+        <div className="relative py-1 pl-8">
+            <span className="absolute bottom-3 left-2 top-3 w-1 rounded-full" style={{ backgroundColor: rideColor }} aria-hidden />
+            <span className="absolute left-1 top-1.5 h-3 w-3 rounded-full border-[3px] bg-card" style={{ borderColor: rideColor }} aria-hidden />
+            <span className="absolute bottom-1.5 left-1 h-3 w-3 rounded-full border-[3px] bg-card" style={{ borderColor: rideColor }} aria-hidden />
+
+            <p className="text-sm font-bold leading-tight text-foreground">{subi}</p>
+            <div className="my-2 flex items-center gap-2.5 rounded-xl bg-muted/40 px-3 py-2.5 dark:bg-slate-800/40">
+                <LineBadge label={leg.lineaLabel?.trim() || leg.codLinea} />
+                <div className="min-w-0">
+                    <p className="text-xs font-bold text-foreground">
+                        Tomá {leg.lineaLabel?.trim() || `Línea ${leg.codLinea}`}
+                        {leg.ramalLabel?.trim() ? (
+                            <span className="font-medium text-muted-foreground"> · Ramal {leg.ramalLabel}</span>
+                        ) : null}
+                    </p>
+                    <p className="mt-0.5 text-[11px] text-muted-foreground">
+                        {numParadas} {numParadas === 1 ? "parada" : "paradas"} · ~{mins} min
+                    </p>
                 </div>
             </div>
+            <p className="text-sm font-bold leading-tight text-foreground">{baja}</p>
         </div>
     );
 }
@@ -119,6 +148,8 @@ type TripResultsSheetProps = {
     selectedIdx: number;
     onSelect: (idx: number) => void;
     onNewTrip: () => void;
+    originLabel?: string;
+    destLabel?: string;
 };
 
 export function TripResultsSheet({
@@ -126,6 +157,8 @@ export function TripResultsSheet({
     selectedIdx,
     onSelect,
     onNewTrip,
+    originLabel,
+    destLabel,
 }: TripResultsSheetProps) {
     const uses221Selected = useMemo(() => {
         const it = itineraries[selectedIdx];
@@ -173,7 +206,14 @@ export function TripResultsSheet({
                     <div className="flex flex-col gap-3 pb-[max(1.25rem,env(safe-area-inset-bottom))]">
                         {itineraries.map((it, idx) => {
                             const expanded = idx === selectedIdx;
-                            const rides = it.legs.filter((leg): leg is RouteLegRide => leg.kind === "ride");
+                            const legMins = estimateLegMins(it);
+                            const totalMins = legMins.reduce((a, b) => a + b, 0);
+                            const firstRide = it.legs.find(
+                                (leg): leg is RouteLegRide => leg.kind === "ride",
+                            );
+                            const boardingLabel = firstRide
+                                ? firstRide.fromEsquinaLabel?.trim() || `parada ${firstRide.fromParadaId}`
+                                : null;
 
                             return (
                                 <div
@@ -201,81 +241,54 @@ export function TripResultsSheet({
                                         </div>
                                     )}
 
-                                    <div className="flex items-center gap-4">
-                                        {/* Badges Block */}
-                                        <div className="flex items-center shrink-0">
-                                            {rides.length === 0 ? (
-                                                <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-500 font-extrabold shadow-sm">
-                                                    🚶
-                                                </span>
-                                            ) : (
-                                                <div className="flex items-center gap-1.5">
-                                                    {rides.map((r, i) => (
-                                                        <div key={i} className="flex items-center gap-1.5">
-                                                            {i > 0 && <span className="text-xs font-bold text-muted-foreground/60">+</span>}
-                                                            <LineBadge label={r.lineaLabel || r.codLinea} />
-                                                        </div>
-                                                    ))}
-                                                </div>
-                                            )}
+                                    <div className="flex items-center gap-3">
+                                        {/* Secuencia de tramos con minutos */}
+                                        <div className="min-w-0 flex-1 space-y-2">
+                                            <div className="flex flex-wrap items-center gap-x-1.5 gap-y-1.5">
+                                                {it.legs.map((leg, i) => (
+                                                    <div key={i} className="flex items-center gap-1.5">
+                                                        {i > 0 && <SeqArrow />}
+                                                        {leg.kind === "walk" ? (
+                                                            <span className="flex items-center gap-1 text-muted-foreground">
+                                                                <IconWalk size={15} />
+                                                                <span className="text-[11px] font-bold">{legMins[i]}′</span>
+                                                            </span>
+                                                        ) : (
+                                                            <span className="flex items-center gap-1">
+                                                                <LineBadge size="sm" label={leg.lineaLabel || leg.codLinea} />
+                                                                <span className="text-[11px] font-bold text-muted-foreground">{legMins[i]}′</span>
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                ))}
+                                            </div>
+                                            <p className="truncate text-xs text-muted-foreground">
+                                                {boardingLabel ? (
+                                                    <>
+                                                        Subí en{" "}
+                                                        <span className="font-semibold text-foreground/85">{boardingLabel}</span>
+                                                        {" · "}
+                                                    </>
+                                                ) : (
+                                                    "Solo caminata · "
+                                                )}
+                                                {formatWalkDistance(it.totalWalkMeters)} a pie
+                                            </p>
                                         </div>
 
-                                        {/* Central Detail Info */}
-                                        <div className="flex-1 min-w-0 space-y-1.5">
-                                            {/* Summary icons row */}
-                                            <div className="flex items-center gap-4 text-xs font-bold text-foreground/80">
-                                                <span className="flex items-center gap-1">
-                                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-muted-foreground" aria-hidden>
-                                                        <rect x="4" y="4" width="16" height="16" rx="2" />
-                                                        <path d="M4 9h16M9 13h6M8 4v5M16 4v5M6 20v2M18 20v2" />
-                                                        <circle cx="8" cy="16" r="1" />
-                                                        <circle cx="16" cy="16" r="1" />
-                                                    </svg>
-                                                    {it.totalRides === 0 ? "Solo caminata" : `${it.totalRides} bondi${it.totalRides === 1 ? "" : "s"}`}
-                                                </span>
-                                                <span className="flex items-center gap-1">
-                                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" className="text-muted-foreground" aria-hidden>
-                                                        <circle cx="12" cy="4" r="2" />
-                                                        <path d="M12 7.5V13l-3 4M15 13l-1.5-4-1.5-1.5" />
-                                                    </svg>
-                                                    {it.totalWalkMeters >= 1000 ? `${(it.totalWalkMeters / 1000).toFixed(1)} km` : `${it.totalWalkMeters} m`}
-                                                </span>
-                                                <span className="flex items-center gap-1 text-sky-600 dark:text-sky-400 font-extrabold">
-                                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" className="text-sky-500" aria-hidden>
-                                                        <circle cx="12" cy="12" r="10" />
-                                                        <polyline points="12 6 12 12 16 14" />
-                                                    </svg>
-                                                    {estimateItineraryMins(it)} min
-                                                </span>
-                                            </div>
-
-                                            {/* Sequence visual path */}
-                                            <div className="flex flex-wrap items-center gap-x-1.5 gap-y-1 text-xs text-muted-foreground font-medium">
-                                                {it.legs.map((leg, i) => {
-                                                    const isLast = i === it.legs.length - 1;
-                                                    return (
-                                                        <div key={i} className="flex items-center gap-1.5">
-                                                            {leg.kind === "walk" ? (
-                                                                <span>Caminá {leg.meters} m</span>
-                                                            ) : (
-                                                                <div className="flex items-center gap-1">
-                                                                    <span>Tomá</span>
-                                                                    <LineBadge size="sm" label={leg.lineaLabel || leg.codLinea} />
-                                                                </div>
-                                                            )}
-                                                            {!isLast && (
-                                                                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3.5" strokeLinecap="round" className="text-muted-foreground/30" aria-hidden>
-                                                                    <polyline points="9 18 15 12 9 6" />
-                                                                </svg>
-                                                            )}
-                                                        </div>
-                                                    );
-                                                })}
-                                            </div>
+                                        {/* Tiempo total + hora de llegada */}
+                                        <div className="shrink-0 text-right">
+                                            <p className="text-xl font-black leading-none text-foreground">
+                                                {totalMins}
+                                                <span className="ml-0.5 text-xs font-bold text-muted-foreground">min</span>
+                                            </p>
+                                            <p className="mt-1 text-[11px] font-medium text-muted-foreground">
+                                                Llegás ~{formatArrivalTime(totalMins)}
+                                            </p>
                                         </div>
 
                                         {/* Expand Right Chevron */}
-                                        <div className="flex items-center shrink-0 text-muted-foreground/40 pl-1" aria-hidden>
+                                        <div className="flex items-center shrink-0 text-muted-foreground/40" aria-hidden>
                                             <svg
                                                 width="16"
                                                 height="16"
@@ -291,19 +304,36 @@ export function TripResultsSheet({
                                         </div>
                                     </div>
 
-                                    {/* Expanded Step Details */}
+                                    {/* Detalle expandido: timeline vertical */}
                                     {expanded && (
-                                        <div className="mt-4 space-y-2 border-t border-border/40 pt-4 cursor-default" onClick={(e) => e.stopPropagation()}>
+                                        <div
+                                            className="mt-4 cursor-default border-t border-border/40 pt-3"
+                                            onClick={(e) => e.stopPropagation()}
+                                        >
+                                            <TimelinePoint
+                                                dotClass="bg-blue-500 ring-4 ring-blue-500/25"
+                                                label={originLabel?.trim() || "Origen"}
+                                            />
                                             {it.legs.map((leg, i) => {
+                                                if (leg.kind === "walk") {
+                                                    return <TimelineWalk key={i} leg={leg} mins={legMins[i]!} />;
+                                                }
                                                 const rideCountBefore = it.legs
                                                     .slice(0, i)
                                                     .filter((x) => x.kind === "ride").length;
-                                                const color =
-                                                    leg.kind === "ride"
-                                                        ? RIDE_COLORS[rideCountBefore % RIDE_COLORS.length]!
-                                                        : "#94a3b8";
-                                                return <LegBlock key={i} leg={leg} rideColor={color} />;
+                                                return (
+                                                    <TimelineRide
+                                                        key={i}
+                                                        leg={leg}
+                                                        mins={legMins[i]!}
+                                                        rideColor={RIDE_COLORS[rideCountBefore % RIDE_COLORS.length]!}
+                                                    />
+                                                );
                                             })}
+                                            <TimelinePoint
+                                                dotClass="bg-red-500 ring-4 ring-red-500/25"
+                                                label={destLabel?.trim() || "Tu destino"}
+                                            />
                                         </div>
                                     )}
                                 </div>
