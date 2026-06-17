@@ -16,6 +16,9 @@ export const metadata: Metadata = {
         "paradas cercanas mar del plata",
         "mapa paradas bondi mdp",
         "qué colectivo pasa cerca mío",
+        "parada de bondi más cercana",
+        "paradas colectivo cerca de mi ubicación",
+        "paradas de colectivo mar del plata mapa",
     ],
     alternates: {
         canonical: "/paradas-cerca",
@@ -37,9 +40,34 @@ export const metadata: Metadata = {
     },
 };
 
+const breadcrumbJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+        {
+            "@type": "ListItem",
+            position: 1,
+            name: "Inicio",
+            item: "https://www.bondimdp.com.ar",
+        },
+        {
+            "@type": "ListItem",
+            position: 2,
+            name: "Paradas cerca mío",
+            item: "https://www.bondimdp.com.ar/paradas-cerca",
+        },
+    ],
+};
+
 export default function ParadasCercaPage() {
     return (
         <>
+            <script
+                type="application/ld+json"
+                dangerouslySetInnerHTML={{
+                    __html: JSON.stringify(breadcrumbJsonLd),
+                }}
+            />
             <section className="sr-only" aria-labelledby="paradas-cerca-seo-title">
                 <h1 id="paradas-cerca-seo-title">Paradas de colectivo cerca tuyo en Mar del Plata</h1>
                 <p>

@@ -27,6 +27,35 @@ export const metadata: Metadata = {
     },
 };
 
+const breadcrumbJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+        {
+            "@type": "ListItem",
+            position: 1,
+            name: "Inicio",
+            item: "https://www.bondimdp.com.ar",
+        },
+        {
+            "@type": "ListItem",
+            position: 2,
+            name: "Acerca",
+            item: "https://www.bondimdp.com.ar/acerca",
+        },
+    ],
+};
+
 export default function AcercaPage() {
-    return <AcercaClient />;
+    return (
+        <>
+            <script
+                type="application/ld+json"
+                dangerouslySetInnerHTML={{
+                    __html: JSON.stringify(breadcrumbJsonLd),
+                }}
+            />
+            <AcercaClient />
+        </>
+    );
 }

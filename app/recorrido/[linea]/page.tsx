@@ -152,6 +152,12 @@ export default async function LineaRecorridoPage({
         },
     };
 
+    // Get all lines for internal linking
+    const allLineas = (await getLineas()) ?? [];
+    const otherLines = allLineas.filter(
+        (l) => l.CodigoLineaParada !== lineaInfo.CodigoLineaParada
+    );
+
     return (
         <>
             {/* JSON-LD structured data */}
@@ -191,6 +197,19 @@ export default async function LineaRecorridoPage({
                         </ul>
                     </>
                 )}
+                {/* Internal links to other lines — helps Google crawl and link juice */}
+                <nav aria-label="Otras líneas de colectivo">
+                    <h2>Otras líneas de colectivo en Mar del Plata</h2>
+                    <ul>
+                        {otherLines.map((l) => (
+                            <li key={l.CodigoLineaParada}>
+                                <a href={`/recorrido/${lineaToSlug(l.Descripcion)}`}>
+                                    Línea {l.Descripcion}
+                                </a>
+                            </li>
+                        ))}
+                    </ul>
+                </nav>
             </section>
 
             {/* Interactive map (client-side) — auto-selects this line */}

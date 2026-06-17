@@ -16,6 +16,24 @@ export function HomeIntro() {
                 recorridos y paradas de todas las líneas municipales (511, 522, 541 y más).
                 Datos oficiales de MGP, instalable en Android e iPhone como PWA.
             </p>
+            <nav aria-label="Funciones principales de Bondi MDP">
+                <h2>¿Qué podés hacer con Bondi MDP?</h2>
+                <ul>
+                    <li>
+                        <a href="/recorrido">Ver recorridos</a> — Mapa interactivo con
+                        recorridos y paradas de todas las líneas de colectivo
+                    </li>
+                    <li>
+                        <a href="/como-llego">Cómo llego</a> — Planificá tu viaje en
+                        colectivo ingresando origen y destino
+                    </li>
+                    <li>
+                        <a href="/paradas-cerca">Paradas cerca mío</a> — Encontrá las
+                        paradas de colectivo más cercanas a tu ubicación
+                    </li>
+                </ul>
+            </nav>
         </section>
     );
 }
+

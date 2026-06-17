@@ -10,9 +10,12 @@ export const metadata: Metadata = {
         "Planificá tu viaje en colectivo por Mar del Plata. Ingresá tu destino y encontrá qué línea tomar, paradas y tiempos de llegada en tiempo real.",
     keywords: [
         "cómo llego en bondi",
+        "cómo llego en colectivo mar del plata",
         "planificador colectivos mar del plata",
         "qué línea tomar mdp",
         "viaje en colectivo mar del plata",
+        "cómo ir en bondi mar del plata",
+        "planificar viaje transporte publico mdp",
     ],
     alternates: {
         canonical: "/como-llego",
@@ -32,6 +35,25 @@ export const metadata: Metadata = {
         description:
             "Planificá tu viaje en colectivo por Mar del Plata. Paradas, líneas y tiempos en tiempo real.",
     },
+};
+
+const breadcrumbJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+        {
+            "@type": "ListItem",
+            position: 1,
+            name: "Inicio",
+            item: "https://www.bondimdp.com.ar",
+        },
+        {
+            "@type": "ListItem",
+            position: 2,
+            name: "Cómo llego",
+            item: "https://www.bondimdp.com.ar/como-llego",
+        },
+    ],
 };
 
 /**
@@ -67,6 +89,12 @@ export default function ComoLlegoPage() {
         <>
             {/* Tiles del mapa: abrir la conexión antes de que cargue Leaflet */}
             <link rel="preconnect" href="https://mt1.google.com" />
+            <script
+                type="application/ld+json"
+                dangerouslySetInnerHTML={{
+                    __html: JSON.stringify(breadcrumbJsonLd),
+                }}
+            />
             <section className="sr-only" aria-labelledby="como-llego-seo-title">
                 <h1 id="como-llego-seo-title">Cómo llego en bondi por Mar del Plata</h1>
                 <p>

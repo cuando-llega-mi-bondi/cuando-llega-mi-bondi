@@ -50,7 +50,15 @@ export function JsonLd() {
         "@context": "https://schema.org",
         "@type": "WebSite",
         "name": "Bondi MDP",
-        "url": "https://www.bondimdp.com.ar"
+        "url": "https://www.bondimdp.com.ar",
+        "potentialAction": {
+            "@type": "SearchAction",
+            "target": {
+                "@type": "EntryPoint",
+                "urlTemplate": "https://www.bondimdp.com.ar/recorrido/{search_term_string}"
+            },
+            "query-input": "required name=search_term_string"
+        }
     };
 
     const speakable = {
