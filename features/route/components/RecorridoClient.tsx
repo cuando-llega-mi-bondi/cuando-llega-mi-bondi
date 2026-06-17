@@ -64,7 +64,7 @@ function normalizeRamal(value: string | null | undefined) {
 
 type Step = "selector" | "map";
 
-export default function RecorridoClient() {
+export default function RecorridoClient({ initialLineCode }: { initialLineCode?: string }) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const deepLinkHandledRef = useRef(false);
@@ -289,17 +289,25 @@ export default function RecorridoClient() {
 
   useEffect(() => {
     if (deepLinkHandledRef.current || linesLoading || lines.length === 0) return;
-    const code = searchParams.get("linea")?.trim();
+    const code = searchParams.get("linea")?.trim() || initialLineCode;
     if (!code) return;
     const line = lines.find((l) => l.CodigoLineaParada === code);
     if (!line) return;
     deepLinkHandledRef.current = true;
     // eslint-disable-next-line react-hooks/set-state-in-effect
     void selectLine(line);
-    router.replace("/recorrido", { scroll: false });
-  }, [linesLoading, lines, searchParams, router]);
+    // Only replace URL when coming from ?linea= query param, not from /recorrido/[linea]
+    if (searchParams.get("linea")) {
+      router.replace("/recorrido", { scroll: false });
+    }
+  }, [linesLoading, lines, searchParams, router, initialLineCode]);
 
   function goBack() {
+    // When rendered from /recorrido/[linea], navigate back to the line selector
+    if (initialLineCode) {
+      router.push("/recorrido");
+      return;
+    }
     withViewTransition(() => {
       setStep("selector");
       setSearch("");

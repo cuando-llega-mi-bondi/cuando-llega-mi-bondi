@@ -1,3 +1,6 @@
+import { getLineas } from "@/lib/server/loadStaticDump";
+import { lineaToSlug } from "@/lib/server/lineaSlug";
+
 const BASE = "https://www.bondimdp.com.ar";
 
 const breadcrumbList = {
@@ -43,7 +46,24 @@ const webPage = {
     },
 };
 
-export function RecorridoJsonLd() {
+export async function RecorridoJsonLd() {
+    const lineas = await getLineas();
+
+    const itemList = {
+        "@context": "https://schema.org",
+        "@type": "ItemList",
+        name: "Líneas de colectivo en Mar del Plata",
+        description:
+            "Todas las líneas de colectivo disponibles en Mar del Plata con recorridos y paradas.",
+        numberOfItems: lineas?.length ?? 0,
+        itemListElement: (lineas ?? []).map((linea, index) => ({
+            "@type": "ListItem",
+            position: index + 1,
+            name: `Línea ${linea.Descripcion}`,
+            url: `${BASE}/recorrido/${lineaToSlug(linea.Descripcion)}`,
+        })),
+    };
+
     return (
         <>
             <script
@@ -53,6 +73,10 @@ export function RecorridoJsonLd() {
             <script
                 type="application/ld+json"
                 dangerouslySetInnerHTML={{ __html: JSON.stringify(webPage) }}
+            />
+            <script
+                type="application/ld+json"
+                dangerouslySetInnerHTML={{ __html: JSON.stringify(itemList) }}
             />
         </>
     );

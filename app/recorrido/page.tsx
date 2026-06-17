@@ -50,7 +50,9 @@ export default function RecorridoPage() {
                     mapa, ramales y datos actualizados de MGP en tiempo real.
                 </p>
             </section>
-            <RecorridoJsonLd />
+            <Suspense fallback={null}>
+                <RecorridoJsonLd />
+            </Suspense>
             <Suspense
                 fallback={
                     <div className="flex min-h-pwa-shell flex-col items-center justify-center gap-2 bg-bg px-4 font-sans text-sm text-text-dim">

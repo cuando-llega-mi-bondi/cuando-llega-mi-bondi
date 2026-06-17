@@ -38,6 +38,13 @@ export const metadata: Metadata = {
         "transporte publico mdp",
         "mgp",
         "paradas de colectivo",
+        "recorridos colectivos mar del plata",
+        "recorrido colectivos",
+        "mi bondi",
+        "bondi app",
+        "cuando viene el bondi",
+        "cuando llega mi bondi",
+        "aplicacion cuando llega mar del plata",
     ],
     manifest: "/manifest.json",
     alternates: {

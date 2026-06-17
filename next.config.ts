@@ -28,6 +28,7 @@ const nextConfig: NextConfig = {
   // Esto le dice al tracer que los incluya en el bundle de /api/reference.
   outputFileTracingIncludes: {
     "/api/reference": ["./data/static/**/*.json"],
+    "/recorrido/[linea]": ["./data/static/**/*.json"],
   },
 
   /**

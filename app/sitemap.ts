@@ -1,11 +1,14 @@
 import { MetadataRoute } from "next";
+import { getLineas } from "@/lib/server/loadStaticDump";
+import { lineaToSlug } from "@/lib/server/lineaSlug";
+
 export const revalidate = 3600; // Cachear por 1 hora
 
-export default function sitemap(): MetadataRoute.Sitemap {
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     const baseUrl = "https://www.bondimdp.com.ar";
     const now = new Date();
 
-    return [
+    const staticRoutes: MetadataRoute.Sitemap = [
         {
             url: baseUrl,
             lastModified: now,
@@ -31,4 +34,15 @@ export default function sitemap(): MetadataRoute.Sitemap {
             priority: 0.6,
         },
     ];
+
+    // Dynamic routes: one page per bus line
+    const lineas = await getLineas();
+    const lineaRoutes: MetadataRoute.Sitemap = (lineas ?? []).map((linea) => ({
+        url: `${baseUrl}/recorrido/${lineaToSlug(linea.Descripcion)}`,
+        lastModified: now,
+        changeFrequency: "weekly" as const,
+        priority: 0.7,
+    }));
+
+    return [...staticRoutes, ...lineaRoutes];
 }
