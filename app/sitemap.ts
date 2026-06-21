@@ -5,7 +5,7 @@ import { lineaToSlug } from "@/lib/server/lineaSlug";
 export const revalidate = 3600; // Cachear por 1 hora
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-    const baseUrl = "https://www.bondimdp.com.ar";
+    const baseUrl = "https://bondimdp.com.ar";
     const now = new Date();
 
     const staticRoutes: MetadataRoute.Sitemap = [

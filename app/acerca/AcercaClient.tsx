@@ -188,7 +188,7 @@ function DevCard({ dev }: { dev: Developer }) {
 export function AcercaClient() {
     const handleShareWhatsApp = useCallback(() => {
         const text = encodeURIComponent(
-            "Mirá esta app para ver cuándo llega el bondi en Mar del Plata 🚌 https://www.bondimdp.com.ar",
+            "Mirá esta app para ver cuándo llega el bondi en Mar del Plata 🚌 https://bondimdp.com.ar",
         );
         window.open(`https://wa.me/?text=${text}`, "_blank", "noopener");
     }, []);
@@ -199,7 +199,7 @@ export function AcercaClient() {
                 await navigator.share({
                     title: "Bondi MDP",
                     text: "Consultá cuándo llega tu colectivo en Mar del Plata",
-                    url: "https://www.bondimdp.com.ar",
+                    url: "https://bondimdp.com.ar",
                 });
             } catch {
                 /* user cancelled */

@@ -24,7 +24,7 @@ export const metadata: Metadata = {
     openGraph: {
         type: "website",
         locale: "es_AR",
-        url: "https://www.bondimdp.com.ar/recorrido",
+        url: "https://bondimdp.com.ar/recorrido",
         title: "Recorridos de colectivos en Mar del Plata — BondiMDP",
         description:
             "Consultá el recorrido completo de cada línea de bondi. Paradas, mapas y horarios en tiempo real.",

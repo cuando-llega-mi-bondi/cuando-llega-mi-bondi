@@ -1,7 +1,7 @@
 import { getLineas } from "@/lib/server/loadStaticDump";
 import { lineaToSlug } from "@/lib/server/lineaSlug";
 
-const BASE = "https://www.bondimdp.com.ar";
+const BASE = "https://bondimdp.com.ar";
 
 const breadcrumbList = {
     "@context": "https://schema.org",

@@ -8,7 +8,7 @@
   </p>
 
   <p>
-    <a href="https://www.bondimdp.com.ar/">Sitio en vivo</a> •
+    <a href="https://bondimdp.com.ar/">Sitio en vivo</a> •
     <a href="#-empezar-getting-started">Empezar</a> •
     <a href="CONTRIBUTING.md">Contribuir</a> •
     <a href="docs/DIATAXIS.md">Documentación (Diátaxis)</a> •

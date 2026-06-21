@@ -23,7 +23,7 @@ export const metadata: Metadata = {
     openGraph: {
         type: "website",
         locale: "es_AR",
-        url: "https://www.bondimdp.com.ar/como-llego",
+        url: "https://bondimdp.com.ar/como-llego",
         title: "Cómo llego en bondi — BondiMDP",
         description:
             "Planificá tu viaje en colectivo por Mar del Plata. Encontrá qué línea tomar, paradas y tiempos en tiempo real.",
@@ -45,13 +45,13 @@ const breadcrumbJsonLd = {
             "@type": "ListItem",
             position: 1,
             name: "Inicio",
-            item: "https://www.bondimdp.com.ar",
+            item: "https://bondimdp.com.ar",
         },
         {
             "@type": "ListItem",
             position: 2,
             name: "Cómo llego",
-            item: "https://www.bondimdp.com.ar/como-llego",
+            item: "https://bondimdp.com.ar/como-llego",
         },
     ],
 };

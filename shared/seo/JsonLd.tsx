@@ -4,7 +4,7 @@ export function JsonLd() {
         description:
             "App gratuita para consultar el tiempo de arribo de colectivos en Mar del Plata en tiempo real.",
         applicationCategory: "TravelApplication",
-        url: "https://www.bondimdp.com.ar",
+        url: "https://bondimdp.com.ar",
         author: {
             "@type": "Organization",
             name: "Bondi MDP Team",
@@ -14,7 +14,7 @@ export function JsonLd() {
             price: "0",
             priceCurrency: "ARS",
         },
-        screenshot: "https://www.bondimdp.com.ar/screenshots/results.jpg",
+        screenshot: "https://bondimdp.com.ar/screenshots/results.jpg",
         featureList: [
             "Tiempo real de arribos",
             "Recorridos completos",
@@ -35,27 +35,27 @@ export function JsonLd() {
         "@type": "MobileApplication",
         ...appBase,
         operatingSystem: "Android, iOS",
-        installUrl: "https://www.bondimdp.com.ar",
+        installUrl: "https://bondimdp.com.ar",
     };
 
     const organization = {
         "@context": "https://schema.org",
         "@type": "Organization",
         "name": "Bondi MDP",
-        "url": "https://www.bondimdp.com.ar",
-        "logo": "https://www.bondimdp.com.ar/icon-512.png"
+        "url": "https://bondimdp.com.ar",
+        "logo": "https://bondimdp.com.ar/icon-512x512.png"
     };
 
     const webSite = {
         "@context": "https://schema.org",
         "@type": "WebSite",
         "name": "Bondi MDP",
-        "url": "https://www.bondimdp.com.ar",
+        "url": "https://bondimdp.com.ar",
         "potentialAction": {
             "@type": "SearchAction",
             "target": {
                 "@type": "EntryPoint",
-                "urlTemplate": "https://www.bondimdp.com.ar/recorrido/{search_term_string}"
+                "urlTemplate": "https://bondimdp.com.ar/recorrido/{search_term_string}"
             },
             "query-input": "required name=search_term_string"
         }
@@ -69,7 +69,7 @@ export function JsonLd() {
             "@type": "SpeakableSpecification",
             "cssSelector": [".arrival-times", ".route-info"]
         },
-        "url": "https://www.bondimdp.com.ar"
+        "url": "https://bondimdp.com.ar"
     };
 
     return (

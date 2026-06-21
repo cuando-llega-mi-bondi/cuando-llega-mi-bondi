@@ -13,7 +13,7 @@ export const metadata: Metadata = {
     openGraph: {
         type: "website",
         locale: "es_AR",
-        url: "https://www.bondimdp.com.ar/acerca",
+        url: "https://bondimdp.com.ar/acerca",
         title: "¿Qué es BondiMDP? La app de colectivos de Mar del Plata",
         description:
             "App gratuita para seguir el bondi en tiempo real en Mar del Plata. Conocé al equipo y cómo funciona.",
@@ -35,13 +35,13 @@ const breadcrumbJsonLd = {
             "@type": "ListItem",
             position: 1,
             name: "Inicio",
-            item: "https://www.bondimdp.com.ar",
+            item: "https://bondimdp.com.ar",
         },
         {
             "@type": "ListItem",
             position: 2,
             name: "Acerca",
-            item: "https://www.bondimdp.com.ar/acerca",
+            item: "https://bondimdp.com.ar/acerca",
         },
     ],
 };

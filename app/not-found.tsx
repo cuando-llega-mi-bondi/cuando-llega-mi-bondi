@@ -97,7 +97,7 @@ export default function NotFound() {
                                 "@type": "ListItem",
                                 position: 1,
                                 name: "Inicio",
-                                item: "https://www.bondimdp.com.ar",
+                                item: "https://bondimdp.com.ar",
                             },
                         ],
                     }),

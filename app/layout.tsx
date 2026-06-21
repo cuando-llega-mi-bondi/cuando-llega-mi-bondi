@@ -20,7 +20,7 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-    metadataBase: new URL("https://www.bondimdp.com.ar"),
+    metadataBase: new URL("https://bondimdp.com.ar"),
     title: {
         default: "Bondi MDP — App de colectivos en Mar del Plata",
         template: "%s | Bondi MDP",
@@ -53,7 +53,7 @@ export const metadata: Metadata = {
     openGraph: {
         type: "website",
         locale: "es_AR",
-        url: "https://www.bondimdp.com.ar",
+        url: "https://bondimdp.com.ar",
         title: "Bondi MDP — App de colectivos en Mar del Plata",
         description:
             "App gratuita para saber cuándo llega tu bondi en Mar del Plata. Datos oficiales de MGP en una interfaz rápida, instalable en el celular.",

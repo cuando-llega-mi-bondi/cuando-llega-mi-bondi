@@ -6,7 +6,7 @@ import { lineaToSlug } from "@/lib/server/lineaSlug";
 import RecorridoClient from "@features/route/components/RecorridoClient";
 import type { Linea } from "@shared/types";
 
-const BASE_URL = "https://www.bondimdp.com.ar";
+const BASE_URL = "https://bondimdp.com.ar";
 
 // ─── Static generation ─────────────────────────────────────────────────────────
 

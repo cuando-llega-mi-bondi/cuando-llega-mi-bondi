@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 
-const USER_AGENT = "BondiMDP-PWA/1.0 (+https://www.bondimdp.com.ar/)";
+const USER_AGENT = "BondiMDP-PWA/1.0 (+https://bondimdp.com.ar/)";
 
 export async function GET(req: NextRequest) {
     const q = (req.nextUrl.searchParams.get("q") ?? "").trim();

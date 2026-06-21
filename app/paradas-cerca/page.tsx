@@ -26,7 +26,7 @@ export const metadata: Metadata = {
     openGraph: {
         type: "website",
         locale: "es_AR",
-        url: "https://www.bondimdp.com.ar/paradas-cerca",
+        url: "https://bondimdp.com.ar/paradas-cerca",
         title: "Paradas de colectivo cerca tuyo — BondiMDP",
         description:
             "Mirá en el mapa las paradas de colectivo más cercanas a vos en Mar del Plata y qué líneas pasan por cada una.",
@@ -48,13 +48,13 @@ const breadcrumbJsonLd = {
             "@type": "ListItem",
             position: 1,
             name: "Inicio",
-            item: "https://www.bondimdp.com.ar",
+            item: "https://bondimdp.com.ar",
         },
         {
             "@type": "ListItem",
             position: 2,
             name: "Paradas cerca mío",
-            item: "https://www.bondimdp.com.ar/paradas-cerca",
+            item: "https://bondimdp.com.ar/paradas-cerca",
         },
     ],
 };
