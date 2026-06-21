@@ -32,6 +32,28 @@ const nextConfig: NextConfig = {
   },
 
   /**
+   * Link headers para descubrimiento por agentes (RFC 8288). Apuntan a los
+   * recursos machine-readable que ya servimos para LLMs/agentes. Van
+   * comma-separated en un solo header `Link` porque dos entradas con la misma
+   * key se pisan (la última gana).
+   *   - describedby -> /llms.txt        (descripción del sitio para agentes)
+   *   - service-doc -> /llms-full.txt   (documentación extendida)
+   */
+  async headers() {
+    return [
+      {
+        source: "/",
+        headers: [
+          {
+            key: "Link",
+            value: `</llms.txt>; rel="describedby"; type="text/plain", </llms-full.txt>; rel="service-doc"; type="text/plain"`,
+          },
+        ],
+      },
+    ];
+  },
+
+  /**
    * Compatibilidad: links viejos con ?tab=favoritos redirigen a /favoritos
    */
   async redirects() {
