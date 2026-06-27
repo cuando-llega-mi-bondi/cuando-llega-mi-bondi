@@ -21,6 +21,10 @@ export default async function OpenGraphImage({
 }) {
     const { linea: slug } = await params;
 
+    const interBlackItalicData = await fetch(
+        "https://fonts.gstatic.com/s/inter/v20/UcCM3FwrK3iLTcvneQg7Ca725JhhKnNqk4j1ebLhAm8SrXTccNxhjZ-Ck-8.ttf"
+    ).then((res) => res.arrayBuffer());
+
     // Resolve slug to line name
     const lineas = await getLineas();
     const lineaInfo = lineas?.find(
@@ -38,9 +42,9 @@ export default async function OpenGraphImage({
                     flexDirection: "column",
                     alignItems: "center",
                     justifyContent: "center",
-                    background: "#000000",
+                    background: "#0f2d4a",
                     backgroundImage:
-                        "radial-gradient(ellipse 80% 55% at 50% 0%, rgba(0, 153, 255, 0.25), transparent 55%)",
+                        "radial-gradient(ellipse 80% 55% at 50% 0%, rgba(29, 117, 112, 0.4), transparent 55%)",
                 }}
             >
                 {/* Line number badge */}
@@ -49,7 +53,7 @@ export default async function OpenGraphImage({
                         display: "flex",
                         alignItems: "center",
                         justifyContent: "center",
-                        background: "#0099ff",
+                        background: "#1d7570",
                         borderRadius: 20,
                         padding: "24px 56px",
                         marginBottom: 32,
@@ -82,7 +86,7 @@ export default async function OpenGraphImage({
                         style={{
                             fontSize: 36,
                             fontWeight: 700,
-                            color: "#ffffff",
+                            color: "#f0f4f8",
                             fontFamily: "ui-sans-serif, system-ui, sans-serif",
                             letterSpacing: -0.5,
                         }}
@@ -92,39 +96,35 @@ export default async function OpenGraphImage({
                     <div
                         style={{
                             display: "flex",
+                            flexDirection: "row",
                             alignItems: "center",
-                            gap: 12,
+                            fontSize: 48,
+                            fontWeight: 900,
+                            fontStyle: "italic",
+                            letterSpacing: -2,
+                            textTransform: "uppercase",
+                            fontFamily: '"Inter"',
+                            color: "#f0f4f8",
+                            lineHeight: 1,
                         }}
                     >
-                        <div
-                            style={{
-                                background: "#0099ff",
-                                borderRadius: 8,
-                                padding: "6px 14px",
-                                color: "#ffffff",
-                                fontSize: 20,
-                                fontWeight: 800,
-                                fontFamily:
-                                    "ui-sans-serif, system-ui, sans-serif",
-                            }}
-                        >
-                            MDP
-                        </div>
-                        <span
-                            style={{
-                                fontSize: 24,
-                                color: "#0099ff",
-                                fontFamily:
-                                    "ui-sans-serif, system-ui, sans-serif",
-                                fontWeight: 600,
-                            }}
-                        >
-                            Bondi MDP
-                        </span>
+                        <span style={{ color: "#f0f4f8" }}>BONDI</span>
+                        <span style={{ color: "#f9cd4a"}}>MDP</span>
                     </div>
                 </div>
             </div>
         ),
-        { ...size }
+        {
+            ...size,
+            fonts: [
+                {
+                    name: "Inter",
+                    data: interBlackItalicData,
+                    style: "italic",
+                    weight: 900,
+                },
+            ],
+        }
     );
 }
+
