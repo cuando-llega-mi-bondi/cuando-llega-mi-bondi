@@ -153,25 +153,61 @@ export async function getRecorridoRamales(codLinea: string): Promise<RamalData[]
 /**
  * One `RecuperarParadasConBanderaYDestinoPorLinea` when the payload includes `puntos`
  * (same as official app); otherwise loads ramales via `RecuperarRecorrido…`.
+ *
+ * - **Timeout**: 12 s per attempt (AbortSignal.timeout).
+ * - **Retry**: 1 automatic retry on network/timeout errors.
+ * - Accepts an optional AbortSignal so callers can cancel (e.g. when the user
+ *   picks a different line before this one finishes).
  */
-export async function getRecorridoMapaCliente(codLinea: string): Promise<{
+export async function getRecorridoMapaCliente(
+    codLinea: string,
+    options?: { signal?: AbortSignal },
+): Promise<{
     ramales: RamalData[];
     paradas: ParadaMapa[];
 }> {
-    const data = await post("RecuperarParadasConBanderaYDestinoPorLinea", {
-        codLinea,
-        isSublinea: "0",
-    });
+    const MAX_ATTEMPTS = 2;
+    const TIMEOUT_MS = 12_000;
 
-    const paradas = buildParadasMapaFromLineaResponse(data, codLinea);
-    const puntos: PuntoRecorrido[] = data.puntos ?? [];
+    let lastError: unknown;
 
-    if (puntos.length > 0) {
-        return { ramales: ramalesFromPuntos(puntos), paradas };
+    for (let attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
+        try {
+            // Combine caller abort with per-attempt timeout
+            const timeoutSignal = AbortSignal.timeout(TIMEOUT_MS);
+            const signal =
+                options?.signal
+                    ? AbortSignal.any([options.signal, timeoutSignal])
+                    : timeoutSignal;
+
+            const data = await post(
+                "RecuperarParadasConBanderaYDestinoPorLinea",
+                { codLinea, isSublinea: "0" },
+                { signal },
+            );
+
+            const paradas = buildParadasMapaFromLineaResponse(data, codLinea);
+            const puntos: PuntoRecorrido[] = data.puntos ?? [];
+
+            if (puntos.length > 0) {
+                return { ramales: ramalesFromPuntos(puntos), paradas };
+            }
+
+            // Fallback: load ramales from legacy endpoint (reuses same signal)
+            const legacyData = await post(
+                "RecuperarRecorridoParaMapaAbrevYAmpliPorEntidadYLinea",
+                { codLinea, isSublinea: "0" },
+                { signal },
+            );
+            return { ramales: ramalesFromPuntos(legacyData.puntos ?? []), paradas };
+        } catch (err: unknown) {
+            // If the caller explicitly aborted, don't retry
+            if (options?.signal?.aborted) throw err;
+            lastError = err;
+        }
     }
 
-    const ramales = await getRecorridoRamales(codLinea);
-    return { ramales, paradas };
+    throw lastError;
 }
 
 export async function getParadasParaMapa(codLinea: string): Promise<ParadaMapa[]> {

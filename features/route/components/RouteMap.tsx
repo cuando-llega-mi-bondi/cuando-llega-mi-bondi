@@ -508,9 +508,17 @@ export default function RouteMap({
       </MapContainer>
       ) : (
         <div
-          style={{ height: "100%", width: "100%", flex: 1, background: "#090909" }}
+          style={{ height: "100%", width: "100%", flex: 1, background: "#090909", display: "flex", alignItems: "center", justifyContent: "center" }}
           aria-hidden
-        />
+        >
+          <div style={{
+            width: 28, height: 28, borderRadius: "50%",
+            border: "3px solid rgba(255,255,255,0.1)",
+            borderTopColor: accentColor,
+            animation: "spin 0.8s linear infinite",
+          }} />
+          <style>{`@keyframes spin { to { transform: rotate(360deg) } }`}</style>
+        </div>
       )}
 
       {/* ── Telegram CTA ── */}

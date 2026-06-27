@@ -83,6 +83,7 @@ export default function RecorridoClient({ initialLineCode }: { initialLineCode?:
   const [mapLoading, setMapLoading] = useState(false);
   const [mapError, setMapError] = useState<string | null>(null);
   const [rawLiveBuses, setRawLiveBuses] = useState<{ lat: number; lng: number; ramal: string | null }[]>([]);
+  const selectAbortRef = useRef<AbortController | null>(null);
 
   // Same línea, selected ramal, or legacy rows without ramal
   const liveRowsForMap = useMemo(() => {
@@ -179,6 +180,11 @@ export default function RecorridoClient({ initialLineCode }: { initialLineCode?:
 
   // ── Actions ──────────────────────────────────────────────────────────────────
   async function selectLine(line: Linea) {
+    // Cancel any in-flight request from a previous selectLine call
+    selectAbortRef.current?.abort();
+    const controller = new AbortController();
+    selectAbortRef.current = controller;
+
     withViewTransition(() => {
       setSelectedLine(line);
       setMapLoading(true);
@@ -215,12 +221,15 @@ export default function RecorridoClient({ initialLineCode }: { initialLineCode?:
 
         const parsed = await Promise.all(
           ramalDefs.map(async (def: RamalDef) => {
-            const res = await fetch(def.geoJsonPath);
+            const res = await fetch(def.geoJsonPath, { signal: controller.signal });
             if (!res.ok) throw new Error(`No se pudo cargar el recorrido (${def.label})`);
             const geojson = (await res.json()) as GeoJsonCollection;
             return { def, geojson };
           }),
         );
+
+        // Bail out if a newer selectLine was called while we were loading
+        if (controller.signal.aborted) return;
 
         const builtRamales: RamalData[] = [];
         const allStops: ParadaMapa[] = [];
@@ -271,19 +280,27 @@ export default function RecorridoClient({ initialLineCode }: { initialLineCode?:
         setParadas(allStops);
       } else {
         const { ramales: ramalData, paradas: paradaData } =
-          await getRecorridoMapaCliente(line.CodigoLineaParada);
+          await getRecorridoMapaCliente(line.CodigoLineaParada, { signal: controller.signal });
+
+        // Bail out if a newer selectLine was called while we were loading
+        if (controller.signal.aborted) return;
+
         setRamales(ramalData);
         setSelectedRamal(ramalData[0] ?? null);
         setParadas(paradaData);
       }
     } catch (err: unknown) {
+      // Silently ignore aborted requests (user picked another line)
+      if (controller.signal.aborted) return;
       setMapError(
         err instanceof Error
           ? err.message
           : "No se pudo cargar el recorrido. Verificá tu conexión e intentá de nuevo.",
       );
     } finally {
-      setMapLoading(false);
+      if (!controller.signal.aborted) {
+        setMapLoading(false);
+      }
     }
   }
 

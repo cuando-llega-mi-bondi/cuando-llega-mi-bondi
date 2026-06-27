@@ -101,8 +101,9 @@ function MapController({
     const lastParada = useRef(paradaCoords.join(","));
 
     useEffect(() => {
-        setTimeout(() => map.invalidateSize({ animate: true }), 100);
-        setTimeout(() => map.invalidateSize({ animate: true }), 300);
+        const t1 = setTimeout(() => map.invalidateSize({ animate: true }), 100);
+        const t2 = setTimeout(() => map.invalidateSize({ animate: true }), 300);
+        return () => { clearTimeout(t1); clearTimeout(t2); };
     }, [isFullscreen, map]);
 
     useEffect(() => {

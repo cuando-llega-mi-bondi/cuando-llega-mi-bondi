@@ -62,7 +62,7 @@ export const BASE_URL = resolveCuandoApiBase();
 export type ActionParams = Record<string, string>;
 export type SwrActionKey = [string, ActionParams];
 
-export async function post(accion: string, params: ActionParams = {}) {
+export async function post(accion: string, params: ActionParams = {}, options?: { signal?: AbortSignal }) {
     if (staticReferenceEnabled() && STATIC_REFERENCE_ACCIONES.has(accion)) {
         try {
             const q = new URLSearchParams({ accion, ...params }).toString();
@@ -72,6 +72,7 @@ export async function post(accion: string, params: ActionParams = {}) {
             // en el servidor, Data Cache alineada al s-maxage de /api/reference.
             const refRes = await fetch(refUrl, {
                 method: "GET",
+                signal: options?.signal,
                 ...(typeof window === "undefined"
                     ? { next: { revalidate: 86400 } }
                     : {}),
@@ -96,7 +97,7 @@ export async function post(accion: string, params: ActionParams = {}) {
     // shim (PascalCase MGP raw).
     const qs = new URLSearchParams(params).toString();
     const url = `${BASE_URL}/mgp/${encodeURIComponent(accion)}${qs ? `?${qs}` : ""}`;
-    const res = await fetch(url, { method: "GET" });
+    const res = await fetch(url, { method: "GET", signal: options?.signal });
 
     if (!res.ok) {
         throw new Error(`HTTP ${res.status}`);
