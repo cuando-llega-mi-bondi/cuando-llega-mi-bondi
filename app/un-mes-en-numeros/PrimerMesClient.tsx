@@ -585,7 +585,7 @@ export default function PrimerMesClient() {
                                     <strong className="text-foreground font-semibold">
                                         Bondi MDP nació como un proyecto de código abierto
                                     </strong>
-                                    : sin modelo de negocio, sin publicidad, sin rastreadores de terceros. Una PWA
+                                    : sin fines de lucro y sin registro. Una PWA
                                     accesible desde cualquier navegador, sin necesidad de instalación, construida por
                                     desarrolladores de Mar del Plata para marplatenses.
                                 </p>
@@ -1399,8 +1399,8 @@ export default function PrimerMesClient() {
                                 </summary>
                                 <div className="mt-3 text-xs sm:text-sm text-muted-foreground leading-relaxed max-w-[720px]" itemScope itemProp="acceptedAnswer" itemType="https://schema.org/Answer">
                                     <p itemProp="text">
-                                        Sí. Bondi MDP es completamente gratuita, sin publicidad, sin registro y sin
-                                        suscripción de ningún tipo. El servicio se accede directamente desde el navegador en
+                                        Sí. Bondi MDP es completamente gratuita, sin registro y sin
+                                        suscripción de ningún tipo; se sostiene con publicidad no intrusiva. El servicio se accede directamente desde el navegador en
                                         bondimdp.com.ar.
                                     </p>
                                 </div>
