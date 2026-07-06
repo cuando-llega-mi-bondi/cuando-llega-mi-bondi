@@ -13,7 +13,7 @@ const features = [
   {
     icon: Zap,
     title: "Rápido y simple",
-    description: "Sin registro, sin publicidad. Abrís, elegís y listo.",
+    description: "Sin registro. Abrís, elegís y listo.",
   },
   {
     icon: Heart,

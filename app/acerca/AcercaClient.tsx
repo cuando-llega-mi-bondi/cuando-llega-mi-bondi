@@ -20,7 +20,10 @@ import { IconXBrand } from "@shared/icons/IconXBrand";
 // ── Data ────────────────────────────────────────────────────────────────────
 
 const FAQ = [
-    { q: "¿Es gratis?", a: "Sí. 100% gratuita y sin anuncios." },
+    {
+        q: "¿Es gratis?",
+        a: "Sí. 100% gratuita. Se sostiene con publicidad no intrusiva.",
+    },
     {
         q: "¿Funciona sin internet?",
         a: "Necesitás conexión para obtener los datos en tiempo real.",
@@ -120,7 +123,7 @@ const APP_FEATURES = [
     {
         icon: <IconZap className="mt-0.5 h-5 w-5 shrink-0 text-secondary" />,
         title: "Rápida",
-        description: "Sin registro, sin publicidad y sin pasos innecesarios.",
+        description: "Sin registro ni pasos innecesarios.",
     },
     {
         icon: <IconCode className="mt-0.5 h-5 w-5 shrink-0 text-secondary" />,
