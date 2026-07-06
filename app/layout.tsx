@@ -114,6 +114,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                         `,
                     }}
                 />
+                <Script
+                    async
+                    src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5101944874293370"
+                    crossOrigin="anonymous"
+                />
             </head>
             <body className={`${inter.variable}`}>
                 <ThemeProvider>
