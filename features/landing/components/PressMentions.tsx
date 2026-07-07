@@ -52,10 +52,10 @@ const pressMentions = [
 
 export function PressMentions() {
     return (
-        <div className="grid md:grid-cols-3 gap-8 mb-16">
+        <div className="grid md:grid-cols-3 gap-8">
             {pressMentions.map((item, index) => (
-                <Link key={index} href={item.link} className="group block h-full">
-                    <div className="bg-background border border-border rounded-[2rem] overflow-hidden hover:border-turquesa/40 hover:shadow-xl transition-all duration-300 h-full flex flex-col">
+                <Link key={index} href={item.link} target="_blank" rel="noopener noreferrer" className="group block h-full">
+                    <div className="bg-card border border-border rounded-[2rem] overflow-hidden hover:border-[#2bb3a8]/50 hover:shadow-2xl transition-all duration-300 h-full flex flex-col">
                         <div className="relative h-56 md:h-64 overflow-hidden bg-muted">
                             <div className="absolute inset-0 bg-black/10 group-hover:bg-transparent transition-colors z-10" />
                             <img
@@ -73,10 +73,10 @@ export function PressMentions() {
                         </div>
 
                         <div className="p-8 flex-1 flex flex-col justify-between">
-                            <h3 className="text-2xl font-bold text-foreground leading-tight mb-6 group-hover:text-turquesa transition-colors">
+                            <h3 className="text-xl font-bold text-foreground leading-snug mb-6 line-clamp-4 group-hover:text-amarillo transition-colors">
                                 &quot;{item.title}&quot;
                             </h3>
-                            <div className="inline-flex items-center text-[15px] font-bold text-muted-foreground group-hover:text-foreground transition-colors mt-auto">
+                            <div className="inline-flex items-center text-[15px] font-bold text-[#2bb3a8] group-hover:text-amarillo transition-colors mt-auto">
                                 Leer nota completa
                                 <ArrowRight className="w-5 h-5 ml-2 transform group-hover:translate-x-1 transition-transform" />
                             </div>
