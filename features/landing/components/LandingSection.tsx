@@ -1,34 +1,45 @@
 "use client";
 
 import type { ReactNode } from "react";
+import { cn } from "@shared/utils";
+import { BlueprintGrid, SectionEyebrow } from "./LandingDecor";
 
 interface LandingSectionProps {
+    eyebrow?: string;
     title: string;
     highlight?: string;
     description?: string;
     className?: string;
+    withGrid?: boolean;
     children: ReactNode;
 }
 
 export function LandingSection({
+    eyebrow,
     title,
     highlight,
     description,
     className = "",
+    withGrid = false,
     children,
 }: LandingSectionProps) {
     return (
-        <section className={`py-24 relative overflow-hidden ${className}`}>
-            <div className="max-w-10/12 mx-auto px-8">
-                <div className="text-center mb-16">
-                    <h2 className="text-4xl lg:text-[40px] flex-wrap text-balance font-black uppercase tracking-tighter mb-4 flex items-center justify-center gap-3">
+        <section className={cn("relative overflow-hidden py-20", className)}>
+            {withGrid ? <BlueprintGrid /> : null}
+            <div className="relative z-10 mx-auto max-w-6xl px-8">
+                <div className="mx-auto mb-14 max-w-2xl text-center">
+                    {eyebrow ? <SectionEyebrow>{eyebrow}</SectionEyebrow> : null}
+                    <h2 className="text-balance text-4xl font-black uppercase tracking-tighter lg:text-[40px]">
                         {title}
                         {highlight ? (
-                            <span className="text-amarillo">{highlight}</span>
+                            <>
+                                {" "}
+                                <span className="text-amarillo">{highlight}</span>
+                            </>
                         ) : null}
                     </h2>
                     {description ? (
-                        <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+                        <p className="mx-auto mt-4 max-w-2xl text-lg text-muted-foreground">
                             {description}
                         </p>
                     ) : null}

@@ -1,14 +1,14 @@
 "use client";
 
 import { Bus, Zap, Heart, Map, Clock, Shield } from "lucide-react";
-import { BrandLogo } from "@shared/ui/BrandLogo";
+import { LandingSection } from "./LandingSection";
 
 const features = [
   {
     icon: Clock,
     title: "Tiempo real",
     description:
-      "Consultá los próximos arrivals de todas las líneas de colectivos en Mar del Plata.",
+      "Consultá los próximos arribos de todas las líneas de colectivos en Mar del Plata.",
   },
   {
     icon: Zap,
@@ -39,37 +39,31 @@ const features = [
 
 export function LandingFeatures() {
   return (
-    <section className="py-24 bg-background">
-      <div className="max-w-7xl mx-auto px-8">
-        <div className="text-center mb-16">
-          <h2 className="text-4xl lg:text-[40px] flex-wrap text-balance font-black uppercase tracking-tighter mb-4 flex items-center justify-center gap-3">
-            ¿Por qué usar <BrandLogo className="text-4xl lg:text-[40px]" />?
-          </h2>
-          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            La forma más simple de consultar cuándo llega tu colectivo.
-          </p>
-        </div>
-
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {features.map((feature) => (
-            <div
-              key={feature.title}
-              className="bg-card border border-border rounded-2xl p-6 hover:border-turquesa/50 transition-colors"
-            >
-              <div className="w-12 h-12 bg-amarillo/10 rounded-2xl flex items-center justify-center mb-4">
-                <feature.icon
-                  className="w-5 h-5 text-amarillo"
-                  strokeWidth={2}
-                />
-              </div>
-              <h3 className="text-lg font-bold mb-2">{feature.title}</h3>
-              <p className="text-[15px] leading-relaxed text-muted-foreground">
-                {feature.description}
-              </p>
+    <LandingSection
+      eyebrow="Funciones"
+      title="¿Por qué usar"
+      highlight="Bondi MDP?"
+      description="La forma más simple de consultar cuándo llega tu colectivo."
+    >
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        {features.map((feature) => (
+          <div
+            key={feature.title}
+            className="group relative overflow-hidden rounded-2xl border border-border bg-card p-6 transition-colors hover:border-[#2bb3a8]/50"
+          >
+            <span className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-amarillo/50 to-transparent opacity-0 transition-opacity group-hover:opacity-100" />
+            <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl border border-amarillo/20 bg-amarillo/10">
+              <feature.icon className="h-5 w-5 text-amarillo" strokeWidth={2} />
             </div>
-          ))}
-        </div>
+            <h3 className="mb-2 text-lg font-bold text-foreground">
+              {feature.title}
+            </h3>
+            <p className="text-[15px] leading-relaxed text-muted-foreground">
+              {feature.description}
+            </p>
+          </div>
+        ))}
       </div>
-    </section>
+    </LandingSection>
   );
 }
