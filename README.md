@@ -92,6 +92,7 @@ Copiá `.env.example` a `.env.local` y completá al menos:
 | Variable | Obligatoria | Uso |
 | -------- | ----------- | --- |
 | `NEXT_PUBLIC_CUANDO_API_URL` | Sí (arribos en vivo) | URL del backend self-hosted (ej. `https://bondi.example.com`) |
+| `NEXT_PUBLIC_PROXY_API_URL` | No | URL base de un proxy opcional. El frontend balanceará la carga entre ambas. |
 | `NEXT_PUBLIC_USE_STATIC_REFERENCE` | No (default `true`) | Catálogo desde dump local vía `/api/reference` |
 
 Telegram, Supabase, analytics y el resto: [docs/env-reference.md](docs/env-reference.md).

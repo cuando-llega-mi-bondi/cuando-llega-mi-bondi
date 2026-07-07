@@ -44,20 +44,33 @@ function internalAppOrigin(): string {
  * `data/mgp-static-dump.json`, las acciones en `STATIC_REFERENCE_ACCIONES`
  * se atienden primero con `GET /api/reference` (sin pegarle al backend).
  */
-function resolveCuandoApiBase(): string | null {
-    const raw =
-        typeof process !== "undefined"
-            ? process.env.NEXT_PUBLIC_CUANDO_API_URL?.trim()
-            : undefined;
-    if (!raw) return null;
-    let base = raw.replace(/\/$/, "");
-    if (!/^https?:\/\//i.test(base)) {
-        base = `https://${base.replace(/^\/+/, "")}`;
+function resolveCuandoApiBases(): string[] {
+    const urls: string[] = [];
+    if (typeof process !== "undefined") {
+        const cuando = process.env.NEXT_PUBLIC_CUANDO_API_URL?.trim();
+        if (cuando) urls.push(cuando);
+        
+        const proxy = process.env.NEXT_PUBLIC_PROXY_API_URL?.trim();
+        if (proxy) urls.push(proxy);
     }
-    return base;
+    
+    return urls.map(raw => {
+        let base = raw.replace(/\/$/, "");
+        if (!/^https?:\/\//i.test(base)) {
+            base = `https://${base.replace(/^\/+/, "")}`;
+        }
+        return base;
+    });
 }
 
-export const BASE_URL = resolveCuandoApiBase();
+const BASE_URLS = resolveCuandoApiBases();
+
+function getBaseUrl(): string | null {
+    if (BASE_URLS.length === 0) return null;
+    return BASE_URLS[Math.floor(Math.random() * BASE_URLS.length)];
+}
+
+export const BASE_URL = BASE_URLS[0] || null; // for backwards compatibility if needed, though getBaseUrl() is preferred for dynamic use
 
 export type ActionParams = Record<string, string>;
 export type SwrActionKey = [string, ActionParams];
@@ -85,9 +98,10 @@ export async function post(accion: string, params: ActionParams = {}, options?: 
         }
     }
 
-    if (!BASE_URL) {
+    const baseUrl = getBaseUrl();
+    if (!baseUrl) {
         throw new Error(
-            "NEXT_PUBLIC_CUANDO_API_URL no está configurada. El front no puede pegarle directo a la muni desde Vercel; configurá la URL del backend self-hosted.",
+            "NEXT_PUBLIC_CUANDO_API_URL (o NEXT_PUBLIC_PROXY_API_URL) no están configuradas. El front no puede pegarle directo a la muni desde Vercel; configurá la URL del backend self-hosted.",
         );
     }
 
@@ -96,7 +110,7 @@ export async function post(accion: string, params: ActionParams = {}, options?: 
     // la misma combinación en la ventana de cache. Mismo shape que el POST /
     // shim (PascalCase MGP raw).
     const qs = new URLSearchParams(params).toString();
-    const url = `${BASE_URL}/mgp/${encodeURIComponent(accion)}${qs ? `?${qs}` : ""}`;
+    const url = `${baseUrl}/mgp/${encodeURIComponent(accion)}${qs ? `?${qs}` : ""}`;
     const res = await fetch(url, { method: "GET", signal: options?.signal });
 
     if (!res.ok) {

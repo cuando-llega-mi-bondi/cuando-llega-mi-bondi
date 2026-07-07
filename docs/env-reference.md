@@ -7,6 +7,7 @@ Valores de ejemplo en [`.env.example`](../.env.example). En desarrollo, copiá e
 | Variable | Leída por la app | Descripción |
 | -------- | ---------------- | ----------- |
 | `NEXT_PUBLIC_CUANDO_API_URL` | Sí (`shared/api/client.ts`) | URL base del backend self-hosted. Sin ella, `post()` falla en acciones en vivo. Las peticiones van a `GET {url}/mgp/{accion}?...`. |
+| `NEXT_PUBLIC_PROXY_API_URL` | Sí (`shared/api/client.ts`) | URL base de un proxy opcional. Si se define junto a `NEXT_PUBLIC_CUANDO_API_URL`, el frontend balanceará la carga entre ambas. |
 | `NEXT_PUBLIC_USE_STATIC_REFERENCE` | Sí | `true` (default) sirve catálogo desde `/api/reference`. `false` fuerza todo el catálogo al backend. |
 
 ## Integraciones opcionales (esta app)
