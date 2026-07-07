@@ -1,4 +1,5 @@
 "use client";
+"use no memo";
 
 import { motion, useScroll, useTransform, useReducedMotion } from "motion/react";
 import { CityMapBackground } from "./LandingDecor";

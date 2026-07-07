@@ -1,4 +1,5 @@
 "use client";
+"use no memo";
 
 import type { ReactNode } from "react";
 import { motion, useReducedMotion } from "motion/react";
@@ -28,3 +29,4 @@ export function Reveal({ children, className }: RevealProps) {
     </motion.div>
   );
 }
+

@@ -1,4 +1,5 @@
 "use client";
+"use no memo";
 
 import { useEffect, useRef } from "react";
 import { animate, useInView, useReducedMotion } from "motion/react";
