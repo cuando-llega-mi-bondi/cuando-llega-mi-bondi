@@ -1,0 +1,2 @@
+feed_publisher_name,feed_publisher_url,feed_lang,feed_start_date,feed_end_date,feed_version,feed_contact_url
+Bondi MDP,https://www.bondimdp.com.ar,es-AR,20260506,20270506,20260506,https://github.com/cuando-llega-mi-bondi/cuando-llega-mi-bondi

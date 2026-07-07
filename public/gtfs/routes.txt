@@ -1,0 +1,32 @@
+route_id,agency_id,route_short_name,route_long_name,route_type
+r562,el-libertador-srl,562,Línea 562,3
+r563,el-libertador-srl,563,Línea 563,3
+r715,empresa-batan-s-a,715,Línea 715,3
+r720,empresa-batan-s-a,720,Línea 720,3
+r531,empresa-de-transporte-12-de-octubre-s-r-l,531,Línea 531,3
+r532,empresa-de-transporte-12-de-octubre-s-r-l,532,Línea 532,3
+r533,empresa-de-transporte-12-de-octubre-s-r-l,533,Línea 533,3
+r511,empresa-de-transporte-peralta-ramos-saci,511,Línea 511,3
+r512,empresa-de-transporte-peralta-ramos-saci,512,Línea 512,3
+r717,empresa-de-transporte-peralta-ramos-saci,717,Línea 717,3
+r501,transportes-25-de-mayo-srl,501,Línea 501,3
+r521,transportes-25-de-mayo-srl,521,Línea 521,3
+r522,transportes-25-de-mayo-srl,522,Línea 522,3
+r523,transportes-25-de-mayo-srl,523,Línea 523,3
+r525,transportes-25-de-mayo-srl,525,Línea 525,3
+r541,transportes-25-de-mayo-srl,541,Línea 541,3
+r542,transportes-25-de-mayo-srl,542,Línea 542,3
+r543,transportes-25-de-mayo-srl,543,Línea 543,3
+r551,transportes-25-de-mayo-srl,551,Línea 551,3
+r552,transportes-25-de-mayo-srl,552,Línea 552,3
+r553,transportes-25-de-mayo-srl,553,Línea 553,3
+r554,transportes-25-de-mayo-srl,554,Línea 554,3
+r555,transportes-25-de-mayo-srl,555,Línea 555,3
+r571,transportes-25-de-mayo-srl,571,Línea 571,3
+r573,transportes-25-de-mayo-srl,573,Línea 573,3
+r581,transportes-25-de-mayo-srl,581,Línea 581,3
+r591,transportes-25-de-mayo-srl,591,Línea 591,3
+r593,transportes-25-de-mayo-srl,593,Línea 593,3
+rbatan,el-libertador-srl,BATAN,Línea BATAN,3
+r593corta,el-libertador-srl,593CORTA,Línea 593CORTA,3
+rcosta-azul,el-libertador-srl,COSTA AZUL,Línea COSTA AZUL,3

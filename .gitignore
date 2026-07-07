@@ -42,3 +42,17 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# self-hosted backend deps
+node_modules/
+
+# artefactos pesados / datos de routing (no versionar)
+/infrastructure/osrm/data/
+/fixtures/
+
+# backups de dumps
+/data/*.bak-*
+
+# supabase local temp
+/supabase/.branches/
+/supabase/.temp/

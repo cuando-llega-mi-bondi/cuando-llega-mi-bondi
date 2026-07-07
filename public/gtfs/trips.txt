@@ -1,0 +1,125 @@
+route_id,service_id,trip_id,trip_headsign,shape_id
+r512,everyday,t17,A Luro Y 244,s17
+r501,everyday,t2,Al Regional,s2
+r511,everyday,t14,Al Puerto,s14
+r525,everyday,t29,A Luro Y Santa Fe,s29
+r533,everyday,t38,A Beruti Y 228,s38
+rbatan,everyday,t98,A Batan,s98
+rbatan,everyday,t101,A Batan,s101
+rbatan,everyday,t117,A Vieja Terminal,s117
+r511,everyday,t11,A Luro Y 244,s11
+r511,everyday,t13,Al Griego,s13
+r533,everyday,t39,A Vieja Terminal,s39
+r593corta,everyday,t91,A Vieja Terminal,s91
+rbatan,everyday,t102,A Batan,s102
+rbatan,everyday,t108,A Vieja Terminal,s108
+rbatan,everyday,t109,A Vieja Terminal,s109
+rbatan,everyday,t118,A Vieja Terminal,s118
+r501,everyday,t1,Al Griego,s1
+r511,everyday,t3,A Acantilados,s3
+r511,everyday,t4,A Alfar,s4
+r511,everyday,t9,A Luro Y 244,s9
+r511,everyday,t10,A Luro Y 244,s10
+r511,everyday,t5,A Brusquitas,s5
+r511,everyday,t6,A Luro Y 244,s6
+r511,everyday,t7,A Luro Y 244,s7
+r511,everyday,t8,A Luro Y 244,s8
+r511,everyday,t12,Al Faro,s12
+r512,everyday,t15,A Luro Y 244,s15
+r512,everyday,t16,A Luro Y 244,s16
+r512,everyday,t18,A Vieja Terminal,s18
+r512,everyday,t19,A Vieja Terminal,s19
+r512,everyday,t20,Al Hipodromo,s20
+r521,everyday,t21,A Beruti Y 228,s21
+r521,everyday,t22,Al Bosque,s22
+r522,everyday,t23,A Beruti Y 228,s23
+r522,everyday,t24,A Beruti Y 228,s24
+r522,everyday,t25,Al Faro,s25
+r522,everyday,t26,Al Faro,s26
+r523,everyday,t27,A Parque Palermo,s27
+r523,everyday,t28,Al Faro,s28
+r525,everyday,t30,A Luro Y Santa Fe,s30
+r525,everyday,t31,A Parque Hermoso,s31
+r525,everyday,t32,A Valle Hermoso,s32
+r531,everyday,t33,A 196 Y Garay,s33
+r531,everyday,t34,A Beruti Y 228,s34
+r532,everyday,t35,A Beruti Y 228,s35
+r532,everyday,t36,A Juan B Justo Y Calaza,s36
+r533,everyday,t37,A Beruti Y 228,s37
+r533,everyday,t40,Al Puerto,s40
+r541,everyday,t41,A Ruta 11 (parque Camet),s41
+r541,everyday,t42,Al Materno,s42
+r542,everyday,t43,A Aeropuerto,s43
+r542,everyday,t44,A Aeropuerto-estacion Camet,s44
+r542,everyday,t45,A Aquasol,s45
+r542,everyday,t46,A Aquasol,s46
+r542,everyday,t47,A Estacion Camet,s47
+r542,everyday,t48,Al 2 De Abril,s48
+r542,everyday,t49,Al Regional,s49
+r542,everyday,t50,Al Regional,s50
+r542,everyday,t51,Al Regional,s51
+r542,everyday,t52,Al Regional,s52
+r542,everyday,t53,Al Regional,s53
+r542,everyday,t54,Al Regional,s54
+r543,everyday,t55,A Estacion Camet,s55
+r543,everyday,t56,Al Regional,s56
+r551,everyday,t57,A Constitucion 10250,s57
+r551,everyday,t58,Al Puerto,s58
+r552,everyday,t59,A 180 Y Estrada,s59
+r552,everyday,t60,A 180 Y Estrada,s60
+r552,everyday,t61,Al Puerto,s61
+r552,everyday,t62,Al Puerto,s62
+r553,everyday,t63,A Constitucion 10250,s63
+r553,everyday,t64,Al Puerto,s64
+r555,everyday,t65,A 180 Y Estrada,s65
+r555,everyday,t66,A Lomas Del Golf,s66
+r562,everyday,t67,Al Hipodromo,s67
+r562,everyday,t68,Al Puerto,s68
+r563,everyday,t69,A Ruta 11 (parque Camet),s69
+r563,everyday,t70,A Ruta 11 (parque Camet),s70
+r591,everyday,t87,A Parque Palermo,s87
+r563,everyday,t71,Al Puerto,s71
+r563,everyday,t72,Al Puerto,s72
+r571,everyday,t73,A Barrio Belgrano,s73
+r571,everyday,t74,A Barrio Belgrano,s74
+rbatan,everyday,t99,A Batan,s99
+r571,everyday,t75,Al Puerto,s75
+r571,everyday,t76,Al Puerto,s76
+r573,everyday,t77,A Barrio Belgrano,s77
+r573,everyday,t78,A Barrio Belgrano,s78
+r573,everyday,t79,A Barrio Belgrano,s79
+r573,everyday,t80,A Polonia Y Mario Bravo,s80
+r573,everyday,t81,A Polonia Y Mario Bravo,s81
+r573,everyday,t82,A Polonia Y Mario Bravo,s82
+r581,everyday,t83,Al Faro,s83
+r581,everyday,t84,Al Gada,s84
+r591,everyday,t85,A Alem Y Pelegrini,s85
+r591,everyday,t86,A Alem Y Pelegrini,s86
+r591,everyday,t88,A Parque Palermo,s88
+r593,everyday,t89,Al Puerto,s89
+r593,everyday,t90,Al Regional,s90
+r593corta,everyday,t92,Al Puerto,s92
+r717,everyday,t93,A Colinas Verdes,s93
+r717,everyday,t94,A Sierra De Los Padres,s94
+r717,everyday,t95,A Vieja Terminal,s95
+r717,everyday,t96,A Vieja Terminal,s96
+rbatan,everyday,t97,A Batan,s97
+rbatan,everyday,t100,A Batan,s100
+rbatan,everyday,t103,A Batan,s103
+rbatan,everyday,t104,A Batan,s104
+rbatan,everyday,t105,A Batan,s105
+rbatan,everyday,t106,A Batan,s106
+rbatan,everyday,t107,A Batan,s107
+rbatan,everyday,t114,A Vieja Terminal,s114
+rbatan,everyday,t115,A Vieja Terminal,s115
+rbatan,everyday,t116,A Vieja Terminal,s116
+rbatan,everyday,t110,A Vieja Terminal,s110
+rbatan,everyday,t124,A Vieja Terminal,s124
+rbatan,everyday,t125,A Vieja Terminal,s125
+rbatan,everyday,t111,A Vieja Terminal,s111
+rbatan,everyday,t113,A Vieja Terminal,s113
+rbatan,everyday,t119,A Vieja Terminal,s119
+rbatan,everyday,t120,A Vieja Terminal,s120
+rbatan,everyday,t121,A Vieja Terminal,s121
+rbatan,everyday,t122,A Vieja Terminal,s122
+rbatan,everyday,t123,A Vieja Terminal,s123

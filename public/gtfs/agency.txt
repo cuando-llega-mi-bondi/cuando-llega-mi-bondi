@@ -1,0 +1,6 @@
+agency_id,agency_name,agency_url,agency_timezone,agency_lang
+el-libertador-srl,El Libertador Srl,https://www.mardelplata.gob.ar,America/Argentina/Buenos_Aires,es-AR
+empresa-batan-s-a,Empresa Batan S.A.,https://www.mardelplata.gob.ar,America/Argentina/Buenos_Aires,es-AR
+empresa-de-transporte-12-de-octubre-s-r-l,Empresa De Transporte 12 De Octubre S R L,https://www.mardelplata.gob.ar,America/Argentina/Buenos_Aires,es-AR
+empresa-de-transporte-peralta-ramos-saci,Empresa De Transporte Peralta Ramos Saci,https://www.mardelplata.gob.ar,America/Argentina/Buenos_Aires,es-AR
+transportes-25-de-mayo-srl,Transportes 25 De Mayo Srl,https://www.mardelplata.gob.ar,America/Argentina/Buenos_Aires,es-AR
