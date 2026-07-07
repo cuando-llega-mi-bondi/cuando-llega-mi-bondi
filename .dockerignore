@@ -12,8 +12,7 @@ node_modules
 fixtures
 public/gtfs
 public/gtfs.zip
-server/node_modules
-server/.env*
+server
 supabase/.branches
 supabase/.temp
 docs/*.pdf
