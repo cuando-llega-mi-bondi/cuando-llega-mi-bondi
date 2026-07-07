@@ -209,7 +209,7 @@ function MainLayoutContent({ children }: { children: ReactNode }) {
   );
 
   return (
-    <div className="flex min-h-pwa-shell flex-col">
+    <div className="flex min-h-pwa-shell flex-col lg:pl-19">
       <Header />
       {children}
       <BottomNav />

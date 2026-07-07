@@ -3,6 +3,7 @@
 import { memo, type ReactNode } from "react";
 import { motion } from "motion/react";
 import { Card } from "@shared/ui/Card";
+import { useIsDesktop } from "@shared/hooks/useIsDesktop";
 import { useSwipeGesture } from "./useSwipeGesture";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -56,6 +57,7 @@ export const SwipeableRow = memo(function SwipeableRow({
     index,
     children,
 }: SwipeableRowProps) {
+    const isDesktop = useIsDesktop();
     const {
         x,
         swipeDir,
@@ -72,6 +74,96 @@ export const SwipeableRow = memo(function SwipeableRow({
         leftLabelOpacity,
         rightLabelOpacity,
     } = transforms;
+
+    // ── Desktop: sin gestos — acciones como botones visibles al hover/focus ──
+    if (isDesktop) {
+        return (
+            <motion.div
+                layout
+                initial={{ opacity: 0, y: 10, scale: 0.98 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{
+                    opacity: 0,
+                    height: 0,
+                    marginBottom: 0,
+                    transition: { duration: 0.18, ease: "easeIn" },
+                }}
+                transition={{
+                    layout: { type: "spring", stiffness: 500, damping: 40 },
+                    opacity: { duration: 0.2, delay: index * 0.04 },
+                    y: { duration: 0.25, delay: index * 0.04 },
+                }}
+                className="group"
+                style={{ position: "relative", borderRadius: 14 }}
+            >
+                <div
+                    onClick={onTap}
+                    onKeyDown={(e) => {
+                        onExtraKeyDown?.(e);
+                        if (e.defaultPrevented) return;
+                        if (e.key === "Enter" || e.key === " ") onTap();
+                        if (e.key === "Delete" || e.key === "Backspace") onSwipeLeft();
+                    }}
+                    tabIndex={0}
+                    role="button"
+                    aria-label={ariaLabel}
+                    className="cursor-pointer outline-none focus-visible:ring-2"
+                    style={
+                        {
+                            "--tw-ring-color": focusRingColor,
+                            borderRadius: 14,
+                        } as React.CSSProperties
+                    }
+                >
+                    <Card className="px-3.5 py-3 transition-colors hover:bg-muted/30">
+                        <div className="flex items-center gap-3">
+                            <div className="min-w-0 flex-1">{children}</div>
+
+                            {/* Acciones (aparecen al hover / focus) */}
+                            <div className="flex shrink-0 items-center gap-1.5 opacity-0 transition-opacity duration-150 group-focus-within:opacity-100 group-hover:opacity-100">
+                                <button
+                                    type="button"
+                                    title={leftAction.label}
+                                    aria-label={leftAction.label}
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        onSwipeRight();
+                                    }}
+                                    className="flex h-9 w-9 cursor-pointer items-center justify-center rounded-lg border border-border bg-muted text-muted-foreground transition-colors hover:text-white"
+                                    onMouseEnter={(e) => {
+                                        e.currentTarget.style.backgroundColor = leftAction.color;
+                                    }}
+                                    onMouseLeave={(e) => {
+                                        e.currentTarget.style.backgroundColor = "";
+                                    }}
+                                >
+                                    {leftAction.icon}
+                                </button>
+                                <button
+                                    type="button"
+                                    title={rightAction.label}
+                                    aria-label={rightAction.label}
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        onSwipeLeft();
+                                    }}
+                                    className="flex h-9 w-9 cursor-pointer items-center justify-center rounded-lg border border-border bg-muted text-muted-foreground transition-colors hover:text-white"
+                                    onMouseEnter={(e) => {
+                                        e.currentTarget.style.backgroundColor = rightAction.color;
+                                    }}
+                                    onMouseLeave={(e) => {
+                                        e.currentTarget.style.backgroundColor = "";
+                                    }}
+                                >
+                                    {rightAction.icon}
+                                </button>
+                            </div>
+                        </div>
+                    </Card>
+                </div>
+            </motion.div>
+        );
+    }
 
     return (
         <motion.div

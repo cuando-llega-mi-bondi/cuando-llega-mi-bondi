@@ -10,7 +10,7 @@ export function PageShell({ children, className }: PageShellProps) {
     return (
         <main
             className={cn(
-                "mx-auto w-full max-w-[520px] flex-1 px-[calc(20px+var(--safe-left))] pt-5 pb-nav pr-[calc(20px+var(--safe-right))] text-foreground",
+                "mx-auto w-full max-w-[520px] flex-1 px-[calc(20px+var(--safe-left))] pt-5 pb-nav pr-[calc(20px+var(--safe-right))] text-foreground lg:max-w-3xl lg:pt-8 lg:pb-10",
                 className,
             )}
         >

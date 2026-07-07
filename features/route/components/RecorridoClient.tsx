@@ -420,8 +420,8 @@ export default function RecorridoClient({ initialLineCode }: { initialLineCode?:
   // ─────────────────────────────────────────────────────────────────────────────
   if (step === "selector") {
     return (
-      <div className="flex min-h-pwa-shell flex-col bg-bg">
-        <header className="z-50 flex shrink-0 items-center gap-3 border-b border-white/10 px-[calc(20px+var(--safe-left))] pt-[calc(16px+var(--safe-top))] pr-[calc(20px+var(--safe-right))] pb-3.5">
+      <div className="flex min-h-pwa-shell flex-col bg-bg lg:pl-19">
+        <header className="z-50 flex shrink-0 items-center gap-3 border-b border-white/10 px-[calc(20px+var(--safe-left))] pt-[calc(16px+var(--safe-top))] pr-[calc(20px+var(--safe-right))] pb-3.5 lg:px-8">
           <Link
             href="/"
             className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-white/12 bg-white/5 text-text-dim no-underline transition hover:border-white/20 hover:text-text"
@@ -442,8 +442,8 @@ export default function RecorridoClient({ initialLineCode }: { initialLineCode?:
           </div>
         </header>
 
-        <div className="shrink-0 border-b border-white/10  px-4 pb-2 pt-3.5">
-          <div className="relative">
+        <div className="shrink-0 border-b border-white/10  px-4 pb-2 pt-3.5 lg:px-8">
+          <div className="relative lg:max-w-xl">
             <span className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-text-dim">
               <IconSearch />
             </span>
@@ -458,7 +458,7 @@ export default function RecorridoClient({ initialLineCode }: { initialLineCode?:
           </div>
         </div>
 
-        <div className="flex-1 overflow-y-auto px-3 pb-45 pt-2">
+        <div className="flex-1 overflow-y-auto px-3 pb-45 pt-2 lg:px-8 lg:pb-10">
           {linesLoading ? (
             <LineSkeletons />
           ) : filteredLines.length === 0 ? (
@@ -466,9 +466,11 @@ export default function RecorridoClient({ initialLineCode }: { initialLineCode?:
               No se encontraron líneas para «{search}»
             </div>
           ) : (
-            filteredLines.map((line) => (
-              <LineItem key={line.CodigoLineaParada} line={line} onSelect={selectLine} />
-            ))
+            <div className="lg:grid lg:grid-cols-2 lg:gap-x-3 xl:grid-cols-3">
+              {filteredLines.map((line) => (
+                <LineItem key={line.CodigoLineaParada} line={line} onSelect={selectLine} />
+              ))}
+            </div>
           )}
         </div>
         <BottomNav />
@@ -480,8 +482,8 @@ export default function RecorridoClient({ initialLineCode }: { initialLineCode?:
   // MAP SCREEN
   // ─────────────────────────────────────────────────────────────────────────────
   return (
-    <div className="flex h-dvh flex-col bg-background pb-nav">
-      <header className="z-50 flex shrink-0 items-center gap-3 border-b border-border bg-background/90 backdrop-blur-md px-[calc(16px+var(--safe-left))] pr-[calc(16px+var(--safe-right))] pt-[calc(10px+var(--safe-top))] pb-3">
+    <div className="flex h-dvh flex-col bg-background pb-nav lg:pl-19 lg:pb-0">
+      <header className="z-50 flex shrink-0 items-center gap-3 border-b border-border bg-background/90 backdrop-blur-md px-[calc(16px+var(--safe-left))] pr-[calc(16px+var(--safe-right))] pt-[calc(10px+var(--safe-top))] pb-3 lg:px-8">
         <button
           type="button"
           onClick={goBack}
