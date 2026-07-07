@@ -12,7 +12,7 @@ import { query } from "../db.js";
 import { env } from "../env.js";
 import { findLine, getStopIndex, type Bandera } from "../data/static.js";
 import { haversineMts } from "../lib/geo.js";
-import { fetchMgpDirect, isMgpDirectEnabled } from "../lib/mgpDirect.js";
+import { enqueueMgp } from "../lib/mgpQueue.js";
 
 const FRESH_SEC = 90;
 // Si no tenemos avg confiable, usamos un fallback de velocidad urbana (en km/h).
@@ -170,52 +170,16 @@ async function fetchMuniArribos(
         codigoLineaParada,
     }).toString();
 
-    // Path "direct" (firma RSA + clave compartida) — preferido si está disponible.
-    if (isMgpDirectEnabled()) {
-        try {
-            const data = (await fetchMgpDirect(body)) as MgpResponse;
-            return mapMgpResponse(data);
-        } catch (e) {
-            return {
-                source: "muni_unavailable",
-                arribos: [],
-                error: (e as Error).message,
-            };
-        }
+    try {
+        const data = (await enqueueMgp(body, { priority: "high" })) as MgpResponse;
+        return mapMgpResponse(data);
+    } catch (e) {
+        return {
+            source: "muni_unavailable",
+            arribos: [],
+            error: (e as Error).message,
+        };
     }
-
-    // Path "proxy" (Termux/Oracle).
-    if (env.MGP_PROXY_URL) {
-        const ctrl = new AbortController();
-        const tid = setTimeout(() => ctrl.abort(), 6_000);
-        try {
-            const r = await fetch(env.MGP_PROXY_URL, {
-                method: "POST",
-                headers: { "content-type": "application/x-www-form-urlencoded" },
-                body,
-                signal: ctrl.signal,
-            });
-            if (!r.ok) {
-                return {
-                    source: "muni_unavailable",
-                    arribos: [],
-                    error: `http_${r.status}`,
-                };
-            }
-            const data = (await r.json().catch(() => null)) as MgpResponse | null;
-            return mapMgpResponse(data);
-        } catch (e) {
-            return {
-                source: "muni_unavailable",
-                arribos: [],
-                error: (e as Error).message,
-            };
-        } finally {
-            clearTimeout(tid);
-        }
-    }
-
-    return { source: "muni_unavailable", arribos: [], error: "no_mgp_config" };
 }
 
 /** Encuentra la primera bandera de la línea que contenga paradaId. */

@@ -3,8 +3,8 @@
  * arribos del MGP y dispara push si está dentro del threshold + cooldown.
  */
 import { query } from "../db.js";
-import { env } from "../env.js";
 import { sendPush, markSubscriptionGone, type Subscription } from "../lib/webpush.js";
+import { enqueueMgp, isBreakerOpen } from "../lib/mgpQueue.js";
 
 type WatchRow = {
     rutina_id: string;
@@ -23,6 +23,9 @@ type WatchRow = {
 
 type Arribo = { Arribo?: string; DescripcionLinea?: string };
 
+/** Delay entre cada candidato para no hacer ráfagas a MGP. */
+const INTER_CANDIDATE_DELAY_MS = 2_000;
+
 function parseEtaMin(s: string | undefined): number | null {
     if (!s) return null;
     const m = s.match(/(\d+)/);
@@ -40,24 +43,18 @@ function cooldownElapsed(lastFiredAt: string | null, cooldownMin: number): boole
     return Date.now() - new Date(lastFiredAt).getTime() >= cooldownMin * 60_000;
 }
 
+function sleep(ms: number): Promise<void> {
+    return new Promise((r) => setTimeout(r, ms));
+}
+
 async function fetchEta(paradaId: string, lineaId: string): Promise<number | null> {
-    if (!env.MGP_PROXY_URL) return null;
     const body = new URLSearchParams({
         accion: "RecuperarProximosArribosW",
         codigoParada: paradaId,
         codigoLineaParada: lineaId,
-    });
-    const ctrl = new AbortController();
-    const tid = setTimeout(() => ctrl.abort(), 5000);
+    }).toString();
     try {
-        const r = await fetch(env.MGP_PROXY_URL, {
-            method: "POST",
-            body,
-            headers: { "content-type": "application/x-www-form-urlencoded" },
-            signal: ctrl.signal,
-        });
-        if (!r.ok) return null;
-        const j = (await r.json().catch(() => null)) as { arribos?: Arribo[] } | null;
+        const j = (await enqueueMgp(body, { priority: "low" })) as { arribos?: Arribo[] } | null;
         if (!j?.arribos?.length) return null;
         const etas = j.arribos
             .map((a) => parseEtaMin(a.Arribo))
@@ -65,12 +62,15 @@ async function fetchEta(paradaId: string, lineaId: string): Promise<number | nul
         return etas.length ? Math.min(...etas) : null;
     } catch {
         return null;
-    } finally {
-        clearTimeout(tid);
     }
 }
 
 export async function runArrivalJob(): Promise<{ checked: number; fired: number; gone: number }> {
+    // Si el circuit breaker está abierto, saltear el tick entero.
+    if (isBreakerOpen()) {
+        return { checked: 0, fired: 0, gone: 0 };
+    }
+
     const dow = nowDow();
 
     const { rows } = await query<WatchRow>(
@@ -91,8 +91,16 @@ export async function runArrivalJob(): Promise<{ checked: number; fired: number;
     let fired = 0;
     let goneCount = 0;
 
-    for (const w of candidates) {
+    for (let i = 0; i < candidates.length; i++) {
+        const w = candidates[i]!;
         if (w.parada_id == null || w.linea_id == null || w.threshold_min == null) continue;
+
+        // Delay entre candidatos para no hacer ráfagas.
+        if (i > 0) await sleep(INTER_CANDIDATE_DELAY_MS);
+
+        // Si el breaker se abrió durante el loop, parar.
+        if (isBreakerOpen()) break;
+
         const eta = await fetchEta(w.parada_id, w.linea_id);
         if (eta === null || eta > w.threshold_min) continue;
 
@@ -122,3 +130,4 @@ export async function runArrivalJob(): Promise<{ checked: number; fired: number;
 
     return { checked: candidates.length, fired, gone: goneCount };
 }
+

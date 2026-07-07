@@ -2,6 +2,7 @@ import { Hono } from "hono";
 import { query } from "../db.js";
 import { snapshot } from "../stats.js";
 import { getWarmupStats } from "../lib/banderasWarmup.js";
+import { getMgpQueueStats } from "../lib/mgpQueue.js";
 
 export const statsRoutes = new Hono();
 
@@ -28,7 +29,7 @@ statsRoutes.get("/data", async (c) => {
     } catch (e) {
         db = { error: (e as Error).message };
     }
-    return c.json({ ...snap, db, warmup });
+    return c.json({ ...snap, db, warmup, queue: getMgpQueueStats() });
 });
 
 const HTML = /* html */ `<!DOCTYPE html>
