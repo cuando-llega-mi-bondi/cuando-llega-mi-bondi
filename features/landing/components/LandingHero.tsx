@@ -1,5 +1,4 @@
 "use client";
-"use no memo";
 
 import Link from "next/link";
 import { ArrowRight, Bus, MapPin, Search, Zap } from "lucide-react";

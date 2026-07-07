@@ -1,22 +1,23 @@
 "use client";
-"use no memo";
 
 import type { ReactNode } from "react";
-import { motion, useReducedMotion } from "motion/react";
+import { motion } from "motion/react";
 
 interface RevealProps {
   children: ReactNode;
   className?: string;
 }
 
-/** Fades + lifts its children into view once, the first time they're scrolled to. */
+/**
+ * Fades + lifts its children into view once, the first time they're scrolled to.
+ *
+ * Reduced motion is handled by `LandingMotionConfig` (MotionConfig
+ * reducedMotion="user"), NOT by branching the tree on `useReducedMotion()`:
+ * the SSR HTML carries `style="opacity:0"`, and production hydration never
+ * repairs attributes, so rendering a plain div on the client leaves the
+ * content permanently invisible.
+ */
 export function Reveal({ children, className }: RevealProps) {
-  const reduceMotion = useReducedMotion();
-
-  if (reduceMotion) {
-    return <div className={className}>{children}</div>;
-  }
-
   return (
     <motion.div
       className={className}
@@ -29,4 +30,3 @@ export function Reveal({ children, className }: RevealProps) {
     </motion.div>
   );
 }
-

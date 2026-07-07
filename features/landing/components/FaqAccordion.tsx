@@ -1,5 +1,4 @@
 "use client";
-"use no memo";
 
 import { useState } from "react";
 import { motion, useReducedMotion } from "motion/react";
