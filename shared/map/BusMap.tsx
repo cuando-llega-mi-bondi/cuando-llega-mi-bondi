@@ -5,6 +5,7 @@ import { MapContainer, TileLayer, Marker, useMap, Popup, Polyline } from "react-
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import "@shared/map/leaflet.css";
+import { useLeafletMapReady } from "@shared/map/useLeafletMapReady";
 import { getRecorridoPuntosParaMapa, ramalesFromPuntos } from "@features/route/api/recorrido";
 import type { Arribo } from "@features/arrivals/types";
 import { arriboBanderaLabel } from "@features/arrivals/utils";
@@ -169,6 +170,7 @@ const BusMap = React.memo(function BusMap({
     /** Abreviaturas de bandera asociadas a la parada elegida (RecuperarParadas…). */
     paradaBanderaAbrevs?: string[];
 }) {
+    const mapReady = useLeafletMapReady();
     const [isFullscreen, setIsFullscreen] = useState(false);
     const [fitTrigger, setFitTrigger] = useState(0);
     const [routePoints, setRoutePoints] = useState<PuntoRecorrido[]>([]);
@@ -463,6 +465,7 @@ const BusMap = React.memo(function BusMap({
                 </div>
             ) : null}
 
+            {mapReady ? (
             <MapContainer center={paradaCoords} zoom={16} scrollWheelZoom style={{ height: "100%", width: "100%", zIndex: 1, flex: 1, background: "#090909" }}>
                 <TileLayer
                     url="https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}"
@@ -596,6 +599,20 @@ const BusMap = React.memo(function BusMap({
                     );
                 })}
             </MapContainer>
+            ) : (
+                <div
+                    style={{ height: "100%", width: "100%", flex: 1, background: "#090909", display: "flex", alignItems: "center", justifyContent: "center" }}
+                    aria-hidden
+                >
+                    <div style={{
+                        width: 28, height: 28, borderRadius: "50%",
+                        border: "3px solid rgba(255,255,255,0.1)",
+                        borderTopColor: "var(--color-accent, #0099ff)",
+                        animation: "spin 0.8s linear infinite",
+                    }} />
+                    <style>{`@keyframes spin { to { transform: rotate(360deg) } }`}</style>
+                </div>
+            )}
 
             {isFullscreen && arribos.length > 0 ? (
                 <div style={{ position: "absolute", bottom: envLocalSafeAreaBottom(16), left: 16, right: 16, zIndex: 1000, background: "var(--color-surface)", border: "1px solid var(--color-border)", borderRadius: "12px", padding: "16px", boxShadow: "0 8px 32px rgba(0,0,0,0.8)", display: "flex", gap: 16, alignItems: "center", animation: "slide-up 0.3s ease" }}>
