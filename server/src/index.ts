@@ -11,7 +11,7 @@ import { subscribeRoutes } from "./routes/subscribe.js";
 import { telegramRoutes } from "./routes/telegram.js";
 import { lineasRoutes } from "./routes/lineas.js";
 import { statsRoutes } from "./routes/stats.js";
-import { enqueueMgp, isBreakerOpen, setProxyUrl } from "./lib/mgpQueue.js";
+import { enqueueMgp, isBreakerOpen, } from "./lib/mgpQueue.js";
 import { startBanderasWarmup } from "./lib/banderasWarmup.js";
 import {
     recordAccion,
@@ -20,8 +20,7 @@ import {
     recordRequest,
 } from "./stats.js";
 
-// Inicializar proxy URL en el queue (fallback cuando mgpDirect no está habilitado).
-setProxyUrl(env.MGP_PROXY_URL);
+
 
 const app = new Hono();
 
