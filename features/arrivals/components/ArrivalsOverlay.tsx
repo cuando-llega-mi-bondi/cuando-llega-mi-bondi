@@ -123,7 +123,7 @@ export function ArrivalsOverlay({
             <Sheet.Content
               disableDrag={(state) => state.scrollPosition !== "top"}
               disableScroll={(state) => state.currentSnap !== 3}
-              scrollStyle={{ paddingBottom }}
+              scrollStyle={{ paddingBottom: paddingBottom as unknown as number }}
             >
               <div className="flex flex-col gap-3 pb-5">
                 {panelView !== "hidden" ? (
