@@ -5,6 +5,7 @@ import { LandingTestimonials } from "./LandingTestimonials";
 import { LandingStats } from "./LandingStats";
 import { SocialTestimonials } from "./SocialTestimonials";
 import { LandingAuthors } from "./LandingAuthors";
+import { LandingSponsors } from "./LandingSponsors";
 import { LandingFaq } from "./LandingFaq";
 import { LandingCta } from "./LandingCta";
 import { RouteDivider } from "./LandingDecor";
@@ -50,6 +51,10 @@ export function LandingPage() {
           <RouteDivider />
           <Reveal>
             <LandingAuthors />
+          </Reveal>
+          <RouteDivider />
+          <Reveal>
+            <LandingSponsors />
           </Reveal>
           <RouteDivider />
           <LandingFaq />
