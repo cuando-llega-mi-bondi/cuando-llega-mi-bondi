@@ -471,7 +471,7 @@ export function ComoLlegoClient() {
         <div className="hidden lg:block">
             <BottomNav />
         </div>
-        <div className="como-llego-overlay fixed inset-0 z-80 min-h-pwa-shell overflow-hidden bg-background lg:left-19">
+        <div className="como-llego-overlay fixed inset-0 z-80 min-h-pwa-shell overflow-hidden bg-background lg:left-60">
             <div className="absolute inset-0 z-0">
                 <ComoLlegoMap
                     variant="fullscreen"
@@ -734,7 +734,7 @@ export function ComoLlegoClient() {
             </div>
 
             {!planning && canPlan && itineraries.length === 0 ? (
-                <div className="pointer-events-auto fixed bottom-[max(1.25rem,env(safe-area-inset-bottom,0px))] left-4 right-4 z-20 mx-auto max-w-lg lg:left-[calc(4.75rem+1rem)] lg:right-auto lg:mx-0 lg:w-[420px]">
+                <div className="pointer-events-auto fixed bottom-[max(1.25rem,env(safe-area-inset-bottom,0px))] left-4 right-4 z-20 mx-auto max-w-lg lg:left-[calc(15rem+1rem)] lg:right-auto lg:mx-0 lg:w-[420px]">
                     <Button type="button" variant="primary" className="w-full shadow-lg" onClick={plan}>
                         Buscar ruta
                     </Button>

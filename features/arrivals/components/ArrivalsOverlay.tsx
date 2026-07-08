@@ -27,7 +27,11 @@ interface ArrivalsOverlayProps extends ArrivalsOverlaySession {
 function OverlayHeaderInfo({
   consult,
   telegramUsername,
-}: Pick<ArrivalsOverlayProps, "consult" | "telegramUsername">) {
+  action,
+}: Pick<ArrivalsOverlayProps, "consult" | "telegramUsername"> & {
+  /** Acción al final de la fila del título (ej: botón de cerrar en el sheet). */
+  action?: React.ReactNode;
+}) {
   const { codLinea, selectedRamal, lineaLabel, calleLabel, interseccionLabel } =
     consult;
 
@@ -39,7 +43,7 @@ function OverlayHeaderInfo({
             {lineaLabel}
           </div>
         )}
-        <div className="min-w-0">
+        <div className="min-w-0 flex-1">
           {calleLabel && (
             <h2 className="font-display text-lg font-bold leading-tight tracking-tight">
               {calleLabel}
@@ -51,6 +55,7 @@ function OverlayHeaderInfo({
             </p>
           )}
         </div>
+        {action}
       </div>
       <TelegramShareCTA
         codLinea={codLinea}
@@ -137,7 +142,7 @@ export function ArrivalsOverlay({
       <div
         className={cn(
           "arrivals-overlay fixed inset-0 z-90 bg-background",
-          isDesktop && "left-19",
+          isDesktop && "left-60",
         )}
       >
         <div className="absolute inset-0">{busMap}</div>
@@ -194,6 +199,16 @@ export function ArrivalsOverlay({
               <OverlayHeaderInfo
                 consult={consult}
                 telegramUsername={telegramUsername}
+                action={
+                  <button
+                    type="button"
+                    onClick={onClose}
+                    aria-label="Cerrar panel de arribos"
+                    className="flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center rounded-full border border-border bg-muted text-foreground transition-colors hover:border-secondary hover:text-secondary"
+                  >
+                    <IconX size={18} />
+                  </button>
+                }
               />
             </Sheet.Header>
 
@@ -209,17 +224,6 @@ export function ArrivalsOverlay({
         </Sheet>
         )}
       </div>
-
-      {!isDesktop ? (
-        <button
-          type="button"
-          onClick={onClose}
-          aria-label="Cerrar panel de arribos"
-          className="fixed right-4 top-[max(var(--safe-top),1rem)] z-10001 flex h-12 w-12 cursor-pointer items-center justify-center rounded-full border border-border bg-background/80 text-foreground shadow-sm backdrop-blur-md transition-colors hover:border-secondary hover:text-secondary"
-        >
-          <IconX size={20} />
-        </button>
-      ) : null}
     </>
   );
 }
