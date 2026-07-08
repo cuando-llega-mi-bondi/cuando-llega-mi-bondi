@@ -5,6 +5,8 @@ import { MapContainer, TileLayer, Marker, useMap, Popup, Polyline } from "react-
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import "@shared/map/leaflet.css";
+import { useLeafletMapReady } from "@shared/map/useLeafletMapReady";
+import { isMapUsable, stopMapSafely } from "@shared/map/leafletSafety";
 import { getRecorridoPuntosParaMapa, ramalesFromPuntos } from "@features/route/api/recorrido";
 import type { Arribo } from "@features/arrivals/types";
 import { arriboBanderaLabel } from "@features/arrivals/utils";
@@ -101,12 +103,16 @@ function MapController({
     const lastParada = useRef(paradaCoords.join(","));
 
     useEffect(() => {
-        const t1 = setTimeout(() => map.invalidateSize({ animate: true }), 100);
-        const t2 = setTimeout(() => map.invalidateSize({ animate: true }), 300);
+        const t1 = setTimeout(() => { if (isMapUsable(map)) map.invalidateSize({ animate: false }); }, 100);
+        const t2 = setTimeout(() => { if (isMapUsable(map)) map.invalidateSize({ animate: false }); }, 300);
         return () => { clearTimeout(t1); clearTimeout(t2); };
     }, [isFullscreen, map]);
 
+    // Cancela animaciones en vuelo antes de que react-leaflet destruya el mapa.
+    useEffect(() => () => stopMapSafely(map), [map]);
+
     useEffect(() => {
+        if (!isMapUsable(map)) return;
         const currentParada = paradaCoords.join(",");
         if (
             !hasInitialized.current ||
@@ -169,6 +175,7 @@ const BusMap = React.memo(function BusMap({
     /** Abreviaturas de bandera asociadas a la parada elegida (RecuperarParadas…). */
     paradaBanderaAbrevs?: string[];
 }) {
+    const mapReady = useLeafletMapReady();
     const [isFullscreen, setIsFullscreen] = useState(false);
     const [fitTrigger, setFitTrigger] = useState(0);
     const [routePoints, setRoutePoints] = useState<PuntoRecorrido[]>([]);
@@ -431,38 +438,45 @@ const BusMap = React.memo(function BusMap({
           };
 
     const controlsTop = fillParent
-        ? "calc(env(safe-area-inset-top) + 70px)"
+        ? "calc(env(safe-area-inset-top) + 16px)"
         : isFullscreen
           ? envLocalSafeAreaTop(16)
           : 12;
 
-    const controlsSide: React.CSSProperties = { right: 12 };
-
     return (
         <div style={containerStyle}>
-            <div style={{ position: "absolute", top: controlsTop, ...controlsSide, zIndex: 1000, display: "flex", gap: 10, flexDirection: "column" }}>
+            {/* En desktop (fillParent) el panel de arribos ocupa 420px a la derecha */}
+            <div
+                className={
+                    fillParent
+                        ? "absolute right-3 z-[1000] flex flex-col gap-2.5 lg:right-[436px]"
+                        : "absolute right-3 z-[1000] flex flex-col gap-2.5"
+                }
+                style={{ top: controlsTop }}
+            >
                 {!fillParent ? (
                     <button
                         onClick={() => setIsFullscreen(!isFullscreen)}
-                        style={{ background: "var(--color-surface)", color: "var(--color-text)", border: "1px solid var(--color-border)", borderRadius: "10px", width: 48, height: 48, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", boxShadow: "0 6px 16px rgba(0,0,0,0.6)" }}
+                        style={{ background: "var(--color-card)", color: "var(--color-foreground)", border: "1px solid var(--color-border)", borderRadius: "10px", width: 48, height: 48, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", boxShadow: "0 6px 16px rgba(0,0,0,0.6)" }}
                     >
                         {isFullscreen ? <IconMinimize/> : <IconMaximize/>}
                     </button>
                 ) : null}
                 <button
                     onClick={() => setFitTrigger((f) => f + 1)}
-                    style={{ background: "var(--color-surface)", color: "var(--color-accent)", border: "1px solid var(--color-border)", borderRadius: "10px", width: 48, height: 48, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", boxShadow: "0 6px 16px rgba(0,0,0,0.6)" }}
+                    style={{ background: "var(--color-card)", color: "var(--color-secondary)", border: "1px solid var(--color-border)", borderRadius: "10px", width: 48, height: 48, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", boxShadow: "0 6px 16px rgba(0,0,0,0.6)" }}
                 >
                     <IconTarget/>
                 </button>
             </div>
 
             {isFullscreen ? (
-                <div style={{ position: "absolute", top: envLocalSafeAreaTop(16), left: 16, zIndex: 1000, background: "var(--color-surface)", padding: "10px 16px", borderRadius: "10px", border: "1px solid var(--color-border)", boxShadow: "0 6px 16px rgba(0,0,0,0.6)", fontFamily: "var(--font-display)", fontWeight: 800, fontSize: 16, letterSpacing: 1 }}>
+                <div style={{ position: "absolute", top: envLocalSafeAreaTop(16), left: 16, zIndex: 1000, background: "var(--color-card)", padding: "10px 16px", borderRadius: "10px", border: "1px solid var(--color-border)", boxShadow: "0 6px 16px rgba(0,0,0,0.6)", fontFamily: "var(--font-display)", fontWeight: 800, fontSize: 16, letterSpacing: 1 }}>
                     MAR DEL PLATA · TIEMPO REAL
                 </div>
             ) : null}
 
+            {mapReady ? (
             <MapContainer center={paradaCoords} zoom={16} scrollWheelZoom style={{ height: "100%", width: "100%", zIndex: 1, flex: 1, background: "#090909" }}>
                 <TileLayer
                     url="https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}"
@@ -581,7 +595,7 @@ const BusMap = React.memo(function BusMap({
                         <Marker key={i} position={[lat, lon]} icon={BusIcon} zIndexOffset={100 + i}>
                             <Popup>
                                 <div style={{ display: "flex", flexDirection: "column", gap: 3, padding: "2px 0" }}>
-                                    <div style={{ background: "var(--color-accent)", color: "#fff", padding: "3px 8px", borderRadius: "6px", fontFamily: "var(--font-display)", fontWeight: 900, fontSize: 16, display: "inline-block", width: "fit-content" }}>
+                                    <div style={{ background: "var(--color-secondary)", color: "#fff", padding: "3px 8px", borderRadius: "6px", fontFamily: "var(--font-display)", fontWeight: 900, fontSize: 16, display: "inline-block", width: "fit-content" }}>
                                         Línea {a.DescripcionLinea}
                                     </div>
                                     <div style={{ fontFamily: "var(--font-mono)", fontSize: 11.5, color: "#6b6b7a", marginTop: 2 }}>
@@ -596,17 +610,31 @@ const BusMap = React.memo(function BusMap({
                     );
                 })}
             </MapContainer>
+            ) : (
+                <div
+                    style={{ height: "100%", width: "100%", flex: 1, background: "#090909", display: "flex", alignItems: "center", justifyContent: "center" }}
+                    aria-hidden
+                >
+                    <div style={{
+                        width: 28, height: 28, borderRadius: "50%",
+                        border: "3px solid rgba(255,255,255,0.1)",
+                        borderTopColor: "var(--color-accent, #0099ff)",
+                        animation: "spin 0.8s linear infinite",
+                    }} />
+                    <style>{`@keyframes spin { to { transform: rotate(360deg) } }`}</style>
+                </div>
+            )}
 
             {isFullscreen && arribos.length > 0 ? (
-                <div style={{ position: "absolute", bottom: envLocalSafeAreaBottom(16), left: 16, right: 16, zIndex: 1000, background: "var(--color-surface)", border: "1px solid var(--color-border)", borderRadius: "12px", padding: "16px", boxShadow: "0 8px 32px rgba(0,0,0,0.8)", display: "flex", gap: 16, alignItems: "center", animation: "slide-up 0.3s ease" }}>
-                    <div style={{ background: "var(--color-accent)", color: "#fff", padding: "8px 12px", borderRadius: "8px", fontFamily: "var(--font-display)", fontWeight: 900, fontSize: 24, letterSpacing: 1, flexShrink: 0, boxShadow: "0 4px 12px rgba(0,153,255,0.3)" }}>
+                <div style={{ position: "absolute", bottom: envLocalSafeAreaBottom(16), left: 16, right: 16, zIndex: 1000, background: "var(--color-card)", border: "1px solid var(--color-border)", borderRadius: "12px", padding: "16px", boxShadow: "0 8px 32px rgba(0,0,0,0.8)", display: "flex", gap: 16, alignItems: "center", animation: "slide-up 0.3s ease" }}>
+                    <div style={{ background: "var(--color-secondary)", color: "#fff", padding: "8px 12px", borderRadius: "8px", fontFamily: "var(--font-display)", fontWeight: 900, fontSize: 24, letterSpacing: 1, flexShrink: 0, boxShadow: "0 4px 12px rgba(0,153,255,0.3)" }}>
                         {arribos[0].DescripcionLinea}
                     </div>
                     <div style={{ flex: 1, minWidth: 0 }}>
                         <div style={{ fontFamily: "var(--font-display)", fontSize: 13, fontWeight: 700, color: "var(--color-text-dim)", letterSpacing: 0.5 }}>
                             {(arribos[0].DescripcionCartelBandera ?? arribos[0].DescripcionBandera ?? "").toUpperCase()}
                         </div>
-                        <div style={{ fontFamily: "var(--font-mono)", fontSize: 20, fontWeight: 800, color: getEtaClass(arribos[0].Arribo) === "warn" ? "var(--color-accent)" : "var(--color-success)" }}>
+                        <div style={{ fontFamily: "var(--font-mono)", fontSize: 20, fontWeight: 800, color: getEtaClass(arribos[0].Arribo) === "warn" ? "var(--color-secondary)" : "var(--color-success)" }}>
                             {arribos[0].Arribo}
                         </div>
                     </div>

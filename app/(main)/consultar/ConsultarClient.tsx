@@ -20,27 +20,30 @@ export function ConsultarClient({ children }: { children?: ReactNode }) {
   return (
     <PageShell>
       {children}
-      <div className="mb-3 grid grid-cols-2 gap-2">
-        <Link
-          href="/paradas-cerca"
-          className={cn(
-            "btn-pill btn-secondary inline-flex min-h-9 w-full items-center justify-center gap-2 px-3 text-xs font-bold tracking-tight",
-          )}
-        >
-          <IconLocation />
-          Paradas cerca mío
-        </Link>
-        <Link
-          href="/como-llego"
-          className={cn(
-            "btn-pill btn-secondary inline-flex min-h-9 w-full items-center justify-center gap-2 px-3 text-xs font-bold tracking-tight",
-          )}
-        >
-          <IconRoute />
-          Cómo llego
-        </Link>
+      {/* Desktop: columna de formulario centrada, más cómoda que el shell completo */}
+      <div className="lg:mx-auto lg:max-w-xl">
+        <div className="mb-3 grid grid-cols-2 gap-2">
+          <Link
+            href="/paradas-cerca"
+            className={cn(
+              "btn-pill btn-secondary inline-flex min-h-9 w-full items-center justify-center gap-2 px-3 text-xs font-bold tracking-tight",
+            )}
+          >
+            <IconLocation />
+            Paradas cerca mío
+          </Link>
+          <Link
+            href="/como-llego"
+            className={cn(
+              "btn-pill btn-secondary inline-flex min-h-9 w-full items-center justify-center gap-2 px-3 text-xs font-bold tracking-tight",
+            )}
+          >
+            <IconRoute />
+            Cómo llego
+          </Link>
+        </div>
+        <SearchFlow loadingArribos={false} />
       </div>
-      <SearchFlow loadingArribos={false} />
     </PageShell>
   );
 }

@@ -100,21 +100,32 @@ export function FavoritosClient() {
           Favoritos
         </h1>
       </div>
-      <FavoritesList
-        favoritos={favoritos}
-        onView={fetchFavArribos}
-        onRemove={removeFavoritoEntry}
-        onUndoRemove={addFavorito}
-        onRename={handleEditFavName}
-        onGoToSearch={() => router.push("/consultar")}
-      />
-      <HistorialList
-        historial={historial}
-        onView={fetchHistEntry}
-        onRemove={removeHistorialEntry}
-        onUndoRemove={pushHistorialEntry}
-        onClear={clearHistorialEntries}
-      />
+      {/* Desktop: favoritos e historial lado a lado */}
+      <div className="lg:grid lg:grid-cols-2 lg:items-start lg:gap-10">
+        <div>
+          {/* Header simétrico al de "Consultas recientes" (solo desktop) */}
+          <div className="mb-3 hidden min-h-[26px] items-center lg:flex">
+            <div className="font-mono text-[10px] tracking-[1.4px] text-muted-foreground">
+              PARADAS GUARDADAS
+            </div>
+          </div>
+          <FavoritesList
+            favoritos={favoritos}
+            onView={fetchFavArribos}
+            onRemove={removeFavoritoEntry}
+            onUndoRemove={addFavorito}
+            onRename={handleEditFavName}
+            onGoToSearch={() => router.push("/consultar")}
+          />
+        </div>
+        <HistorialList
+          historial={historial}
+          onView={fetchHistEntry}
+          onRemove={removeHistorialEntry}
+          onUndoRemove={pushHistorialEntry}
+          onClear={clearHistorialEntries}
+        />
+      </div>
     </PageShell>
   );
 }

@@ -75,6 +75,20 @@ export const BASE_URL = BASE_URLS[0] || null; // for backwards compatibility if 
 export type ActionParams = Record<string, string>;
 export type SwrActionKey = [string, ActionParams];
 
+/**
+ * Timeout por defecto para requests vivas al backend: una request colgada se
+ * convierte en error visible (y reintentable) en vez de un spinner infinito.
+ */
+const LIVE_REQUEST_TIMEOUT_MS = 12_000;
+
+function defaultTimeoutSignal(): AbortSignal | undefined {
+    // Safari viejos no tienen AbortSignal.timeout; en ese caso, sin timeout.
+    if (typeof AbortSignal !== "undefined" && "timeout" in AbortSignal) {
+        return AbortSignal.timeout(LIVE_REQUEST_TIMEOUT_MS);
+    }
+    return undefined;
+}
+
 export async function post(accion: string, params: ActionParams = {}, options?: { signal?: AbortSignal }) {
     if (staticReferenceEnabled() && STATIC_REFERENCE_ACCIONES.has(accion)) {
         try {
@@ -111,7 +125,10 @@ export async function post(accion: string, params: ActionParams = {}, options?: 
     // shim (PascalCase MGP raw).
     const qs = new URLSearchParams(params).toString();
     const url = `${baseUrl}/mgp/${encodeURIComponent(accion)}${qs ? `?${qs}` : ""}`;
-    const res = await fetch(url, { method: "GET", signal: options?.signal });
+    const res = await fetch(url, {
+        method: "GET",
+        signal: options?.signal ?? defaultTimeoutSignal(),
+    });
 
     if (!res.ok) {
         throw new Error(`HTTP ${res.status}`);
@@ -139,6 +156,7 @@ export async function swrFetcher([accion, params]: SwrActionKey) {
         if (
             err instanceof TypeError ||
             error?.name === "AbortError" ||
+            error?.name === "TimeoutError" ||
             error?.message?.startsWith("Failed to fetch")
         ) {
             throw new MgpError(

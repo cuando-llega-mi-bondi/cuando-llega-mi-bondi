@@ -213,7 +213,7 @@ export function AcercaClient() {
     }, [handleShareWhatsApp]);
 
     return (
-        <div className="flex min-h-pwa-shell flex-col">
+        <div className="flex min-h-pwa-shell flex-col lg:pl-60">
             <PageShell className="space-y-10 pt-4">
                 {/* ── HERO ──────────────────────────────────────────── */}
                 <section className="flex flex-col items-center gap-5 text-center">
@@ -238,7 +238,7 @@ export function AcercaClient() {
                     <h2 className="text-[10.4px] font-normal uppercase tracking-wider text-muted-foreground">
                         Hecho por
                     </h2>
-                    <div className="space-y-3">
+                    <div className="space-y-3 lg:grid lg:grid-cols-2 lg:items-start lg:gap-4 lg:space-y-0">
                         {DEVELOPERS.map((dev) => (
                             <DevCard key={dev.name} dev={dev} />
                         ))}
@@ -273,7 +273,7 @@ export function AcercaClient() {
                     <h2 className="text-[10.4px] font-normal uppercase tracking-wider text-muted-foreground">
                         Sobre la app
                     </h2>
-                    <div className="space-y-3">
+                    <div className="space-y-3 lg:grid lg:grid-cols-3 lg:items-stretch lg:gap-4 lg:space-y-0">
                         {APP_FEATURES.map(({ icon, title, description }) => (
                             <div
                                 key={title}
@@ -296,7 +296,7 @@ export function AcercaClient() {
                     <h2 className="text-[10.4px] font-normal uppercase tracking-wider text-muted-foreground">
                         Código abierto
                     </h2>
-                    <div className="space-y-3">
+                    <div className="space-y-3 lg:grid lg:grid-cols-2 lg:items-stretch lg:gap-4 lg:space-y-0">
                         {[
                             {
                                 href: "https://github.com/cuando-llega-mi-bondi/cuando-llega-mi-bondi",

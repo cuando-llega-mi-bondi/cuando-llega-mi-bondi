@@ -127,10 +127,10 @@ export const HistorialList = memo(function HistorialList({
     if (historial.length === 0) return null;
 
     return (
-        <div className="mt-8">
+        <div className="mt-8 lg:mt-0">
             {/* Header */}
 
-            <div className="mb-3 flex items-center justify-between">
+            <div className="mb-3 flex min-h-[26px] items-center justify-between">
                 <div className="font-mono text-[10px] tracking-[1.4px] text-muted-foreground">
                     CONSULTAS RECIENTES
                 </div>

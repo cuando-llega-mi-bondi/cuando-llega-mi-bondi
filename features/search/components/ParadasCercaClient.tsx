@@ -137,8 +137,8 @@ export function ParadasCercaClient() {
     );
 
     return (
-        <div className="flex h-dvh flex-col bg-background pb-nav">
-            <header className="z-50 flex shrink-0 items-center gap-3 border-b border-border bg-background/90 px-[calc(16px+var(--safe-left))] pr-[calc(16px+var(--safe-right))] pt-[calc(10px+var(--safe-top))] pb-3 backdrop-blur-md">
+        <div className="flex h-dvh flex-col bg-background pb-[calc(var(--nav-height)+max(env(safe-area-inset-bottom,0px),var(--safe-bottom-live,0px)))] lg:pl-60 lg:pb-0">
+            <header className="z-50 flex shrink-0 items-center gap-3 border-b border-border bg-background/90 px-[calc(16px+var(--safe-left))] pr-[calc(16px+var(--safe-right))] pt-[calc(10px+var(--safe-top))] pb-3 backdrop-blur-md lg:px-8">
                 <Link
                     href="/consultar"
                     className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-border bg-muted text-muted-foreground no-underline transition hover:border-secondary hover:text-foreground"

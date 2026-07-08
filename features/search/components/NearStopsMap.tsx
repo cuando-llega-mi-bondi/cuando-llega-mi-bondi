@@ -13,6 +13,7 @@ import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import "@shared/map/leaflet.css";
 import { useLeafletMapReady } from "@shared/map/useLeafletMapReady";
+import { isMapUsable, stopMapSafely } from "@shared/map/leafletSafety";
 import { cn } from "@shared/utils";
 
 export type NearLinea = { codigoLineaParada: string; descripcion: string };
@@ -78,11 +79,14 @@ function MapController({
 
     useEffect(() => {
         const timers = [
-            setTimeout(() => map.invalidateSize({ animate: true }), 100),
-            setTimeout(() => map.invalidateSize({ animate: true }), 300),
+            setTimeout(() => { if (isMapUsable(map)) map.invalidateSize({ animate: false }); }, 100),
+            setTimeout(() => { if (isMapUsable(map)) map.invalidateSize({ animate: false }); }, 300),
         ];
         return () => timers.forEach(clearTimeout);
     }, [map]);
+
+    // Cancela animaciones en vuelo antes de que react-leaflet destruya el mapa.
+    useEffect(() => () => stopMapSafely(map), [map]);
 
     useEffect(() => {
         if (fitted.current && lastTrigger.current === trigger) return;
@@ -93,6 +97,7 @@ function MapController({
         for (const s of stops) bounds.extend([s.lat, s.lng]);
 
         const timer = setTimeout(() => {
+            if (!isMapUsable(map)) return;
             try {
                 map.fitBounds(bounds, { padding: [56, 56], maxZoom: 16, animate: true });
             } catch {

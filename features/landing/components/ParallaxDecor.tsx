@@ -1,7 +1,6 @@
 "use client";
 
 import { motion, useScroll, useTransform, useReducedMotion } from "motion/react";
-import { CityMapBackground } from "./LandingDecor";
 
 const MAP_MASK =
   "radial-gradient(120% 85% at 50% 42%, black 28%, transparent 80%)";
@@ -25,19 +24,11 @@ export function ParallaxDecor() {
   const { scrollYProgress } = useScroll();
 
   // Map drifts down slowly; glows drift up — opposite motion reads as depth.
+  // With reduced motion the same tree renders with the drift pinned to 0:
+  // branching into different markup here breaks hydration of the SSR'd
+  // variant (see LandingMotionConfig).
   const mapY = useTransform(scrollYProgress, [0, 1], [-40, 140]);
   const glowY = useTransform(scrollYProgress, [0, 1], [60, -140]);
-
-  if (reduceMotion) {
-    return (
-      <>
-        <CityMapBackground />
-        <div aria-hidden className="pointer-events-none fixed inset-0 z-0">
-          <Glows />
-        </div>
-      </>
-    );
-  }
 
   return (
     <>
@@ -45,7 +36,7 @@ export function ParallaxDecor() {
         aria-hidden
         className="pointer-events-none fixed -inset-[15%] z-0 bg-cover bg-center"
         style={{
-          y: mapY,
+          y: reduceMotion ? 0 : mapY,
           backgroundImage: "url(/mar-del-plata-mapa-bg.svg)",
           opacity: 0.14,
           maskImage: MAP_MASK,
@@ -61,7 +52,7 @@ export function ParallaxDecor() {
         aria-hidden
         className="pointer-events-none fixed inset-0 z-0"
         style={{
-          y: glowY,
+          y: reduceMotion ? 0 : glowY,
           willChange: "transform",
           backfaceVisibility: "hidden",
           contain: "layout paint",
