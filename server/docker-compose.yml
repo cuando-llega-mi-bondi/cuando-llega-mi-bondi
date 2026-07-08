@@ -51,7 +51,7 @@ services:
       - ../lib/static:/app/static-data:ro
     networks:
       - internal
-    command: ["pnpm", "scheduler"]
+    command: ["node_modules/.bin/tsx", "src/scheduler/run.ts"]
 
 networks:
   web:

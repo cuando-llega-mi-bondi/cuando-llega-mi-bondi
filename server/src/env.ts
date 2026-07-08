@@ -39,6 +39,11 @@ const schema = z.object({
     // Path "proxy" (Termux/Oracle u otro endpoint que envuelve el flujo init+proxy).
     MGP_PROXY_URL: z.string().url().optional(),
 
+    // Analytics: si están seteadas, cada consulta MGP se persiste en la tabla
+    // `query_events` de este proyecto Supabase (compartido con el mgp-proxy).
+    SUPABASE_URL: z.string().url().optional(),
+    SUPABASE_KEY: z.string().optional(),
+
     PORT: z.coerce.number().int().positive().default(4000),
     HOST: z.string().default("0.0.0.0"),
     NODE_ENV: z.enum(["development", "production", "test"]).default("development"),

@@ -13,6 +13,8 @@ import { lineasRoutes } from "./routes/lineas.js";
 import { statsRoutes } from "./routes/stats.js";
 import { fetchMgpDirect, isMgpDirectEnabled } from "./lib/mgpDirect.js";
 import { startBanderasWarmup } from "./lib/banderasWarmup.js";
+import { trackQuery } from "./lib/analytics.js";
+import { getLines } from "./data/static.js";
 import {
     recordAccion,
     recordCache,
@@ -22,6 +24,37 @@ import {
 } from "./stats.js";
 
 const app = new Hono();
+
+// Mapa CodigoLineaParada ("93") → Descripcion ("501") para guardar la línea en
+// analytics en el mismo formato que el mgp-proxy. Se carga una vez al arrancar.
+const lineaMap = new Map<string, string>();
+getLines()
+    .then((lines) => {
+        for (const l of lines) lineaMap.set(l.codigo, l.descripcion);
+    })
+    .catch((e) => console.error("[analytics] no se pudo cargar el mapa de líneas:", e));
+
+// Extrae parada y línea (mapeada a Descripcion) de los params de una request MGP
+// y la registra en analytics. Fire-and-forget.
+function trackMgp(accion: string, params: URLSearchParams | Record<string, string>): void {
+    const get = (k: string): string | undefined =>
+        params instanceof URLSearchParams ? (params.get(k) ?? undefined) : params[k];
+    const parada =
+        get("CodigoParada") ??
+        get("codigoParada") ??
+        get("parada") ??
+        get("identificadorParada") ??
+        null;
+    let linea =
+        get("CodigoLineaParada") ??
+        get("codigoLineaParada") ??
+        get("CodigoLinea") ??
+        get("Linea") ??
+        get("linea") ??
+        null;
+    if (linea && lineaMap.has(linea)) linea = lineaMap.get(linea) as string;
+    trackQuery(accion, parada, linea);
+}
 
 app.use(logger());
 
@@ -205,9 +238,11 @@ app.post("/", async (c) => {
     const key = normalizeKey(body);
     const now = Date.now();
     const cached = proxyCache.get(key);
-    const accion = new URLSearchParams(body).get("accion") ?? "(desconocida)";
+    const bodyParams = new URLSearchParams(body);
+    const accion = bodyParams.get("accion") ?? "(desconocida)";
     const { fresh: freshTtl, stale: staleTtl } = getTtls(accion);
     recordAccion(accion);
+    trackMgp(accion, bodyParams);
 
     if (cached && now - cached.at < freshTtl) {
         recordCache("HIT");
@@ -260,6 +295,7 @@ app.get("/mgp/:accion", async (c) => {
     const sMaxAge = isSemiStatic ? 21_600 : 30;
     const browserMaxAge = isSemiStatic ? 3_600 : 15;
     recordAccion(accion);
+    trackMgp(accion, params);
 
     // CORS público (sin Vary): la data MGP es pública y queremos que CF
     // cachee una sola entrada compartida entre todos los orígenes.
