@@ -12,6 +12,6 @@ export default function robots(): MetadataRoute.Robots {
                 allow: "/",
             }
         ],
-        sitemap: "https://www.bondimdp.com.ar/sitemap.xml",
+        sitemap: "https://bondimdp.com.ar/sitemap.xml",
     };
 }

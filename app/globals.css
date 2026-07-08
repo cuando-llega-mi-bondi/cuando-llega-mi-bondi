@@ -38,6 +38,9 @@
   --animate-spin-slow: spin-slow 1.5s linear infinite;
   --animate-skeleton-shimmer: skeleton-shimmer 1.4s ease-in-out infinite;
   --animate-pulse-highlight: pulse-highlight 1.5s ease-in-out infinite;
+  --animate-route-flow: route-flow 2.4s linear infinite;
+  --animate-route-draw: route-draw 2.6s ease-out both;
+  --animate-route-pulse: route-pulse 2.2s ease-in-out infinite;
 }
 
 @layer base {
@@ -264,6 +267,38 @@ html.dark *::-webkit-scrollbar-thumb {
   50% { box-shadow: 0 0 12px rgba(29, 117, 112, 0.6); }
 }
 
+/* Marching-ants flow for the hero route line */
+@keyframes route-flow {
+  to { stroke-dashoffset: -140; }
+}
+
+/* One-time "draw on" reveal (uses pathLength="1000" normalization) */
+@keyframes route-draw {
+  from { stroke-dashoffset: 1000; }
+  to   { stroke-dashoffset: 0; }
+}
+
+/* Pulsing GPS marker ring */
+@keyframes route-pulse {
+  0%, 100% { opacity: 0.55; transform: scale(1); }
+  50%      { opacity: 0;    transform: scale(2.4); }
+}
+
+/* Horizontal marching-ants line used as a section divider */
+.route-dash-line {
+  background-image: repeating-linear-gradient(
+    to right,
+    rgba(249, 205, 74, 0.55) 0 8px,
+    transparent 8px 16px
+  );
+  background-size: 16px 100%;
+  animation: route-dash-move 0.9s linear infinite;
+}
+
+@keyframes route-dash-move {
+  to { background-position: 16px 0; }
+}
+
 .arrival-row {
   animation: var(--animate-arrival-row);
   animation-fill-mode: both;
@@ -282,7 +317,11 @@ html.dark *::-webkit-scrollbar-thumb {
   .motion-step,
   .blink,
   .spin-slow,
-  .arrivals-skeleton-row {
+  .arrivals-skeleton-row,
+  .animate-route-flow,
+  .animate-route-draw,
+  .animate-route-pulse,
+  .route-dash-line {
     animation: none !important;
   }
   .arrival-row,
@@ -551,6 +590,12 @@ html.dark *::-webkit-scrollbar-thumb {
   pointer-events: none !important;
 }
 
+/* Cómo llego: mapa visible detrás del sheet (portal en body) */
+body.como-llego-sheet-open .react-modal-sheet-backdrop {
+  background-color: transparent !important;
+  pointer-events: none !important;
+}
+
 .react-modal-sheet-container {
   background: var(--background) !important;
   border-top: 1px solid var(--border) !important;
@@ -586,4 +631,28 @@ html.dark *::-webkit-scrollbar-thumb {
 body.arrivals-overlay-open {
   overflow: hidden;
   overscroll-behavior: none;
+}
+
+body.como-llego-overlay-open {
+  overflow: hidden;
+  overscroll-behavior: none;
+}
+
+/*
+ * View Transitions: animación cross-fade rápida cuando se revela/oculta el
+ * ArrivalsOverlay (HomeClient) o se cambia de línea en /recorrido. Disparado
+ * imperativamente por `lib/viewTransition.ts`. Browsers sin soporte
+ * (Firefox <= 138) ejecutan el cambio sin animación.
+ */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 220ms;
+  animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation-duration: 0.01ms;
+  }
 }

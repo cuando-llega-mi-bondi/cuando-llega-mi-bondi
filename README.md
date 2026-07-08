@@ -8,18 +8,18 @@
   </p>
 
   <p>
-    <a href="https://www.bondimdp.com.ar/">Sitio en vivo</a> •
+    <a href="https://bondimdp.com.ar/">Sitio en vivo</a> •
     <a href="#-empezar-getting-started">Empezar</a> •
     <a href="CONTRIBUTING.md">Contribuir</a> •
     <a href="docs/DIATAXIS.md">Documentación (Diátaxis)</a> •
-    <a href="#-arquitectura--stack-tecnológico">Arquitectura</a>
+    <a href="docs/architecture.md">Arquitectura</a>
   </p>
 </div>
 
 ---
 
 > [!NOTE]
-> Una Progressive Web App (PWA) rápida, moderna y responsiva. Consultá cuándo llega el colectivo a tu parada sin publicidades, sin descargar apps nativas y con posibilidad de funcionar sin conexión (caché).
+> Progressive Web App (PWA) rápida y responsiva. Consultá cuándo llega el colectivo a tu parada sin publicidades, sin apps nativas y con caché local para datos estáticos.
 
 <div align="center">
   <img src="public/screenshots/results.jpg" alt="Screenshot de la aplicación" width="400" style="border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.2);" />
@@ -27,131 +27,155 @@
 
 ## ✨ Funcionalidades
 
-- **Tiempo real (GPS):** Consulta de arribos en tiempo real obteniendo datos del proxy de la Municipalidad de Gral. Pueyrredón.
-- **Rutas Manuales (GeoJSON):** Soporte para líneas que no están en la API oficial (ej. Mar Chiquita 221) mediante archivos GeoJSON.
-- **Favoritos:** Guardá tus paradas de uso diario con nombres personalizados (ej. "Casa", "Trabajo").
-- **Historial inteligente:** Historial automático de las últimas paradas consultadas.
-- **Mapa Interactivo Avanzado:**
-  - Visualización de colectivos acercándose en tiempo real.
-  - Marcado de paradas con **navegación rápida** (vía Google Maps).
-  - Trazado de recorridos completos sobre el mapa.
-- **Modo PWA & Caché:** Instalación nativa en móviles e información estática (calles, recorridos) persistida localmente por 24hs.
-- **Compartir:** Mensajes rápidos por WhatsApp con tiempos de arribo y ubicación; enlaces al bot de Telegram para seguir un recorrido y (con backend configurado) ubicación en vivo en el mapa.
-- **Status de API:** Detección y alerta visual si el servidor de la Municipalidad está fuera de servicio.
+- **Tiempo real (GPS):** Arribos en vivo vía backend self-hosted que consulta la API de la Municipalidad de Gral. Pueyrredón.
+- **Rutas manuales (GeoJSON):** Líneas fuera de la API oficial (ej. 221 Costa Azul) con uno o más ramales en `public/*.geojson`.
+- **Cómo llego:** Planificador multimodal (caminata + colectivo) sobre el grafo estático de paradas y recorridos. Algoritmo y modelo de costos: [docs/trip-planner.md](docs/trip-planner.md).
+- **Paradas cercanas:** Búsqueda por geolocalización usando el catálogo en `data/static/`.
+- **Favoritos:** Paradas con nombre personalizado (ej. «Casa», «Trabajo»).
+- **Historial:** Últimas paradas consultadas, persistidas en el dispositivo.
+- **Mapa interactivo:** Colectivos en vivo, paradas, recorridos, enlace a Google Maps.
+- **PWA y caché:** Instalable en móviles; catálogo MGP servido desde dump local con revalidación larga en CDN.
+- **Compartir:** WhatsApp, Telegram y (con Supabase) ubicación en vivo en el mapa.
+- **Estado del servicio:** Alerta si el backend municipal no responde.
 
-## 🛠 Arquitectura & Stack Tecnológico
+## 🛠 Arquitectura y stack
 
-La aplicación está diseñada pensando en la performance y la facilidad de extensión.
+El código sigue una **Screaming Architecture** orientada al dominio: `features/` agrupa casos de uso (`arrivals`, `search`, `trip-planner`, …), con `shared/` para lo transversal y `app/` como capa de rutas Next.js. Ver [docs/architecture.md](docs/architecture.md#screaming-architecture-intención).
 
-| Tecnología                  | Propósito                                                              |
-| --------------------------- | ---------------------------------------------------------------------- |
-| **Next.js 16 (App Router)** | Framework base, optimización de bundles, y proxy `/api/cuando`.        |
-| **React 19**                | UI responsiva y gestión de estado mediante hooks.                      |
-| **Tailwind CSS 4**          | Utilidades de estilo; tokens y tema en `app/globals.css`.              |
-| **SWR**                     | Fetching de datos con revalidación automática y caché en memoria.      |
-| **Leaflet**                 | Motor de mapas liviano para visualización de GPS y GeoJSON.            |
-| **LocalStorage**            | Persistencia de favoritos, historial y caché de calles (24hs TTL).     |
-| **Supabase** (opcional)     | Backend para ubicación en vivo vinculada al bot de Telegram y el mapa. |
+| Tecnología | Propósito |
+| ---------- | --------- |
+| **Next.js 16 (App Router)** | Framework, rutas API internas (`/api/reference`, `/api/geo/*`) y despliegue en Vercel. |
+| **React 19** | UI con hooks y React Compiler. |
+| **Tailwind CSS 4** | Estilos; tokens en `app/globals.css`. |
+| **SWR** | Datos con revalidación; cliente en `shared/api/client.ts`. |
+| **Leaflet / react-leaflet** | Mapas, GeoJSON y marcadores. |
+| **LocalStorage** | Favoritos, historial y caché de calles (TTL 24 h). |
+| **Supabase** (opcional) | Ubicación en vivo vinculada al bot de Telegram. |
 
-### Flujo de Datos
+Diagrama detallado y decisiones de diseño: [docs/architecture.md](docs/architecture.md).
+
+### Flujo de datos (resumen)
 
 ```mermaid
 graph TD
-  UI[UI Components] --> SWR[SWR Hooks]
-  SWR --> Storage[(LocalStorage / Cache 24h)]
-  SWR -->|acciones de catálogo, USE_STATIC_REFERENCE=true| Ref["GET /api/reference (dump local)"]
-  SWR -->|resto de acciones| Cuando["POST NEXT_PUBLIC_CUANDO_API_URL (lib/api/client.ts)"]
-  Cuando --> Backend["Backend self-hosted (server/, cloudflared)"]
-  Backend --> MGP[API Municipalidad]
-  UI --> Manual[lib/manualRoutes.ts]
-  Manual --> GeoJSON[public/*.geojson]
+  UI[features + app] --> SWR[SWR / shared/api]
+  SWR --> LS[(LocalStorage)]
+  SWR -->|catálogo| Ref["GET /api/reference"]
+  Ref --> Static["data/static/"]
+  SWR -->|arribos y banderas en vivo| MGP["GET {CUANDO_API}/mgp/:accion"]
+  MGP --> Backend[Backend self-hosted]
+  Backend --> Mun[API Municipalidad]
+  UI --> Geo["POST/GET /api/geo/*"]
+  Geo --> Static
+  Geo --> OSM[Nominatim OSM]
+  UI --> Manual[features/route/manualRoutes]
+  Manual --> GJ[public/*.geojson]
 ```
 
-### Backend self-hosted obligatorio
+### Backend self-hosted (obligatorio para datos en vivo)
 
-La API municipal bloquea el rango de IPs de Vercel, así que **este front no tiene proxy interno**: no existe `/api/cuando`. El cliente (`post()` en `lib/api/client.ts`) hace `POST` directo a `NEXT_PUBLIC_CUANDO_API_URL`, que apunta al backend self-hosted (ver `server/`, expuesto vía cloudflared/traefik). Si la env var no está configurada, `post()` tira un error explícito en el primer uso en lugar de pegarle a un endpoint inexistente.
+La API municipal bloquea las IPs de Vercel. **Este repositorio no incluye proxy municipal** (`/api/cuando` no existe). El cliente (`post()` en `shared/api/client.ts`) llama al backend externo configurado en `NEXT_PUBLIC_CUANDO_API_URL` con `GET /mgp/{accion}?params`.
 
-Las acciones de catálogo (líneas, calles, paradas, recorridos, banderas) las atiende `/api/reference` desde un dump estático en `data/mgp-static-dump.json` cuando `NEXT_PUBLIC_USE_STATIC_REFERENCE=true`. Esa ruta vive en Vercel sin riesgo: nunca toca la muni.
+El catálogo (líneas, calles, paradas, recorridos) se sirve desde **`GET /api/reference`** leyendo `data/static/`, generado a partir de `data/mgp-static-dump.json`. Esa ruta es segura en Vercel: no contacta a la muni.
 
 ## 🚀 Empezar (Getting Started)
 
-Estas instrucciones te permitirán obtener una copia del proyecto y ejecutarlo en tu máquina local para desarrollo y pruebas.
-
 ### Prerrequisitos
 
-- **Node.js** (v20.x recomendado; mínimo compatible con Next.js 16)
-- **npm** (incluido con Node.js)
+- **Node.js** v20.x (recomendado; runtime de Next)
+- **Bun** v1.x (gestor de paquetes y runner de scripts)
 
 ### Variables de entorno
 
-**Consulta municipal (obligatorio):** `NEXT_PUBLIC_CUANDO_API_URL` apunta al backend self-hosted. Sin esa variable las acciones en vivo (arribos, banderas, etc.) fallan en el primer uso con un error explícito. La muni bloquea las IPs de Vercel; no hay fallback.
+Copiá `.env.example` a `.env.local` y completá al menos:
 
-| Variable                            | Uso                                                                 |
-| ----------------------------------- | ------------------------------------------------------------------- |
-| `NEXT_PUBLIC_CUANDO_API_URL`        | URL base del backend self-hosted (ej. `https://bondi.aeterna.red`)  |
-| `NEXT_PUBLIC_USE_STATIC_REFERENCE`  | `true` para servir catálogo desde `data/mgp-static-dump.json`        |
-| `NEXT_PUBLIC_TELEGRAM_BOT_USERNAME` | Usuario del bot (sin `@`) para enlaces `t.me/...`                   |
-| `TELEGRAM_BOT_TOKEN`                | Token del bot; el webhook responde con `sendMessage`               |
-| `NEXT_PUBLIC_SUPABASE_URL`          | URL del proyecto Supabase                                          |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY`     | Clave anónima (webhook + cliente de ubicación en vivo)              |
-| `NEXT_PUBLIC_GA_MEASUREMENT_ID`     | Opcional: Google Analytics (layout)                                 |
-| `NEXT_PUBLIC_CLARITY_PROJECT_ID`    | Opcional: Microsoft Clarity                                        |
+| Variable | Obligatoria | Uso |
+| -------- | ----------- | --- |
+| `NEXT_PUBLIC_CUANDO_API_URL` | Sí (arribos en vivo) | URL del backend self-hosted (ej. `https://bondi.example.com`) |
+| `NEXT_PUBLIC_PROXY_API_URL` | No | URL base de un proxy opcional. El frontend balanceará la carga entre ambas. |
+| `NEXT_PUBLIC_USE_STATIC_REFERENCE` | No (default `true`) | Catálogo desde dump local vía `/api/reference` |
 
-Si no configurás Telegram ni Supabase, el resto de la app sigue funcionando; lo único realmente obligatorio es `NEXT_PUBLIC_CUANDO_API_URL` para que el cliente sepa a dónde mandar las acciones en vivo.
+Telegram, Supabase, analytics y el resto: [docs/env-reference.md](docs/env-reference.md).
 
 ### Instalación
 
-1. **Clonar el repositorio:**
+1. **Clonar:**
 
    ```bash
    git clone https://github.com/cuando-llega-mi-bondi/cuando-llega-mi-bondi.git
    cd cuando-llega-mi-bondi
    ```
 
-2. **Instalar dependencias:**
+2. **Dependencias:**
 
    ```bash
-   npm install
+   bun install
    ```
 
-3. **Ejecutar en entorno de desarrollo:**
+3. **Desarrollo:**
 
    ```bash
-   npm run dev
+   bun run dev
    ```
 
-   La aplicación estará corriendo en [http://localhost:3000](http://localhost:3000).
+   Abrí [http://localhost:3000](http://localhost:3000).
 
-   Configurá `NEXT_PUBLIC_CUANDO_API_URL` en `.env.local` apuntando al backend self-hosted (local o tunelado vía cloudflared); si no, todas las acciones en vivo van a tirar error.
+   Sin `NEXT_PUBLIC_CUANDO_API_URL`, las acciones en vivo fallan con un error explícito; el catálogo estático sigue funcionando si el dump está en `data/static/`.
 
-## 📡 API Reference
+### Regenerar catálogo estático
 
-El cliente (`post` en `lib/api/client.ts`) envía todas las acciones por `POST` con `application/x-www-form-urlencoded` a `NEXT_PUBLIC_CUANDO_API_URL`. Las acciones de catálogo (ver `lib/staticReferenceAcciones.ts`) se cortan antes con un `GET /api/reference?accion=...` que sirve el dump estático.
+Con el backend accesible:
 
-### Acciones comunes
+```bash
+bun run dump-static    # genera data/mgp-static-dump.json
+bun run split-static   # parte en data/static/lineas.json y data/static/linea/*.json
+```
 
-- `RecuperarLineaPorCuandoLlega`: Lista de líneas (cache servidor ~300 s).
-- `RecuperarCallesPrincipalPorLinea`: `codLinea` → calles del recorrido (cache).
-- `RecuperarInterseccionPorLineaYCalle`: `codLinea`, `codCalle` → intersecciones (cache).
-- `RecuperarParadasConBanderaPorLineaCalleEInterseccion`: paradas/banderas e identificador (cache).
-- `RecuperarRecorridoParaMapaAbrevYAmpliPorEntidadYLinea`: geometría de mapa (cache).
-- `RecuperarParadasConBanderaYDestinoPorLinea`: paradas con destino por línea (cache).
-- `RecuperarBanderasAsociadasAParada`: banderas asociadas a una parada (cache).
-- `RecuperarProximosArribosW`: `identificadorParada`, `codigoLineaParada` → arribos GPS en vivo (**sin** cache servidor).
+## 📡 API (referencia breve)
 
-_(El cliente está en `lib/api/client.ts` (`post`, `swrFetcher`); las acciones que se atienden desde el dump estático están listadas en `lib/staticReferenceAcciones.ts`.)_
+### Cliente MGP (`shared/api/client.ts`)
+
+- **Catálogo:** si `NEXT_PUBLIC_USE_STATIC_REFERENCE` no es `false`, las acciones listadas en `shared/api/staticReferenceAcciones.ts` usan `GET /api/reference?accion=...&...`.
+- **En vivo:** `GET {NEXT_PUBLIC_CUANDO_API_URL}/mgp/{accion}?{params}` (respuesta en PascalCase, igual que la API municipal).
+
+### Acciones de catálogo (dump estático)
+
+- `RecuperarLineaPorCuandoLlega`
+- `RecuperarCallesPrincipalPorLinea` (`codLinea`)
+- `RecuperarInterseccionPorLineaYCalle` (`codLinea`, `codCalle`)
+- `RecuperarParadasConBanderaPorLineaCalleEInterseccion`
+- `RecuperarParadasConBanderaYDestinoPorLinea`
+- `RecuperarRecorridoParaMapaAbrevYAmpliPorEntidadYLinea`
+- `ResolverUbicacionFormularioPorParada`
+
+### Acciones en vivo (backend)
+
+- `RecuperarBanderasAsociadasAParada`
+- `RecuperarProximosArribosW` (`identificadorParada`, `codigoLineaParada`) — sin caché de catálogo
+
+### Rutas API de esta app
+
+| Ruta | Método | Descripción |
+| ---- | ------ | ----------- |
+| `/api/reference` | GET | Catálogo MGP desde `data/static/` |
+| `/api/geo/paradas-cercanas` | GET | Paradas en radio (`lat`, `lng`, `radio`, `limit`) |
+| `/api/geo/nominatim` | GET | Geocodificación proxy (`q`) hacia OSM |
+| `/api/geo/plan` | POST | Planificador «Cómo llego» (origen/destino) |
+| `/api/telegram-webhook` | POST | Webhook opcional del bot |
+
+## 🐳 Docker (opcional)
+
+`docker-compose.yml` levanta la app Next.js y un túnel **cloudflared** (requiere `TUNNEL_TOKEN` en `.env`). Las variables `NEXT_PUBLIC_*` se pasan como build args; ver `.env.example`.
 
 ## 🤝 Contribuir
 
-¡Las contribuciones (pull requests, reporte de bugs, sugerencias) son bienvenidas!
-
-Revisá [CONTRIBUTING.md](CONTRIBUTING.md) para el árbol del repo, convenciones y PRs. Para nuevos textos de documentación, el marco está en [docs/DIATAXIS.md](docs/DIATAXIS.md).
+Pull requests y reportes de bugs son bienvenidos. Guía completa: [CONTRIBUTING.md](CONTRIBUTING.md). Marco de documentación: [docs/DIATAXIS.md](docs/DIATAXIS.md).
 
 ## 📄 Licencia
 
-Este proyecto se distribuye bajo la licencia **MIT**. Consultá el archivo [LICENSE](LICENSE) para más detalles.
+**MIT** — ver [LICENSE](LICENSE).
 
 ---
 
 > [!TIP]
-> Si la app te es útil, apreciamos una estrella ⭐ en el [repositorio de GitHub](https://github.com/cuando-llega-mi-bondi/cuando-llega-mi-bondi).
+> Si la app te sirve, una estrella ⭐ en [GitHub](https://github.com/cuando-llega-mi-bondi/cuando-llega-mi-bondi) ayuda mucho.

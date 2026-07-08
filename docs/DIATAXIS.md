@@ -1,37 +1,56 @@
-# Documentación Diátaxis 📐
+# Documentación Diátaxis
 
-Este proyecto utiliza el marco de trabajo **Diátaxis** para organizar la documentación técnica. Diátaxis propone dividir el contenido en cuatro cuadrantes según el propósito y el contexto del usuario.
+Este proyecto organiza la documentación con el marco [Diátaxis](https://diataxis.fr/): cuatro tipos según lo que el lector necesita hacer.
 
-## 1. Tutoriales (orientado al aprendizaje)
+## 1. Tutoriales (aprendizaje)
 
-Ayudan al principiante a dar sus primeros pasos. En este proyecto, la sección **«Empezar»** del [README](../README.md) es el tutorial base.
+Guían a alguien sin contexto previo hacia un primer resultado.
 
-- *Meta:* Correr la app localmente en pocos minutos (clonar, `npm install`, `npm run dev`).
+| Documento | Contenido |
+| --------- | --------- |
+| [README — Empezar](../README.md#-empezar-getting-started) | Clonar, `.env.local`, `bun run dev` |
+| [README — Regenerar catálogo](../README.md#regenerar-catálogo-estático) | `dump-static` + `split-static` |
 
-## 2. Guías «cómo hacer» (orientado a la tarea)
+**Meta:** tener la PWA corriendo en local y entender qué variable es imprescindible.
 
-Instrucciones paso a paso para resolver un problema concreto.
+## 2. Guías «cómo hacer» (tareas)
 
-- **Agregar líneas manuales (GeoJSON):** [CONTRIBUTING.md](../CONTRIBUTING.md) («Cómo agregar una línea manual»).
-- **Contribuir con código y PRs:** [CONTRIBUTING.md](../CONTRIBUTING.md) (setup, estructura, convenciones).
-- **Variables opcionales (Telegram / Supabase):** tabla en el [README](../README.md) («Variables de entorno (opcional)»).
+Recetas para un problema concreto.
 
-## 3. Referencia (orientado a la información)
+| Documento | Tarea |
+| --------- | ----- |
+| [CONTRIBUTING — Línea manual](../CONTRIBUTING.md#cómo-agregar-una-línea-manual-geojson) | Agregar GeoJSON y entrada en `manualRoutes.ts` |
+| [CONTRIBUTING — Setup y PR](../CONTRIBUTING.md) | Fork, ramas, convenciones, checklist de PR |
+| [CONTRIBUTING — Scripts estáticos](../CONTRIBUTING.md#scripts-de-datos-estáticos) | Actualizar `data/static/` desde la API |
+| [CONTRIBUTING — Diagnóstico del planner](../CONTRIBUTING.md#scripts-de-diagnóstico-del-planner) | Correr `smoke-plan` y `audit-stop-order` |
+| [README — Docker](../README.md#-docker-opcional) | Compose + cloudflared |
 
-Descripciones técnicas precisas del funcionamiento.
+## 3. Referencia (información técnica)
 
-- **Proxy municipal:** `POST /api/cuando`, acciones y body — [README](../README.md) («API Reference»); implementación en `app/api/cuando/route.ts`; cliente en `lib/api/client.ts`.
-- **Tipos TypeScript:** `lib/types.ts`.
-- **Webhook Telegram (opcional):** `app/api/telegram-webhook/route.ts`.
+Descripciones precisas del «maquinaria».
 
-## 4. Explicación (orientado a la comprensión)
+| Documento | Tema |
+| --------- | ---- |
+| [docs/env-reference.md](env-reference.md) | Variables de entorno |
+| [README — API breve](../README.md#-api-referencia-breve) | Acciones MGP y rutas `/api/*` |
+| [shared/api/client.ts](../shared/api/client.ts) | `post()`, `swrFetcher`, fallback estático |
+| [shared/api/staticReferenceAcciones.ts](../shared/api/staticReferenceAcciones.ts) | Acciones servidas por `/api/reference` |
+| [shared/types.ts](../shared/types.ts) | Tipos de dominio compartidos |
+| [app/api/telegram-webhook/route.ts](../app/api/telegram-webhook/route.ts) | Webhook del bot (opcional) |
+| [DESIGN.md](../DESIGN.md) | Tokens, tipografía, componentes |
 
-Conceptos de alto nivel, arquitectura y decisiones de diseño.
+## 4. Explicación (comprensión)
 
-- **Flujo de datos:** diagrama Mermaid en el [README](../README.md).
-- **Estructura del repo y stack:** tablas y listas en el [README](../README.md) y árbol en [CONTRIBUTING.md](../CONTRIBUTING.md).
+Contexto, arquitectura y decisiones.
+
+| Documento | Tema |
+| --------- | ---- |
+| [docs/architecture.md](architecture.md) | Flujo de datos, Screaming Architecture, capas, backend externo |
+| [docs/trip-planner.md](trip-planner.md) | Planner «Cómo llego»: grafo de transit, modelo de costos, RAPTOR, poda |
+| [README — Arquitectura](../README.md#-arquitectura-y-stack) | Stack y diagrama Mermaid |
+| [DESIGN.md](../DESIGN.md) | Sistema visual MDP y accesibilidad |
 
 ---
 
 > [!TIP]
-> Al escribir nueva documentación, preguntate: *¿El usuario quiere aprender, completar una tarea, buscar un dato técnico o entender el porqué de algo?* Elegí el cuadrante correspondiente para mantener la claridad.
+> Al escribir documentación nueva, preguntate: ¿el lector quiere **aprender**, **hacer una tarea**, **consultar un dato** o **entender el porqué**? Ubicá el texto en el cuadrante correcto y enlazalo desde esta página.

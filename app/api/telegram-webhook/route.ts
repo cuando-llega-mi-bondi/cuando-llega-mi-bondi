@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
-import { parseLiveSharePayload } from "@/lib/liveSharePayload";
+import { parseLiveSharePayload } from "@features/live-sharing/lib/liveSharePayload";
 
 // We use service_role client in the backend to ensure we can update rows
 // Note: If you don't have service_role, anon key works if RLS allows public anonymous updates

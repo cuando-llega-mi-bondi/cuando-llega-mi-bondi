@@ -3,35 +3,56 @@
 
 import { Suspense } from "react";
 import type { Metadata } from "next";
-import { RecorridoJsonLd } from "@/components/RecorridoJsonLd";
-import RecorridoClient from "./RecorridoClient";
+import { RecorridoJsonLd } from "@features/route/components/RecorridoJsonLd";
+import RecorridoClient from "@features/route/components/RecorridoClient";
 
 export const metadata: Metadata = {
-    title: "Recorridos de Colectivos MDP",
-    description: "Mirá el mapa completo con todos los recorridos y paradas de las líneas de colectivos en Mar del Plata. Mapa interactivo actualizado de MGP.",
+    title: {
+        absolute: "Recorridos de colectivos en Mar del Plata — BondiMDP",
+    },
+    description:
+        "Consultá el recorrido completo de cada línea de bondi en Mar del Plata. Paradas, mapas y horarios actualizados en tiempo real.",
+    keywords: [
+        "recorridos colectivos mar del plata",
+        "mapa bondi mdp",
+        "paradas colectivo mar del plata",
+        "líneas colectivo mdp",
+    ],
     alternates: {
         canonical: "/recorrido",
     },
     openGraph: {
         type: "website",
         locale: "es_AR",
-        url: "https://www.bondimdp.com.ar/recorrido",
-        title: "Recorridos de Colectivos MDP | Bondi MDP",
+        url: "https://bondimdp.com.ar/recorrido",
+        title: "Recorridos de colectivos en Mar del Plata — BondiMDP",
         description:
-            "Mapa interactivo con recorridos y paradas de colectivos en Mar del Plata. Datos MGP.",
+            "Consultá el recorrido completo de cada línea de bondi. Paradas, mapas y horarios en tiempo real.",
         siteName: "Bondi MDP",
     },
     twitter: {
         card: "summary_large_image",
-        title: "Recorridos de Colectivos MDP",
-        description: "Mapa de recorridos y paradas en Mar del Plata.",
+        title: "Recorridos de colectivos en Mar del Plata",
+        description:
+            "Mapa interactivo con recorridos y paradas de todas las líneas de bondi en Mar del Plata.",
     },
 };
 
 export default function RecorridoPage() {
     return (
         <>
-            <RecorridoJsonLd />
+            <section className="sr-only" aria-labelledby="recorrido-seo-title">
+                <h1 id="recorrido-seo-title">
+                    Recorridos de colectivos en Mar del Plata
+                </h1>
+                <p>
+                    Consultá el recorrido completo de cada línea de bondi: paradas en el
+                    mapa, ramales y datos actualizados de MGP en tiempo real.
+                </p>
+            </section>
+            <Suspense fallback={null}>
+                <RecorridoJsonLd />
+            </Suspense>
             <Suspense
                 fallback={
                     <div className="flex min-h-pwa-shell flex-col items-center justify-center gap-2 bg-bg px-4 font-sans text-sm text-text-dim">

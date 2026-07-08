@@ -1,25 +1,57 @@
-FROM node:22-slim
+# === PASO 1: Instalar dependencias (Bun) ===
+FROM oven/bun:1.1-alpine AS deps
+WORKDIR /app
+COPY package*.json bun.lock* ./
+RUN bun install
 
-# Instalamos Git y dependencias mínimas para que node-gyp no falle con algunos paquetes
-RUN apt-get update && apt-get install -y \
-    git \
-    curl \
-    ca-certificates \
-    && rm -rf /var/lib/apt/lists/*
+# === PASO 2: Compilar la aplicación (Node + Turbopack) ===
+FROM node:22-alpine AS builder
+WORKDIR /app
+COPY --from=deps /app/node_modules ./node_modules
+COPY . .
 
-ENV PNPM_HOME="/home/node/.local/share/pnpm"
-ENV PATH="$PNPM_HOME:$PATH"
+ENV NEXT_TELEMETRY_DISABLED 1
+ENV NODE_ENV production
 
-# Habilitamos corepack para tener pnpm listo
-RUN corepack enable && corepack prepare pnpm@latest --activate
+ARG NEXT_PUBLIC_SUPABASE_URL
+ARG NEXT_PUBLIC_SUPABASE_ANON_KEY
+ARG NEXT_PUBLIC_TELEGRAM_BOT_USERNAME
+ARG NEXT_PUBLIC_CLARITY_PROJECT_ID
+ARG NEXT_PUBLIC_GA_MEASUREMENT_ID
+ARG NEXT_PUBLIC_USE_STATIC_REFERENCE
+ARG NEXT_PUBLIC_CUANDO_API_URL
+ARG NEXT_PUBLIC_BONDI_API_URL
+ARG NEXT_PUBLIC_PROXY_API_URL
+ARG NEXT_PUBLIC_VAPID_PUBLIC
 
-# Directorio de trabajo
-WORKDIR /workspaces
-RUN chown -R node:node /workspaces
+ENV NEXT_PUBLIC_SUPABASE_URL=$NEXT_PUBLIC_SUPABASE_URL \
+    NEXT_PUBLIC_SUPABASE_ANON_KEY=$NEXT_PUBLIC_SUPABASE_ANON_KEY \
+    NEXT_PUBLIC_TELEGRAM_BOT_USERNAME=$NEXT_PUBLIC_TELEGRAM_BOT_USERNAME \
+    NEXT_PUBLIC_CLARITY_PROJECT_ID=$NEXT_PUBLIC_CLARITY_PROJECT_ID \
+    NEXT_PUBLIC_GA_MEASUREMENT_ID=$NEXT_PUBLIC_GA_MEASUREMENT_ID \
+    NEXT_PUBLIC_USE_STATIC_REFERENCE=$NEXT_PUBLIC_USE_STATIC_REFERENCE \
+    NEXT_PUBLIC_CUANDO_API_URL=$NEXT_PUBLIC_CUANDO_API_URL \
+    NEXT_PUBLIC_BONDI_API_URL=$NEXT_PUBLIC_BONDI_API_URL \
+    NEXT_PUBLIC_PROXY_API_URL=$NEXT_PUBLIC_PROXY_API_URL \
+    NEXT_PUBLIC_VAPID_PUBLIC=$NEXT_PUBLIC_VAPID_PUBLIC
 
-USER node
+RUN npx next build
 
-# Configuración de pnpm
-RUN pnpm config set store-dir /home/node/.local/share/pnpm/store
+# === PASO 3: Imagen final de producción (Cambiamos Bun por Node para estabilidad total) ===
+FROM node:22-alpine AS runner
+WORKDIR /app
 
-CMD ["sleep", "infinity"]
+ENV NODE_ENV production
+ENV NEXT_TELEMETRY_DISABLED 1
+ENV PORT 3000
+ENV HOSTNAME "0.0.0.0"
+
+# Copiar assets estáticos y el build standalone
+COPY --from=builder /app/public ./public
+COPY --from=builder /app/.next/standalone ./
+COPY --from=builder /app/.next/static ./.next/static
+
+EXPOSE 3000
+
+# Ejecutamos con Node para garantizar compatibilidad nativa con Turbopack
+CMD ["node", "server.js"]

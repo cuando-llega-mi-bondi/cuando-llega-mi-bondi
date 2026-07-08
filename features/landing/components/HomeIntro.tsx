@@ -1,0 +1,39 @@
+/** Server-rendered intro for crawlers and accessibility (single page h1). */
+export function HomeIntro() {
+    return (
+        <section
+            className="sr-only route-info mb-4 border-b border-border pb-1"
+            aria-labelledby="home-seo-title"
+        >
+            <h1
+                id="home-seo-title"
+                className="mb-2 font-display text-[40px] md:text-[62px] font-medium leading-[0.95] tracking-[-2px] md:tracking-[-3.1px] text-foreground"
+            >
+                App de colectivos en Mar del Plata: cuándo llega tu bondi con Bondi MDP
+            </h1>
+            <p className="m-0 font-sans text-[15px] leading-[1.3] text-muted-foreground mt-3">
+                Bondi MDP es la app gratuita para Mar del Plata: arribos en tiempo real,
+                recorridos y paradas de todas las líneas municipales (511, 522, 541 y más).
+                Datos oficiales de MGP, instalable en Android e iPhone como PWA.
+            </p>
+            <nav aria-label="Funciones principales de Bondi MDP">
+                <h2>¿Qué podés hacer con Bondi MDP?</h2>
+                <ul>
+                    <li>
+                        <a href="/recorrido">Ver recorridos</a> — Mapa interactivo con
+                        recorridos y paradas de todas las líneas de colectivo
+                    </li>
+                    <li>
+                        <a href="/como-llego">Cómo llego</a> — Planificá tu viaje en
+                        colectivo ingresando origen y destino
+                    </li>
+                    <li>
+                        <a href="/paradas-cerca">Paradas cerca mío</a> — Encontrá las
+                        paradas de colectivo más cercanas a tu ubicación
+                    </li>
+                </ul>
+            </nav>
+        </section>
+    );
+}
+
