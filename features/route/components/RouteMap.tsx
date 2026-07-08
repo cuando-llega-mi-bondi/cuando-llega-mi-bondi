@@ -8,6 +8,7 @@ import "leaflet/dist/leaflet.css";
 import "@shared/map/leaflet.css";
 import { encodeLiveSharePayload } from "@features/live-sharing/lib/liveSharePayload";
 import { useLeafletMapReady } from "@shared/map/useLeafletMapReady";
+import { isMapUsable, stopMapSafely } from "@shared/map/leafletSafety";
 
 // ─── Icons ────────────────────────────────────────────────────────────────────
 
@@ -221,11 +222,14 @@ function MapController({
 
   useEffect(() => {
     const timers = [
-      setTimeout(() => map.invalidateSize({ animate: true }), 100),
-      setTimeout(() => map.invalidateSize({ animate: true }), 300),
+      setTimeout(() => { if (isMapUsable(map)) map.invalidateSize({ animate: false }); }, 100),
+      setTimeout(() => { if (isMapUsable(map)) map.invalidateSize({ animate: false }); }, 300),
     ];
     return () => timers.forEach(clearTimeout);
   }, [isFullscreen, map]);
+
+  // Cancela animaciones en vuelo antes de que react-leaflet destruya el mapa.
+  useEffect(() => () => stopMapSafely(map), [map]);
 
   useEffect(() => {
     if (!bounds) return;
@@ -233,6 +237,7 @@ function MapController({
       fitted.current = true;
       lastTrigger.current = triggerFit;
       const timer = setTimeout(() => {
+        if (!isMapUsable(map)) return;
         try {
           map.fitBounds(bounds as L.LatLngBoundsExpression, { padding: [60, 60], animate: true });
         } catch {
