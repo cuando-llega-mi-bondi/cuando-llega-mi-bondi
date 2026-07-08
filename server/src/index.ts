@@ -11,7 +11,7 @@ import { subscribeRoutes } from "./routes/subscribe.js";
 import { telegramRoutes } from "./routes/telegram.js";
 import { lineasRoutes } from "./routes/lineas.js";
 import { statsRoutes } from "./routes/stats.js";
-import { fetchMgpDirect, isMgpDirectEnabled } from "./lib/mgpDirect.js";
+import { enqueueMgp, isBreakerOpen, } from "./lib/mgpQueue.js";
 import { startBanderasWarmup } from "./lib/banderasWarmup.js";
 import { trackQuery } from "./lib/analytics.js";
 import { getLines } from "./data/static.js";
@@ -19,9 +19,10 @@ import {
     recordAccion,
     recordCache,
     recordError,
-    recordMgp,
     recordRequest,
 } from "./stats.js";
+
+
 
 const app = new Hono();
 
@@ -155,7 +156,23 @@ function getTtls(accion: string): { fresh: number; stale: number } {
 }
 
 type CacheEntry = { at: number; payload: unknown; status: number };
+const PROXY_CACHE_MAX = 5_000;
 const proxyCache = new Map<string, CacheEntry>();
+
+/** Evict oldest entries when cache exceeds max size. */
+function proxyCacheSet(key: string, entry: CacheEntry): void {
+    proxyCache.set(key, entry);
+    if (proxyCache.size > PROXY_CACHE_MAX) {
+        // Map itera en orden de inserción; borramos las más viejas.
+        const overflow = proxyCache.size - PROXY_CACHE_MAX;
+        let removed = 0;
+        for (const k of proxyCache.keys()) {
+            if (removed >= overflow) break;
+            proxyCache.delete(k);
+            removed++;
+        }
+    }
+}
 
 function normalizeKey(body: string): string {
     return new URLSearchParams(body).toString();
@@ -177,53 +194,7 @@ async function readProxyBody(c: import("hono").Context): Promise<string | null> 
     return null;
 }
 
-// Circuit breaker: cuando MGP devuelve 429, queda "open" durante este tiempo
-// y no le pegamos más. Le da espacio a enfriarse en lugar de hammerearla en
-// bucle (que es lo que la mantiene rate-limiteada). Mientras está open,
-// callMgp tira inmediatamente para que la lógica de cache stale entre.
-const BREAKER_OPEN_MS = 30_000;
-let breakerOpenUntil = 0;
 
-async function callMgp(body: string): Promise<unknown> {
-    if (Date.now() < breakerOpenUntil) {
-        throw new Error("circuit_open: appWS.php devolvió 429 reciente");
-    }
-    try {
-        const data = isMgpDirectEnabled()
-            ? await fetchMgpDirect(body)
-            : await callMgpProxy(body);
-        recordMgp({ at: Date.now(), ok: true, status: 200 });
-        return data;
-    } catch (e) {
-        const message = (e as Error).message;
-        const m = message.match(/(\d{3})/);
-        const status = m ? Number(m[1]) : 0;
-        if (status === 429) {
-            breakerOpenUntil = Date.now() + BREAKER_OPEN_MS;
-        }
-        recordMgp({ at: Date.now(), ok: false, status, message });
-        throw e;
-    }
-}
-
-async function callMgpProxy(body: string): Promise<unknown> {
-    if (!env.MGP_PROXY_URL) throw new Error("no_mgp_config");
-    const ctrl = new AbortController();
-    const tid = setTimeout(() => ctrl.abort(), 8_000);
-    try {
-        const r = await fetch(env.MGP_PROXY_URL, {
-            method: "POST",
-            headers: { "content-type": "application/x-www-form-urlencoded" },
-            body,
-            signal: ctrl.signal,
-        });
-        const text = await r.text();
-        if (!r.ok) throw new Error(`HTTP ${r.status}`);
-        return JSON.parse(text);
-    } finally {
-        clearTimeout(tid);
-    }
-}
 
 app.post("/", async (c) => {
     const body = await readProxyBody(c);
@@ -251,8 +222,8 @@ app.post("/", async (c) => {
     }
 
     try {
-        const data = await callMgp(body);
-        proxyCache.set(key, { at: now, payload: data, status: 200 });
+        const data = await enqueueMgp(body, { priority: "high" });
+        proxyCacheSet(key, { at: now, payload: data, status: 200 });
         recordCache("MISS");
         c.header("X-Cache", "MISS");
         return c.json(data as Record<string, unknown>);
@@ -309,8 +280,8 @@ app.get("/mgp/:accion", async (c) => {
     }
 
     try {
-        const data = await callMgp(body);
-        proxyCache.set(key, { at: now, payload: data, status: 200 });
+        const data = await enqueueMgp(body, { priority: "high" });
+        proxyCacheSet(key, { at: now, payload: data, status: 200 });
         recordCache("MISS");
         c.header("X-Cache", "MISS");
         c.header("Cache-Control", `public, max-age=${browserMaxAge}, s-maxage=${sMaxAge}`);
@@ -356,6 +327,5 @@ serve(
 // las paradas, después refresh semanal. Estado expuesto en /stats/data.warmup.
 startBanderasWarmup({
     proxyCache,
-    callMgp,
-    isBreakerOpen: () => Date.now() < breakerOpenUntil,
+    proxyCacheSet,
 }).catch((e) => console.error("[warmup] failed to start:", e));

@@ -14,6 +14,8 @@ type RequestRecord = {
     path: string;
     status: number;
     durationMs: number;
+    ip?: string | null;
+    ua?: string;
 };
 
 type ErrorRecord = {

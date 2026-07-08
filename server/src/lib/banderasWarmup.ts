@@ -19,6 +19,7 @@
 import { readFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import { query } from "../db.js";
+import { enqueueMgp, isBreakerOpen } from "../lib/mgpQueue.js";
 
 const STATIC_DIR = process.env.STATIC_DATA_DIR ?? resolve(process.cwd(), "static-data");
 const TICK_MS = 30_000;
@@ -137,8 +138,7 @@ async function recomputeStats(allIds: string[]): Promise<void> {
 
 export type WarmupDeps = {
     proxyCache: Map<string, ProxyCacheEntry>;
-    callMgp: (body: string) => Promise<unknown>;
-    isBreakerOpen: () => boolean;
+    proxyCacheSet: (key: string, entry: ProxyCacheEntry) => void;
 };
 
 export async function startBanderasWarmup(deps: WarmupDeps): Promise<void> {
@@ -166,7 +166,7 @@ export async function startBanderasWarmup(deps: WarmupDeps): Promise<void> {
     async function tick(): Promise<void> {
         try {
             stats.nextTickAt = Date.now() + TICK_MS;
-            if (deps.isBreakerOpen()) {
+            if (isBreakerOpen()) {
                 return;
             }
             const paradaId = await pickNextParada(allIds);
@@ -175,7 +175,7 @@ export async function startBanderasWarmup(deps: WarmupDeps): Promise<void> {
                 accion: "RecuperarBanderasAsociadasAParada",
                 identificadorParada: paradaId,
             }).toString();
-            const data = await deps.callMgp(body);
+            const data = await enqueueMgp(body, { priority: "low" });
             const banderas = (data as { banderas?: unknown }).banderas ?? [];
             await query(
                 `insert into bondi.banderas_cache (parada_id, banderas, fetched_at)
@@ -185,7 +185,7 @@ export async function startBanderasWarmup(deps: WarmupDeps): Promise<void> {
                        fetched_at = excluded.fetched_at`,
                 [paradaId, JSON.stringify(banderas)],
             );
-            deps.proxyCache.set(body, { at: Date.now(), payload: data, status: 200 });
+            deps.proxyCacheSet(body, { at: Date.now(), payload: data, status: 200 });
             stats.lastFetchAt = Date.now();
             stats.lastFetchParada = paradaId;
             stats.lastError = null;

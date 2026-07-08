@@ -7,6 +7,9 @@
  *
  * Idéntico al wrapper que vive en lib/api/mgpDirect.ts del frontend Next; lo
  * mantenemos aparte porque los repos no comparten workspace de paquetes.
+ *
+ * Timeouts: 10s para authenticate(), 8s para callAppWS().
+ * Auth cooldown: 10s después de un fallo de auth para no generar ráfagas.
  */
 
 import { publicEncrypt, constants, randomUUID } from "node:crypto";
@@ -21,11 +24,19 @@ const HEADERS_BASE = {
 };
 
 const REAUTH_INTERVAL_MS = 100_000;
+/** Timeout para el flujo completo de autenticación (bootstrap + registro). */
+const AUTH_TIMEOUT_MS = 10_000;
+/** Timeout para cada llamada a appWS.php. */
+const CALL_TIMEOUT_MS = 8_000;
+/** Cooldown post-error de auth: evita ráfagas de registro.php. */
+const AUTH_COOLDOWN_MS = 10_000;
 
 type Session = { phpsessid: string; authedAt: number };
 
 let session: Session | null = null;
 let pending: Promise<Session> | null = null;
+/** Timestamp hasta el cual no intentamos re-autenticar (cooldown post-error). */
+let authCooldownUntil = 0;
 
 export function isMgpDirectEnabled(): boolean {
     return Boolean(process.env.MGP_RSA_PUBKEY && process.env.MGP_SHARED_KEY);
@@ -49,49 +60,59 @@ function extractCookie(setCookies: string[], name: string): string | undefined {
 }
 
 async function authenticate(): Promise<Session> {
-    const baseRes = await fetch(`${APP_BASE}/`, {
-        headers: HEADERS_BASE,
-        redirect: "manual",
+    const ctrl = new AbortController();
+    const tid = setTimeout(() => ctrl.abort(), AUTH_TIMEOUT_MS);
+    try {
+        const baseRes = await fetch(`${APP_BASE}/`, {
+            headers: HEADERS_BASE,
+            redirect: "manual",
+            signal: ctrl.signal,
+        });
+        const setCookies = baseRes.headers.getSetCookie?.() ?? [];
+        const phpsessid = extractCookie(setCookies, "PHPSESSID");
+        if (!phpsessid) throw new Error("MGP no devolvió PHPSESSID en bootstrap");
 
-    });
-    const setCookies = baseRes.headers.getSetCookie?.() ?? [];
-    const phpsessid = extractCookie(setCookies, "PHPSESSID");
-    if (!phpsessid) throw new Error("MGP no devolvió PHPSESSID en bootstrap");
+        const epoch = Math.floor(Date.now() / 1000);
+        const payload = `9!1;${epoch};${phpsessid};#95`;
+        const encrypted = publicEncrypt(
+            { key: pubkeyPem(), padding: constants.RSA_PKCS1_PADDING },
+            Buffer.from(payload, "utf-8"),
+        );
+        const token = encrypted.toString("base64");
 
-    const epoch = Math.floor(Date.now() / 1000);
-    const payload = `9!1;${epoch};${phpsessid};#95`;
-    const encrypted = publicEncrypt(
-        { key: pubkeyPem(), padding: constants.RSA_PKCS1_PADDING },
-        Buffer.from(payload, "utf-8"),
-    );
-    const token = encrypted.toString("base64");
+        const regBody = new URLSearchParams({
+            dispositivo: "Android:Pixel 8:14",
+            uuid: randomUUID(),
+            token,
+            clave: process.env.MGP_SHARED_KEY!,
+        }).toString();
 
-    const regBody = new URLSearchParams({
-        dispositivo: "Android:Pixel 8:14",
-        uuid: randomUUID(),
-        token,
-        clave: process.env.MGP_SHARED_KEY!,
-    }).toString();
+        const regRes = await fetch(`${APP_BASE}/registro.php`, {
+            method: "POST",
+            headers: {
+                ...HEADERS_BASE,
+                Cookie: `PHPSESSID=${phpsessid}`,
+                "Content-Type": "application/x-www-form-urlencoded",
+                Referer: `${APP_BASE}/`,
+            },
+            body: regBody,
+            signal: ctrl.signal,
+        });
+        if (!regRes.ok) throw new Error(`registro.php devolvió ${regRes.status}`);
 
-    const regRes = await fetch(`${APP_BASE}/registro.php`, {
-        method: "POST",
-        headers: {
-            ...HEADERS_BASE,
-            Cookie: `PHPSESSID=${phpsessid}`,
-            "Content-Type": "application/x-www-form-urlencoded",
-            Referer: `${APP_BASE}/`,
-        },
-        body: regBody,
-
-    });
-    if (!regRes.ok) throw new Error(`registro.php devolvió ${regRes.status}`);
-
-    return { phpsessid, authedAt: Date.now() };
+        return { phpsessid, authedAt: Date.now() };
+    } finally {
+        clearTimeout(tid);
+    }
 }
 
 async function getSession(): Promise<Session> {
     if (session && Date.now() - session.authedAt < REAUTH_INTERVAL_MS) return session;
     if (pending) return pending;
+    // Auth cooldown: si un intento reciente falló, no martillamos registro.php.
+    if (Date.now() < authCooldownUntil) {
+        throw new Error("mgp_auth_cooldown: esperando cooldown post-error de auth");
+    }
     pending = authenticate()
         .then((s) => {
             session = s;
@@ -99,6 +120,8 @@ async function getSession(): Promise<Session> {
         })
         .catch((e) => {
             session = null;
+            authCooldownUntil = Date.now() + AUTH_COOLDOWN_MS;
+            console.warn(`[mgpDirect] auth falló, cooldown ${AUTH_COOLDOWN_MS / 1000}s:`, (e as Error).message);
             throw e;
         })
         .finally(() => {
@@ -108,21 +131,29 @@ async function getSession(): Promise<Session> {
 }
 
 async function callAppWS(s: Session, body: string): Promise<{ status: number; text: string }> {
-    const res = await fetch(`${APP_BASE}/appWS.php`, {
-        method: "POST",
-        headers: {
-            ...HEADERS_BASE,
-            Cookie: `PHPSESSID=${s.phpsessid}`,
-            "Content-Type": "application/x-www-form-urlencoded",
-            Referer: `${APP_BASE}/`,
-        },
-        body,
-
-    });
-    return { status: res.status, text: await res.text() };
+    const ctrl = new AbortController();
+    const tid = setTimeout(() => ctrl.abort(), CALL_TIMEOUT_MS);
+    try {
+        const res = await fetch(`${APP_BASE}/appWS.php`, {
+            method: "POST",
+            headers: {
+                ...HEADERS_BASE,
+                Cookie: `PHPSESSID=${s.phpsessid}`,
+                "Content-Type": "application/x-www-form-urlencoded",
+                Referer: `${APP_BASE}/`,
+            },
+            body,
+            signal: ctrl.signal,
+        });
+        return { status: res.status, text: await res.text() };
+    } finally {
+        clearTimeout(tid);
+    }
 }
 
-function looksUnauthenticated(text: string): boolean {
+function looksUnauthenticated(text: string, status?: number): boolean {
+    // Redirect (302) a login page = sesión expirada.
+    if (status === 302 || status === 301) return true;
     if (!text.trim()) return true;
     const head = text.trimStart().slice(0, 5).toLowerCase();
     return head.startsWith("<");
@@ -132,7 +163,7 @@ export async function fetchMgpDirect(body: string): Promise<unknown> {
     let s = await getSession();
     let { status, text } = await callAppWS(s, body);
 
-    if (looksUnauthenticated(text) || status >= 400) {
+    if (looksUnauthenticated(text, status) || status >= 400) {
         session = null;
         s = await getSession();
         ({ status, text } = await callAppWS(s, body));
