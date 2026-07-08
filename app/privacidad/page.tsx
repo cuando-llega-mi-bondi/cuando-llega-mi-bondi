@@ -103,7 +103,7 @@ export default function PrivacidadPage() {
                     __html: JSON.stringify(breadcrumbJsonLd),
                 }}
             />
-            <div className="flex min-h-pwa-shell flex-col lg:pl-19">
+            <div className="flex min-h-pwa-shell flex-col lg:pl-60">
                 <PageShell className="space-y-10 pt-4">
                     {/* ── ENCABEZADO ──────────────────────────────────── */}
                     <section className="space-y-3 text-center">

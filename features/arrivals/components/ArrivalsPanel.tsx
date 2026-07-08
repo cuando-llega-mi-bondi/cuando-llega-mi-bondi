@@ -13,7 +13,7 @@ import {
 } from "@features/arrivals/types/arrivalsSession";
 import { useFavoritos } from "@features/favorites/hooks/useFavoritos";
 import { useUIStore } from "@shared/ui/store/useUIStore";
-import { useCallback, useMemo } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import type { Parada } from "@shared/types";
 import { ArrivalsEmpty } from "./ArrivalsEmpty";
 import { ArrivalsLoading } from "./ArrivalsLoading";
@@ -22,9 +22,20 @@ import { LiveSharingBanner } from "./LiveSharingBanner";
 interface ArrivalsPanelProps {
     consult: Pick<
         ArrivalsConsultSession,
-        "isConsulting" | "selectedRamal" | "setSelectedRamal" | "paradaId"
+        "isConsulting" | "selectedRamal" | "setSelectedRamal" | "paradaId" | "error"
     >;
     arrivals: ArrivalsDataSession;
+}
+
+/** Umbral para marcar la última actualización como "vieja". */
+const STALE_AFTER_MS = 120_000;
+
+function formatRelative(ms: number): string {
+    const s = Math.max(0, Math.round(ms / 1000));
+    if (s < 10) return "recién";
+    if (s < 60) return `hace ${s} s`;
+    const m = Math.round(s / 60);
+    return `hace ${m} min`;
 }
 
 export function ArrivalsPanel({ consult, arrivals }: ArrivalsPanelProps) {
@@ -33,6 +44,7 @@ export function ArrivalsPanel({ consult, arrivals }: ArrivalsPanelProps) {
         selectedRamal,
         setSelectedRamal,
         paradaId,
+        error,
         codLinea,
         lineaLabel = "",
         selectedParada,
@@ -107,6 +119,16 @@ export function ArrivalsPanel({ consult, arrivals }: ArrivalsPanelProps) {
         setNamingModal
     ]);
 
+    // Tick de 10s para mantener fresco el "actualizado hace X".
+    const [nowTick, setNowTick] = useState(() => Date.now());
+    useEffect(() => {
+        const id = setInterval(() => setNowTick(Date.now()), 10_000);
+        return () => clearInterval(id);
+    }, []);
+
+    const elapsedMs = lastUpdate ? nowTick - lastUpdate.getTime() : null;
+    const isStale = elapsedMs !== null && elapsedMs > STALE_AFTER_MS;
+
     const hasArribos = displayArribos.length > 0;
     const hasLiveSharings = liveSharings.length > 0;
     const showOtrasLineas =
@@ -129,13 +151,17 @@ export function ArrivalsPanel({ consult, arrivals }: ArrivalsPanelProps) {
                     PRÓXIMOS ARRIBOS
                 </label>
                 <div className="flex items-center gap-2">
-                    {lastUpdate ? (
-                        <span className="font-mono text-[10px] text-muted-foreground">
-                            {lastUpdate.toLocaleTimeString("es-AR", {
-                                hour: "2-digit",
-                                minute: "2-digit",
-                                second: "2-digit",
-                            })}
+                    {elapsedMs !== null ? (
+                        <span
+                            className={cn(
+                                "font-mono text-[10px]",
+                                isStale ? "font-semibold text-amarillo" : "text-muted-foreground",
+                            )}
+                            title={lastUpdate?.toLocaleTimeString("es-AR")}
+                        >
+                            {isStale
+                                ? `Última info ${formatRelative(elapsedMs)}`
+                                : formatRelative(elapsedMs)}
                         </span>
                     ) : null}
                     <ShareButton
@@ -160,6 +186,7 @@ export function ArrivalsPanel({ consult, arrivals }: ArrivalsPanelProps) {
             ) : view === "empty" ? (
                 <ArrivalsEmpty
                     mode={isConsulting ? "no-data" : "prompt"}
+                    hasError={Boolean(error) && isConsulting}
                     loadingArribos={loadingArribos}
                     selectedRamal={selectedRamal}
                     onRetry={fetchArribos}
@@ -209,7 +236,7 @@ export function ArrivalsPanel({ consult, arrivals }: ArrivalsPanelProps) {
                         {isCurrentFavorito ? "Quitar de favoritos" : "Guardar en favoritos"}
                     </button>
                     <div className="text-center font-mono text-[10px] text-muted-foreground">
-                        Actualización automática cada 30s
+                        Actualización automática cada 60 s
                     </div>
                 </div>
             ) : null}

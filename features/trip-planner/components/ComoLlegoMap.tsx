@@ -13,6 +13,7 @@ import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import "@shared/map/leaflet.css";
 import type { ItineraryMapView } from "@features/trip-planner/lib/itineraryMapPayload";
+import { isMapUsable, stopMapSafely } from "@shared/map/leafletSafety";
 import { Button } from "@shared/ui/Button";
 import { cn } from "@shared/utils";
 
@@ -47,8 +48,13 @@ function MapFitter({
     draftDest: { lat: number; lng: number } | null;
 }) {
     const map = useMap();
+
+    // Cancela animaciones en vuelo antes de que react-leaflet destruya el mapa.
+    useEffect(() => () => stopMapSafely(map), [map]);
+
     useEffect(() => {
         const run = () => {
+            if (!isMapUsable(map)) return;
             if (routeView) {
                 const b = L.latLngBounds([]);
                 let any = false;
@@ -90,7 +96,7 @@ function MapFitter({
             }
         };
         run();
-        const t = requestAnimationFrame(() => map.invalidateSize());
+        const t = requestAnimationFrame(() => { if (isMapUsable(map)) map.invalidateSize(); });
         return () => cancelAnimationFrame(t);
     }, [map, routeView, draftOrigin, draftDest]);
     return null;

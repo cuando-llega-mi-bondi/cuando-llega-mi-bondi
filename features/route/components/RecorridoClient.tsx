@@ -420,7 +420,7 @@ export default function RecorridoClient({ initialLineCode }: { initialLineCode?:
   // ─────────────────────────────────────────────────────────────────────────────
   if (step === "selector") {
     return (
-      <div className="flex min-h-pwa-shell flex-col bg-bg lg:pl-19">
+      <div className="flex min-h-pwa-shell flex-col bg-bg lg:pl-60">
         <header className="z-50 flex shrink-0 items-center gap-3 border-b border-white/10 px-[calc(20px+var(--safe-left))] pt-[calc(16px+var(--safe-top))] pr-[calc(20px+var(--safe-right))] pb-3.5 lg:px-8">
           <Link
             href="/"
@@ -482,7 +482,7 @@ export default function RecorridoClient({ initialLineCode }: { initialLineCode?:
   // MAP SCREEN
   // ─────────────────────────────────────────────────────────────────────────────
   return (
-    <div className="flex h-dvh flex-col bg-background pb-nav lg:pl-19 lg:pb-0">
+    <div className="flex h-dvh flex-col bg-background pb-[calc(var(--nav-height)+max(env(safe-area-inset-bottom,0px),var(--safe-bottom-live,0px)))] lg:pl-60 lg:pb-0">
       <header className="z-50 flex shrink-0 items-center gap-3 border-b border-border bg-background/90 backdrop-blur-md px-[calc(16px+var(--safe-left))] pr-[calc(16px+var(--safe-right))] pt-[calc(10px+var(--safe-top))] pb-3 lg:px-8">
         <button
           type="button"
