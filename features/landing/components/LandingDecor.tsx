@@ -19,29 +19,6 @@ export function BlueprintGrid({ className }: { className?: string }) {
   );
 }
 
-/**
- * Faint Mar del Plata street map behind the whole landing. Fixed so the content
- * scrolls over one coherent map instead of a repeated/cropped texture.
- * Map data © OpenStreetMap contributors (ODbL) — attributed in the footer.
- */
-export function CityMapBackground() {
-  const mask = "radial-gradient(120% 85% at 50% 42%, black 28%, transparent 80%)";
-  return (
-    <div
-      aria-hidden
-      className="pointer-events-none fixed inset-0 z-0"
-      style={{
-        backgroundImage: "url(/mar-del-plata-mapa-bg.svg)",
-        backgroundSize: "cover",
-        backgroundPosition: "center",
-        opacity: 0.14,
-        maskImage: mask,
-        WebkitMaskImage: mask,
-      }}
-    />
-  );
-}
-
 /** Small turquoise pill label sitting above a section heading. */
 export function SectionEyebrow({ children }: { children: ReactNode }) {
   return (

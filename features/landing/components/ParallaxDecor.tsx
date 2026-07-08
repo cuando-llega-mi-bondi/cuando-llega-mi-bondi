@@ -1,6 +1,9 @@
 "use client";
 
+import { preload } from "react-dom";
 import { motion, useScroll, useTransform, useReducedMotion } from "motion/react";
+
+const MAP_SVG = "/mar-del-plata-mapa-bg.svg";
 
 const MAP_MASK =
   "radial-gradient(120% 85% at 50% 42%, black 28%, transparent 80%)";
@@ -20,6 +23,11 @@ function Glows() {
  * different speeds as the page scrolls, creating a subtle parallax depth.
  */
 export function ParallaxDecor() {
+  // CSS background-images aren't discovered until this element paints, so the
+  // 240KB map used to pop in seconds late. Preloading emits a
+  // <link rel="preload"> in the SSR'd head, fetching it with the initial HTML.
+  preload(MAP_SVG, { as: "image", type: "image/svg+xml", fetchPriority: "high" });
+
   const reduceMotion = useReducedMotion();
   const { scrollYProgress } = useScroll();
 
@@ -37,7 +45,7 @@ export function ParallaxDecor() {
         className="pointer-events-none fixed -inset-[15%] z-0 bg-cover bg-center"
         style={{
           y: reduceMotion ? 0 : mapY,
-          backgroundImage: "url(/mar-del-plata-mapa-bg.svg)",
+          backgroundImage: `url(${MAP_SVG})`,
           opacity: 0.14,
           maskImage: MAP_MASK,
           WebkitMaskImage: MAP_MASK,
