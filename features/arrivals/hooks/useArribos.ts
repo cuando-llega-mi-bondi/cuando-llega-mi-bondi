@@ -34,6 +34,9 @@ export function useArribos({
             refreshWhenHidden: false,
             revalidateOnFocus: true,
             focusThrottleInterval: 60_000,
+            // Si un refresh falla, mantener la última lista visible: junto al
+            // "actualizado hace X" el usuario ve datos viejos en vez de nada.
+            keepPreviousData: true,
             onSuccess: () => {
                 setLastUpdate(new Date());
                 onSuccessRef.current?.();
