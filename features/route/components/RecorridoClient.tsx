@@ -20,6 +20,7 @@ import {
   MapLoadingOverlay,
 } from "@features/route/components";
 import { BottomNav } from "@shared/layout/BottomNav";
+import { PageHeader } from "@shared/layout/PageHeader";
 
 // Leaflet can't run on the server — dynamic import with ssr:false is mandatory
 const RouteMap = dynamic(() => import("@features/route/components/RouteMap"), {
@@ -421,7 +422,8 @@ export default function RecorridoClient({ initialLineCode }: { initialLineCode?:
   if (step === "selector") {
     return (
       <div className="flex min-h-pwa-shell flex-col bg-bg lg:pl-60">
-        <header className="z-50 flex shrink-0 items-center gap-3 border-b border-white/10 px-[calc(20px+var(--safe-left))] pt-[calc(16px+var(--safe-top))] pr-[calc(20px+var(--safe-right))] pb-3.5 lg:px-8">
+        {/* Mobile: header con volver (la pantalla vive fuera del layout con Header). */}
+        <header className="z-50 flex shrink-0 items-center gap-3 border-b border-white/10 px-[calc(20px+var(--safe-left))] pt-[calc(16px+var(--safe-top))] pr-[calc(20px+var(--safe-right))] pb-3.5 lg:hidden">
           <Link
             href="/"
             className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-white/12 bg-white/5 text-text-dim no-underline transition hover:border-white/20 hover:text-text"
@@ -437,12 +439,23 @@ export default function RecorridoClient({ initialLineCode }: { initialLineCode?:
               {linesLoading ? "Cargando líneas…" : `${lines.length} líneas disponibles`}
             </div>
           </div>
-          <div className="shrink-0 rounded-full border border-accent/35 bg-accent/12 px-3 py-1 font-sans text-[11px] font-medium tracking-[-0.01em] text-accent">
-            MAPA
-          </div>
         </header>
 
-        <div className="shrink-0 border-b border-white/10  px-4 pb-2 pt-3.5 lg:px-8">
+        {/* Desktop: mismo PageHeader y métricas (px-8/pt-8) que el resto. */}
+        <div className="hidden shrink-0 px-8 pt-8 lg:block">
+          <PageHeader
+            as="h2"
+            title="Explorar"
+            highlight="Recorridos"
+            subtitle={
+              linesLoading
+                ? "Cargando líneas…"
+                : `${lines.length} líneas disponibles`
+            }
+          />
+        </div>
+
+        <div className="shrink-0 border-b border-white/10 px-4 pb-2 pt-3.5 lg:border-b-0 lg:px-8 lg:pb-0 lg:pt-6">
           <div className="relative lg:max-w-xl">
             <span className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-text-dim">
               <IconSearch />
@@ -458,7 +471,7 @@ export default function RecorridoClient({ initialLineCode }: { initialLineCode?:
           </div>
         </div>
 
-        <div className="flex-1 overflow-y-auto px-3 pb-45 pt-2 lg:px-8 lg:pb-10">
+        <div className="flex-1 overflow-y-auto px-3 pb-45 pt-2 lg:px-8 lg:pt-6 lg:pb-10">
           {linesLoading ? (
             <LineSkeletons />
           ) : filteredLines.length === 0 ? (

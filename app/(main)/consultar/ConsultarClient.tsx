@@ -5,8 +5,11 @@ import Link from "next/link";
 import { cn } from "@shared/utils";
 
 import { SearchFlow } from "@features/search/components/SearchFlow";
+import { FavoritosQuickList } from "@features/favorites/components/FavoritosQuickList";
 import { PageShell } from "@shared/layout/PageShell";
+import { PageHeader } from "@shared/layout/PageHeader";
 import { IconLocation } from "@shared/icons/IconLocation";
+import { ConsultarMapPane } from "./ConsultarMapPane";
 
 /** Directions / route icon (signpost style) */
 const IconRoute = () => (
@@ -18,31 +21,48 @@ const IconRoute = () => (
 
 export function ConsultarClient({ children }: { children?: ReactNode }) {
   return (
-    <PageShell>
+    <PageShell fluid>
       {children}
-      {/* Desktop: columna de formulario centrada, más cómoda que el shell completo */}
-      <div className="lg:mx-auto lg:max-w-xl">
-        <div className="mb-3 grid grid-cols-2 gap-2">
-          <Link
-            href="/paradas-cerca"
-            className={cn(
-              "btn-pill btn-secondary inline-flex min-h-9 w-full items-center justify-center gap-2 px-3 text-xs font-bold tracking-tight",
-            )}
-          >
-            <IconLocation />
-            Paradas cerca mío
-          </Link>
-          <Link
-            href="/como-llego"
-            className={cn(
-              "btn-pill btn-secondary inline-flex min-h-9 w-full items-center justify-center gap-2 px-3 text-xs font-bold tracking-tight",
-            )}
-          >
-            <IconRoute />
-            Cómo llego
-          </Link>
+      {/* Header de continuidad — solo desktop: en mobile el espacio es del form. */}
+      <div className="hidden lg:mb-6 lg:block">
+        <PageHeader
+          as="h2"
+          title="Consultar"
+          highlight="arribos"
+          subtitle="Tu parada en tiempo real · Mar del Plata"
+        />
+      </div>
+      {/* Desktop: dos columnas — formulario a la izquierda, mapa persistente a la
+          derecha. Todas las clases nuevas son lg: → el markup mobile no cambia. */}
+      <div className="lg:flex lg:min-h-0 lg:flex-1 lg:gap-6">
+        <div className="lg:flex lg:w-[440px] lg:shrink-0 lg:flex-col lg:overflow-y-auto lg:pr-1 lg:pb-2">
+          <div className="mb-3 grid grid-cols-2 gap-2">
+            <Link
+              href="/paradas-cerca"
+              className={cn(
+                "btn-pill btn-secondary inline-flex min-h-9 w-full items-center justify-center gap-2 px-3 text-xs font-bold tracking-tight",
+              )}
+            >
+              <IconLocation />
+              Paradas cerca mío
+            </Link>
+            <Link
+              href="/como-llego"
+              className={cn(
+                "btn-pill btn-secondary inline-flex min-h-9 w-full items-center justify-center gap-2 px-3 text-xs font-bold tracking-tight",
+              )}
+            >
+              <IconRoute />
+              Cómo llego
+            </Link>
+          </div>
+          <SearchFlow loadingArribos={false} />
+          <FavoritosQuickList className="mt-6 hidden lg:block" />
         </div>
-        <SearchFlow loadingArribos={false} />
+
+        <div className="hidden lg:relative lg:block lg:min-w-0 lg:flex-1 lg:overflow-hidden lg:rounded-2xl lg:border lg:border-border lg:bg-muted">
+          <ConsultarMapPane />
+        </div>
       </div>
     </PageShell>
   );

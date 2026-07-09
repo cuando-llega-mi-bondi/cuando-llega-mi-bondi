@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 /** Server-rendered intro for crawlers and accessibility (single page h1). */
 export function HomeIntro() {
     return (
@@ -20,15 +22,15 @@ export function HomeIntro() {
                 <h2>¿Qué podés hacer con Bondi MDP?</h2>
                 <ul>
                     <li>
-                        <a href="/recorrido">Ver recorridos</a> — Mapa interactivo con
+                        <Link href="/recorrido">Ver recorridos</Link> — Mapa interactivo con
                         recorridos y paradas de todas las líneas de colectivo
                     </li>
                     <li>
-                        <a href="/como-llego">Cómo llego</a> — Planificá tu viaje en
+                        <Link href="/como-llego">Cómo llego</Link> — Planificá tu viaje en
                         colectivo ingresando origen y destino
                     </li>
                     <li>
-                        <a href="/paradas-cerca">Paradas cerca mío</a> — Encontrá las
+                        <Link href="/paradas-cerca">Paradas cerca mío</Link> — Encontrá las
                         paradas de colectivo más cercanas a tu ubicación
                     </li>
                 </ul>

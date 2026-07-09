@@ -7,8 +7,10 @@ import { useHistorial } from "@features/history/hooks/useHistorial";
 import type { Favorito } from "@features/favorites/types";
 import type { HistorialEntry } from "@features/history/types";
 import { FavoritesList } from "@features/favorites/components/FavoritesList";
+import { resolveFavoritoLinea } from "@features/favorites/resolveFavoritoLinea";
 import { HistorialList } from "@features/history/components/HistorialList";
 import { PageShell } from "@shared/layout/PageShell";
+import { PageHeader } from "@shared/layout/PageHeader";
 import { useSearchFlowData } from "@features/search/context/SearchFlowContext";
 import { useSearchFlowStore } from "@features/search/store/useSearchFlowStore";
 import { useUIStore } from "@shared/ui/store/useUIStore";
@@ -49,27 +51,7 @@ export function FavoritosClient() {
 
   const fetchFavArribos = useCallback(
     (fav: Favorito) => {
-      const isValid = (v: unknown): v is string =>
-        typeof v === "string" && v !== "" && v !== "undefined";
-
-      // 1) Direct field
-      let line = isValid(fav.codigoLineaParada)
-        ? fav.codigoLineaParada
-        : undefined;
-
-      // 2) Extract from id (format: paradaId_codLinea)
-      if (!line) {
-        const fromId = fav.id.split("_")[1];
-        if (isValid(fromId)) line = fromId;
-      }
-
-      // 3) Recover from lineaLabel / descripcionLinea via lineas metadata
-      if (!line) {
-        const label =
-          fav.lineaLabel?.trim() || fav.descripcionLinea?.trim();
-        if (label) line = descripcionToCode.get(label);
-      }
-
+      const line = resolveFavoritoLinea(fav, descripcionToCode);
       if (!line) return; // Can't resolve – do nothing
 
       resetToParada(fav.identificadorParada, line, {
@@ -94,14 +76,14 @@ export function FavoritosClient() {
   );
 
   return (
-    <PageShell>
-      <div className="mb-6">
-        <h1 className="font-display text-[24px] font-semibold tracking-[-0.04em] text-text">
-          Favoritos
-        </h1>
-      </div>
-      {/* Desktop: favoritos e historial lado a lado */}
-      <div className="lg:grid lg:grid-cols-2 lg:items-start lg:gap-10">
+    <PageShell wide>
+      <PageHeader
+        className="mb-6"
+        title="Favoritos"
+        subtitle="Paradas guardadas y consultas recientes"
+      />
+      {/* Desktop: favoritos (1/3) e historial (2/3, en dos columnas) */}
+      <div className="lg:grid lg:grid-cols-3 lg:items-start lg:gap-8">
         <div>
           {/* Header simétrico al de "Consultas recientes" (solo desktop) */}
           <div className="mb-3 hidden min-h-[26px] items-center lg:flex">
@@ -118,13 +100,15 @@ export function FavoritosClient() {
             onGoToSearch={() => router.push("/consultar")}
           />
         </div>
-        <HistorialList
-          historial={historial}
-          onView={fetchHistEntry}
-          onRemove={removeHistorialEntry}
-          onUndoRemove={pushHistorialEntry}
-          onClear={clearHistorialEntries}
-        />
+        <div className="lg:col-span-2">
+          <HistorialList
+            historial={historial}
+            onView={fetchHistEntry}
+            onRemove={removeHistorialEntry}
+            onUndoRemove={pushHistorialEntry}
+            onClear={clearHistorialEntries}
+          />
+        </div>
       </div>
     </PageShell>
   );

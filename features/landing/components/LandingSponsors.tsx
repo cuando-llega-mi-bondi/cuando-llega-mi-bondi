@@ -12,6 +12,7 @@ const SPONSORS: Sponsor[] = [
 
 function SponsorCard({ sponsor }: { sponsor: Sponsor }) {
   const logo = (
+    // eslint-disable-next-line @next/next/no-img-element -- el proyecto no usa next/image (sin config de images); logo estático liviano
     <img
       src={sponsor.logo}
       alt={sponsor.name}

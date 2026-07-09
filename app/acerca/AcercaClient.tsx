@@ -13,6 +13,7 @@ import { IconMessage } from "@shared/icons/IconMessage";
 import { IconSearch } from "@shared/icons/IconSearch";
 import { BottomNav } from "@shared/layout/BottomNav";
 import { PageShell } from "@shared/layout/PageShell";
+import { PageHeader } from "@shared/layout/PageHeader";
 import { BrandLogo } from "@shared/ui/BrandLogo";
 import { Footer } from "@shared/layout/Footer";
 import { IconIg } from "@shared/icons/IconIg";
@@ -214,84 +215,95 @@ export function AcercaClient() {
 
     return (
         <div className="flex min-h-pwa-shell flex-col lg:pl-60">
-            <PageShell className="space-y-10 pt-4">
-                {/* ── HERO ──────────────────────────────────────────── */}
-                <section className="flex flex-col items-center gap-5 text-center">
-                    <div className="flex items-center justify-center text-secondary">
-                        <IconBus size={64} />
-                    </div>
-                    <div>
-                        <h1 className="sr-only">BONDI MDP</h1>
-                        <BrandLogo className="text-4xl lg:text-[40px]" />
-                        <p className="mt-1 text-[10.4px] uppercase tracking-wider text-muted-foreground">
-                            MAR DEL PLATA
-                        </p>
-                    </div>
-                    <p className="max-w-sm text-[14px] leading-relaxed text-muted-foreground">
-                        Información de colectivos en tiempo real para Mar del Plata. Rápida,
-                        clara y sin vueltas.
-                    </p>
-                </section>
-
-                {/* ── HECHO POR ─────────────────────────────────────── */}
-                <section className="space-y-3">
-                    <h2 className="text-[10.4px] font-normal uppercase tracking-wider text-muted-foreground">
-                        Hecho por
-                    </h2>
-                    <div className="space-y-3 lg:grid lg:grid-cols-2 lg:items-start lg:gap-4 lg:space-y-0">
-                        {DEVELOPERS.map((dev) => (
-                            <DevCard key={dev.name} dev={dev} />
-                        ))}
-                    </div>
-                </section>
-
-                {/* ── COMPARTIR ─────────────────────────────────────── */}
-                <section className="space-y-3">
-                    <h2 className="text-[10.4px] font-normal uppercase tracking-wider text-muted-foreground">
-                        Compartir
-                    </h2>
-                    <div className="grid grid-cols-2 gap-3">
-                        <button
-                            onClick={handleShareWhatsApp}
-                            className="btn-pill btn-secondary w-full gap-2 text-[13px]"
-                        >
-                            <IconWhatsApp className="h-5 w-5" />
-                            WhatsApp
-                        </button>
-                        <button
-                            onClick={handleShareNative}
-                            className="btn-pill btn-primary w-full gap-2 text-[13px]"
-                        >
-                            <IconShare className="h-5 w-5" />
-                            Compartir
-                        </button>
-                    </div>
-                </section>
-
-                {/* ── SOBRE LA APP ──────────────────────────────────── */}
-                <section className="space-y-3">
-                    <h2 className="text-[10.4px] font-normal uppercase tracking-wider text-muted-foreground">
-                        Sobre la app
-                    </h2>
-                    <div className="space-y-3 lg:grid lg:grid-cols-3 lg:items-stretch lg:gap-4 lg:space-y-0">
-                        {APP_FEATURES.map(({ icon, title, description }) => (
-                            <div
-                                key={title}
-                                className="flex items-start gap-3 rounded-xl border border-border bg-card p-4"
-                            >
-                                {icon}
-                                <div>
-                                    <p className="text-[14px] font-semibold">{title}</p>
-                                    <p className="mt-1 text-[13px] text-muted-foreground">
-                                        {description}
-                                    </p>
-                                </div>
+            <PageShell wide className="space-y-10 lg:space-y-6">
+                <PageHeader
+                    title="Acerca de"
+                    highlight="Bondi MDP"
+                    subtitle="El proyecto y el equipo"
+                />
+                {/* Desktop: rail izquierdo sticky (marca + compartir) y contenido
+                    a la derecha. En mobile todo fluye en una columna. */}
+                <div className="space-y-10 lg:grid lg:grid-cols-[320px_minmax(0,1fr)] lg:items-start lg:gap-10 lg:space-y-0">
+                    <div className="space-y-10 lg:sticky lg:top-8 lg:space-y-5">
+                        {/* ── HERO ──────────────────────────────────── */}
+                        <section className="flex flex-col items-center gap-5 text-center lg:gap-4 lg:rounded-2xl lg:border lg:border-border lg:bg-card lg:px-6 lg:py-6">
+                            {/* El ícono grande duplica el logo de la sidebar en desktop */}
+                            <div className="flex items-center justify-center text-secondary lg:hidden">
+                                <IconBus size={64} />
                             </div>
-                        ))}
-                    </div>
-                </section>
+                            <div>
+                                <BrandLogo className="text-4xl lg:text-[40px]" />
+                                <p className="mt-1 text-[10.4px] uppercase tracking-wider text-muted-foreground">
+                                    MAR DEL PLATA
+                                </p>
+                            </div>
+                            <p className="max-w-sm text-[14px] leading-relaxed text-muted-foreground">
+                                Información de colectivos en tiempo real para Mar del Plata.
+                                Rápida, clara y sin vueltas.
+                            </p>
+                        </section>
 
-                {/* ── CÓDIGO ABIERTO ────────────────────────────────── */}
+                        {/* ── SOBRE LA APP ──────────────────────────── */}
+                        <section className="space-y-3">
+                            <h2 className="text-[10.4px] font-normal uppercase tracking-wider text-muted-foreground">
+                                Sobre la app
+                            </h2>
+                            <div className="space-y-3">
+                                {APP_FEATURES.map(({ icon, title, description }) => (
+                                    <div
+                                        key={title}
+                                        className="flex items-start gap-3 rounded-xl border border-border bg-card p-4"
+                                    >
+                                        {icon}
+                                        <div>
+                                            <p className="text-[14px] font-semibold">{title}</p>
+                                            <p className="mt-1 text-[13px] text-muted-foreground">
+                                                {description}
+                                            </p>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </section>
+
+                        {/* ── COMPARTIR ─────────────────────────────── */}
+                        <section className="space-y-3">
+                            <h2 className="text-[10.4px] font-normal uppercase tracking-wider text-muted-foreground">
+                                Compartir
+                            </h2>
+                            <div className="grid grid-cols-2 gap-3">
+                                <button
+                                    onClick={handleShareWhatsApp}
+                                    className="btn-pill btn-secondary w-full gap-2 text-[13px]"
+                                >
+                                    <IconWhatsApp className="h-5 w-5" />
+                                    WhatsApp
+                                </button>
+                                <button
+                                    onClick={handleShareNative}
+                                    className="btn-pill btn-primary w-full gap-2 text-[13px]"
+                                >
+                                    <IconShare className="h-5 w-5" />
+                                    Compartir
+                                </button>
+                            </div>
+                        </section>
+                    </div>
+
+                    <div className="space-y-10 lg:space-y-8">
+                        {/* ── HECHO POR ─────────────────────────────── */}
+                        <section className="space-y-3">
+                            <h2 className="text-[10.4px] font-normal uppercase tracking-wider text-muted-foreground">
+                                Hecho por
+                            </h2>
+                            <div className="space-y-3 lg:grid lg:grid-cols-2 lg:items-start lg:gap-4 lg:space-y-0">
+                                {DEVELOPERS.map((dev) => (
+                                    <DevCard key={dev.name} dev={dev} />
+                                ))}
+                            </div>
+                        </section>
+
+                        {/* ── CÓDIGO ABIERTO ────────────────────────── */}
                 <section className="space-y-3">
                     <h2 className="text-[10.4px] font-normal uppercase tracking-wider text-muted-foreground">
                         Código abierto
@@ -338,7 +350,7 @@ export function AcercaClient() {
                     <h2 className="text-[10.4px] font-normal uppercase tracking-wider text-muted-foreground">
                         Preguntas frecuentes
                     </h2>
-                    <div className="space-y-3">
+                    <div className="space-y-3 lg:grid lg:grid-cols-3 lg:items-stretch lg:gap-4 lg:space-y-0">
                         {FAQ.map(({ q, a }) => (
                             <div
                                 key={q}
@@ -350,6 +362,8 @@ export function AcercaClient() {
                         ))}
                     </div>
                 </section>
+                    </div>
+                </div>
 
                 {/* ── FOOTER ────────────────────────────────────────── */}
                 <Footer />

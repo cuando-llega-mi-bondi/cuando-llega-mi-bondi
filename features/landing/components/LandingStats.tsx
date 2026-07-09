@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Users, Eye, Activity, Repeat } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 import { LandingSection } from "./LandingSection";
 import { CountUp } from "./CountUp";
 
@@ -7,13 +8,36 @@ interface Stat {
   count?: { to: number; sep?: boolean; prefix?: string; suffix?: string };
   value?: string;
   label: string;
+  /** Línea de contexto que traduce la métrica a algo que le hable al usuario. */
+  detail: string;
+  icon: LucideIcon;
 }
 
 const STATS: Stat[] = [
-  { count: { to: 19267, sep: true }, label: "usuarios activos" },
-  { count: { to: 300, prefix: "+", suffix: " mil" }, label: "vistas de página" },
-  { count: { to: 87784, sep: true }, label: "sesiones" },
-  { value: "2:1", label: "ratio de fidelidad" },
+  {
+    count: { to: 19267, sep: true },
+    label: "marplatenses la usan",
+    detail: "sin una sola campaña de publicidad",
+    icon: Users,
+  },
+  {
+    count: { to: 300, prefix: "+", suffix: " mil" },
+    label: "consultas de arribos",
+    detail: "unas 10.000 por día",
+    icon: Eye,
+  },
+  {
+    count: { to: 87784, sep: true },
+    label: "visitas en 30 días",
+    detail: "cada persona volvió 4,5 veces",
+    icon: Activity,
+  },
+  {
+    value: "2 de 3",
+    label: "usuarios vuelven",
+    detail: "la mayoría ya la usa de rutina",
+    icon: Repeat,
+  },
 ];
 
 export function LandingStats() {
@@ -21,7 +45,7 @@ export function LandingStats() {
     <LandingSection
       eyebrow="En números"
       title="El primer mes"
-      highlight="en números"
+      highlight="en la calle"
     >
       {/* Texto previo — le da contexto y narrativa a los números */}
       <p className="mx-auto mb-12 max-w-2xl text-center text-[17px] leading-relaxed text-muted-foreground">
@@ -29,21 +53,27 @@ export function LandingStats() {
         <span className="font-semibold text-foreground">
           sin un peso en publicidad
         </span>
-        . En apenas 30 días, miles de marplatenses la sumaron a su viaje diario —
-        y los números lo dicen todo.
+        : creció de boca en boca, de parada en parada. Esto pasó en los primeros
+        30 días.
       </p>
 
       <div className="mx-auto grid max-w-4xl grid-cols-2 gap-4 lg:grid-cols-4">
-        {STATS.map((stat) => (
+        {STATS.map(({ count, value, label, detail, icon: Icon }) => (
           <div
-            key={stat.label}
+            key={label}
             className="rounded-2xl border border-border bg-card p-6 text-center transition-colors hover:border-[#2bb3a8]/40"
           >
-            <div className="whitespace-nowrap text-3xl font-black text-amarillo lg:text-4xl">
-              {stat.count ? <CountUp {...stat.count} /> : stat.value}
+            <span className="mx-auto flex h-9 w-9 items-center justify-center rounded-full border border-[#2bb3a8]/30 bg-[#2bb3a8]/10">
+              <Icon className="h-4 w-4 text-[#2bb3a8]" />
+            </span>
+            <div className="mt-4 whitespace-nowrap text-3xl font-black tracking-tight text-amarillo lg:text-4xl">
+              {count ? <CountUp {...count} /> : value}
             </div>
-            <div className="mt-1 text-[13px] text-muted-foreground">
-              {stat.label}
+            <div className="mt-1.5 text-[14px] font-bold text-foreground">
+              {label}
+            </div>
+            <div className="mt-1 text-[12px] leading-snug text-muted-foreground">
+              {detail}
             </div>
           </div>
         ))}

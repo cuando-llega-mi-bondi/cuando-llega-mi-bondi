@@ -2,6 +2,7 @@
 
 import type { ReactNode } from "react";
 import { useCallback, useEffect, useMemo } from "react";
+import { usePathname } from "next/navigation";
 import { Header } from "@shared/layout/Header";
 import { BottomNav } from "@shared/layout/BottomNav";
 import { SearchFlowProvider, useSearchFlowData } from "@features/search/context/SearchFlowContext";
@@ -14,8 +15,9 @@ import { useLiveBuses } from "@features/live-sharing/hooks/useLiveBuses";
 import { useOtrasLineas } from "@features/arrivals/hooks/useOtrasLineas";
 import { useOtrasLineasNavigation } from "@features/arrivals/hooks/useOtrasLineasNavigation";
 import { ArrivalsOverlay } from "@features/arrivals/components/ArrivalsOverlay";
+import { ArrivalsSessionProvider } from "@features/arrivals/context/ArrivalsSessionContext";
+import { useIsDesktop } from "@shared/hooks/useIsDesktop";
 import { FavoriteNameModal } from "@features/favorites/components/FavoriteNameModal";
-import { ServiceDownModal } from "@shared/ui/ServiceDownModal";
 import { withViewTransition } from "@shared/pwa/viewTransition";
 import { useUIStore, NAMING_CLOSED } from "@shared/ui/store/useUIStore";
 import { toast } from "@shared/ui/store/useToastStore";
@@ -39,7 +41,13 @@ function MainLayoutContent({ children }: { children: ReactNode }) {
     paradaBanderaAbrevs,
     selectedParada,
   } = useSearchFlowData();
-  const { sheetOpen, setSheetOpen, namingModal: naming, setNamingModal: setNaming, showServiceDownModal, setShowServiceDownModal } = useUIStore();
+  const { sheetOpen, setSheetOpen, namingModal: naming, setNamingModal: setNaming } = useUIStore();
+
+  // En desktop, /consultar tiene su propio pane con mapa + panel embebidos: ahí
+  // el overlay global no se monta (un solo mapa a la vez) ni se lockea el scroll.
+  const pathname = usePathname();
+  const isDesktop = useIsDesktop();
+  const consultarPaneActive = isDesktop && pathname === "/consultar";
 
   const codLinea = useSearchFlowStore((s) => s.codLinea);
   const paradaId = useSearchFlowStore((s) => s.paradaId);
@@ -114,22 +122,14 @@ function MainLayoutContent({ children }: { children: ReactNode }) {
   }, [isConsulting, sheetOpen, setSheetOpen]);
 
   useEffect(() => {
-    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
-    const isDismissed = localStorage.getItem("service-down-dismissed") === "true";
-    if (isIOS && !isDismissed) setShowServiceDownModal(true);
-  }, [setShowServiceDownModal]);
-
-  const handleCloseServiceDown = useCallback(() => {
-    setShowServiceDownModal(false);
-    localStorage.setItem("service-down-dismissed", "true");
-  }, [setShowServiceDownModal]);
-
-  useEffect(() => {
-    document.body.classList.toggle("arrivals-overlay-open", sheetOpen);
+    document.body.classList.toggle(
+      "arrivals-overlay-open",
+      sheetOpen && !consultarPaneActive,
+    );
     return () => {
       document.body.classList.remove("arrivals-overlay-open");
     };
-  }, [sheetOpen]);
+  }, [sheetOpen, consultarPaneActive]);
 
   const handleCloseSheet = useCallback(() => {
     withViewTransition(() => {
@@ -208,13 +208,19 @@ function MainLayoutContent({ children }: { children: ReactNode }) {
     ],
   );
 
+  const sessionValue = useMemo(
+    () => ({ session: overlaySession, closeConsult: handleCloseSheet }),
+    [overlaySession, handleCloseSheet],
+  );
+
   return (
+    <ArrivalsSessionProvider value={sessionValue}>
     <div className="flex min-h-pwa-shell flex-col lg:pl-60">
       <Header />
       {children}
       <BottomNav />
 
-      {sheetOpen ? (
+      {sheetOpen && !consultarPaneActive ? (
         <ArrivalsOverlay
           isOpen={sheetOpen}
           onClose={handleCloseSheet}
@@ -234,10 +240,7 @@ function MainLayoutContent({ children }: { children: ReactNode }) {
         }
       />
 
-      <ServiceDownModal
-        isOpen={showServiceDownModal}
-        onClose={handleCloseServiceDown}
-      />
     </div>
+    </ArrivalsSessionProvider>
   );
 }

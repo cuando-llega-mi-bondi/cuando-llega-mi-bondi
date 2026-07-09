@@ -1,8 +1,6 @@
 "use client";
 
 import { IconX } from "@shared/icons/IconX";
-import { ServiceDownModal } from "@shared/ui/ServiceDownModal";
-import { useState } from "react";
 
 interface ErrorBannerProps {
     message: string;
@@ -10,9 +8,6 @@ interface ErrorBannerProps {
 }
 
 export function ErrorBanner({ message, onClose }: ErrorBannerProps) {
-    const isServerError = message.toLowerCase().includes("servidor") || message.toLowerCase().includes("muni");
-    const [isModalOpen, setIsModalOpen] = useState(isServerError);
-
     if (!message) return null;
 
     return (
@@ -39,18 +34,8 @@ export function ErrorBanner({ message, onClose }: ErrorBannerProps) {
                 </div>
                 <div className="font-sans text-xs leading-relaxed text-danger/90">
                     {message}
-                    {isServerError && (
-                        <button
-                            type="button"
-                            onClick={() => setIsModalOpen(true)}
-                            className="ml-1 font-semibold underline decoration-danger/30 underline-offset-2 transition-colors hover:decoration-danger"
-                        >
-                            Ver detalles
-                        </button>
-                    )}
                 </div>
             </div>
-            <ServiceDownModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
             <button
                 type="button"
                 onClick={onClose}

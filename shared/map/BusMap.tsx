@@ -6,6 +6,7 @@ import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import "@shared/map/leaflet.css";
 import { useLeafletMapReady } from "@shared/map/useLeafletMapReady";
+import { cn } from "@shared/utils";
 import { isMapUsable, stopMapSafely } from "@shared/map/leafletSafety";
 import { getRecorridoPuntosParaMapa, ramalesFromPuntos } from "@features/route/api/recorrido";
 import type { Arribo } from "@features/arrivals/types";
@@ -163,6 +164,9 @@ const BusMap = React.memo(function BusMap({
     fillParent = false,
     selectedRamal = "TODOS",
     paradaBanderaAbrevs = [],
+    fallbackCenter,
+    fallbackZoom = 13,
+    controlsClassName,
 }: {
     arribos: Arribo[];
     paradaLat: string;
@@ -174,6 +178,11 @@ const BusMap = React.memo(function BusMap({
     selectedRamal?: string;
     /** Abreviaturas de bandera asociadas a la parada elegida (RecuperarParadas…). */
     paradaBanderaAbrevs?: string[];
+    /** Centro a usar cuando no hay parada aún (mapa "vacío"); sin esto, no renderiza. */
+    fallbackCenter?: [number, number];
+    fallbackZoom?: number;
+    /** Offset de los controles según el host; default asume el panel de 420px del overlay. */
+    controlsClassName?: string;
 }) {
     const mapReady = useLeafletMapReady();
     const [isFullscreen, setIsFullscreen] = useState(false);
@@ -389,7 +398,8 @@ const BusMap = React.memo(function BusMap({
         });
     }, [groupedRoutes, activeDescripcionKeys, paradaCoords, busCoordsForOrient]);
 
-    if (!paradaCoords) return null;
+    const centerCoords = paradaCoords ?? fallbackCenter ?? null;
+    if (!centerCoords) return null;
 
     const stopIcon = L.divIcon({
         className: "custom-stop-icon",
@@ -447,11 +457,10 @@ const BusMap = React.memo(function BusMap({
         <div style={containerStyle}>
             {/* En desktop (fillParent) el panel de arribos ocupa 420px a la derecha */}
             <div
-                className={
-                    fillParent
-                        ? "absolute right-3 z-[1000] flex flex-col gap-2.5 lg:right-[436px]"
-                        : "absolute right-3 z-[1000] flex flex-col gap-2.5"
-                }
+                className={cn(
+                    "absolute right-3 z-[1000] flex flex-col gap-2.5",
+                    controlsClassName ?? (fillParent ? "lg:right-[436px]" : ""),
+                )}
                 style={{ top: controlsTop }}
             >
                 {!fillParent ? (
@@ -477,7 +486,7 @@ const BusMap = React.memo(function BusMap({
             ) : null}
 
             {mapReady ? (
-            <MapContainer center={paradaCoords} zoom={16} scrollWheelZoom style={{ height: "100%", width: "100%", zIndex: 1, flex: 1, background: "#090909" }}>
+            <MapContainer center={centerCoords} zoom={paradaCoords ? 16 : fallbackZoom} scrollWheelZoom style={{ height: "100%", width: "100%", zIndex: 1, flex: 1, background: "#090909" }}>
                 <TileLayer
                     url="https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}"
                     attribution="&copy; Google Maps"
@@ -511,21 +520,27 @@ const BusMap = React.memo(function BusMap({
                     );
                 })}
 
-                <MapController
-                    arribos={arribos}
-                    liveBuses={liveBuses}
-                    paradaCoords={paradaCoords}
-                    triggerFit={fitTrigger}
-                    isFullscreen={isFullscreen}
-                />
+                {/* Sin parada aún (mapa fallback) no hay nada que encuadrar ni marcar;
+                    cuando aparece, MapController se monta y anima hacia la parada. */}
+                {paradaCoords ? (
+                    <MapController
+                        arribos={arribos}
+                        liveBuses={liveBuses}
+                        paradaCoords={paradaCoords}
+                        triggerFit={fitTrigger}
+                        isFullscreen={isFullscreen}
+                    />
+                ) : null}
 
-                <Marker position={paradaCoords} icon={stopIcon} zIndexOffset={-100}>
-                    <Popup>
-                        <div style={{ fontFamily: "var(--font-display)", fontWeight: 700, fontSize: 14 }}>
-                            Parada Seleccionada
-                        </div>
-                    </Popup>
-                </Marker>
+                {paradaCoords ? (
+                    <Marker position={paradaCoords} icon={stopIcon} zIndexOffset={-100}>
+                        <Popup>
+                            <div style={{ fontFamily: "var(--font-display)", fontWeight: 700, fontSize: 14 }}>
+                                Parada Seleccionada
+                            </div>
+                        </Popup>
+                    </Marker>
+                ) : null}
 
                 {liveBuses.map((b, i) => {
                     const LiveBusIcon = L.divIcon({

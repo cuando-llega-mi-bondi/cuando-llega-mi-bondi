@@ -145,8 +145,8 @@ export const HistorialList = memo(function HistorialList({
                 </motion.button>
             </div>
 
-            {/* Rows */}
-            <div className="flex flex-col gap-2">
+            {/* Rows: en desktop el historial ocupa 2/3 del ancho → dos columnas */}
+            <div className="flex flex-col gap-2 lg:grid lg:grid-cols-2 lg:items-start">
                 <AnimatePresence mode="popLayout" initial={false}>
                     {historial.map((h, i) => (
                         <HistorialRow
