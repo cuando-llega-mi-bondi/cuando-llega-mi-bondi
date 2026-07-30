@@ -34,9 +34,12 @@ export function useArribos({
             refreshWhenHidden: false,
             revalidateOnFocus: true,
             focusThrottleInterval: 60_000,
-            // Si un refresh falla, mantener la última lista visible: junto al
-            // "actualizado hace X" el usuario ve datos viejos en vez de nada.
-            keepPreviousData: true,
+            // Nada de `keepPreviousData`: la key incluye parada y línea, así que
+            // al cambiar de colectivo SWR seguía mostrando los arribos del
+            // anterior como si fueran del nuevo — y sin spinner, porque con datos
+            // previos `isLoading` queda en false. Para lo que buscaba (que un
+            // refresh fallido no vacíe la lista) no hace falta: SWR ya conserva
+            // los datos de una key cuando su revalidación falla.
             onSuccess: () => {
                 setLastUpdate(new Date());
                 onSuccessRef.current?.();
