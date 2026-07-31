@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { getLineas } from "@features/search/api/lineas";
 import { getRecorridoMapaCliente } from "@features/route/api/recorrido";
+import { describeMgpError } from "@shared/api/errors";
 import { getCache, setCache } from "@shared/storage/localCache";
 import { withViewTransition } from "@shared/pwa/viewTransition";
 import type { Linea } from "@shared/types";
@@ -82,7 +83,7 @@ export default function RecorridoClient({ initialLineCode }: { initialLineCode?:
   const [selectedRamal, setSelectedRamal] = useState<RamalData | null>(null);
   const [paradas, setParadas] = useState<ParadaMapa[]>([]);
   const [mapLoading, setMapLoading] = useState(false);
-  const [mapError, setMapError] = useState<string | null>(null);
+  const [mapError, setMapError] = useState<unknown>(null);
   const [rawLiveBuses, setRawLiveBuses] = useState<{ lat: number; lng: number; ramal: string | null }[]>([]);
   const selectAbortRef = useRef<AbortController | null>(null);
 
@@ -293,11 +294,7 @@ export default function RecorridoClient({ initialLineCode }: { initialLineCode?:
     } catch (err: unknown) {
       // Silently ignore aborted requests (user picked another line)
       if (controller.signal.aborted) return;
-      setMapError(
-        err instanceof Error
-          ? err.message
-          : "No se pudo cargar el recorrido. Verificá tu conexión e intentá de nuevo.",
-      );
+      setMapError(err);
     } finally {
       if (!controller.signal.aborted) {
         setMapLoading(false);
@@ -572,7 +569,11 @@ export default function RecorridoClient({ initialLineCode }: { initialLineCode?:
         {mapLoading ? (
           <MapLoadingOverlay />
         ) : mapError ? (
-          <MapErrorOverlay message={mapError} onRetry={() => selectedLine && selectLine(selectedLine)} />
+          <MapErrorOverlay
+            title={describeMgpError(mapError).title}
+            message={describeMgpError(mapError).message}
+            onRetry={() => selectedLine && selectLine(selectedLine)}
+          />
         ) : (
           <RouteMap
             key={`${selectedLine?.CodigoLineaParada ?? ""}-${selectedRamal?.key ?? ""}`}

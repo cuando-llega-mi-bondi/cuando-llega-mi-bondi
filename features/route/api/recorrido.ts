@@ -1,5 +1,6 @@
 import type { ParadaMapa, PuntoRecorrido, RamalData } from "@features/route/types";
 import { post } from "@shared/api/client";
+import { MgpBusinessError } from "@shared/api/errors";
 
 const COORD_EPS = 1e-6;
 
@@ -203,6 +204,8 @@ export async function getRecorridoMapaCliente(
         } catch (err: unknown) {
             // If the caller explicitly aborted, don't retry
             if (options?.signal?.aborted) throw err;
+            // Línea inválida u otro error de negocio: no se arregla reintentando.
+            if (err instanceof MgpBusinessError) throw err;
             lastError = err;
         }
     }
