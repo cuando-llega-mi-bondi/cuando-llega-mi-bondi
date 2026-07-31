@@ -60,12 +60,14 @@ function MainLayoutContent({ children }: { children: ReactNode }) {
   const setIsConsulting = useSearchFlowStore((s) => s.setIsConsulting);
   const applySelection = useSearchFlowStore((s) => s.applySelection);
 
-  const { arribos, loadingArribos, mutateArribos, lastUpdate } = useArribos({
+  const { arribos, loadingArribos, mutateArribos, lastUpdate, errorInfo, retryAt, isStale } = useArribos({
     isConsulting,
     paradaId,
     codLinea,
+    // Los errores de arribos ya no se rutean por el store genérico de búsqueda
+    // (`error`/`setError` es sólo para fallos pre-consulta, ej. no cargaron las
+    // líneas) — viven en `errorInfo`, con mensaje/retry propios por tipo de error.
     onSuccess: () => setError(""),
-    onError: setError,
   });
 
   const displayArribos = useMemo(
@@ -180,6 +182,9 @@ function MainLayoutContent({ children }: { children: ReactNode }) {
         loadingOtras,
         onSelectOtraLinea: handleSelectOtraLinea,
         liveSharings,
+        errorInfo,
+        retryAt,
+        isStale,
       },
       telegramUsername:
         process.env.NEXT_PUBLIC_TELEGRAM_BOT_USERNAME || "cuandollegamdp_bot",
@@ -205,6 +210,9 @@ function MainLayoutContent({ children }: { children: ReactNode }) {
       loadingOtras,
       handleSelectOtraLinea,
       liveSharings,
+      errorInfo,
+      retryAt,
+      isStale,
     ],
   );
 

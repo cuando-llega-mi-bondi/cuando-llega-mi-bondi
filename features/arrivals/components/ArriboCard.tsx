@@ -44,6 +44,11 @@ export function ArriboCard({
               <IconWheelchair /> ADAPTADO
             </div>
           )}
+          {arribo.MensajeError ? (
+            <div className="mt-1 font-sans text-[10px] leading-snug text-amarillo">
+              {arribo.MensajeError}
+            </div>
+          ) : null}
         </div>
 
       </div>

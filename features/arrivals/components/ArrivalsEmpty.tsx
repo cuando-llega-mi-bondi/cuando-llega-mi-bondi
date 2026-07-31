@@ -1,14 +1,15 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@shared/ui/Button";
 import { Card } from "@shared/ui/Card";
 import { Spinner } from "@shared/ui/Spinner";
+import { IconAlertTriangle } from "@shared/icons/IconAlertTriangle";
+import { IconInfo } from "@shared/icons/IconInfo";
+import { cn } from "@shared/utils";
+import type { MgpErrorPresentation } from "@shared/api/errors";
 
 export type ArrivalsEmptyMode = "prompt" | "no-data";
-
-/** Cadencia del reintento automático visible. */
-const AUTO_RETRY_SECONDS = 20;
 
 /** Franja con servicio reducido: el vacío suele ser normal, avisamos. */
 function isOffPeakNow(): boolean {
@@ -18,50 +19,40 @@ function isOffPeakNow(): boolean {
 
 interface ArrivalsEmptyProps {
     mode: ArrivalsEmptyMode;
-    /** True si la última consulta terminó en error (red/servidor caído). */
-    hasError: boolean;
+    /** Presentación del último error (`null` si el último intento no fue error). */
+    errorInfo: MgpErrorPresentation | null;
+    /** `Date.now()` estimado del próximo retry automático (ver `useArribos`). */
+    retryAt: number | null;
     loadingArribos: boolean;
     selectedRamal: string;
     onRetry: () => void;
     onResetRamal: () => void;
 }
 
+/** Cuenta regresiva legible en segundos hasta `retryAt`, o `null` si ya pasó / no hay. */
+function useCountdown(retryAt: number | null): number | null {
+    const [now, setNow] = useState(() => Date.now());
+
+    useEffect(() => {
+        if (retryAt === null) return;
+        const id = setInterval(() => setNow(Date.now()), 1000);
+        return () => clearInterval(id);
+    }, [retryAt]);
+
+    if (retryAt === null) return null;
+    return Math.max(0, Math.ceil((retryAt - now) / 1000));
+}
+
 export function ArrivalsEmpty({
     mode,
-    hasError,
+    errorInfo,
+    retryAt,
     loadingArribos,
     selectedRamal,
     onRetry,
     onResetRamal,
 }: ArrivalsEmptyProps) {
-    const [countdown, setCountdown] = useState(AUTO_RETRY_SECONDS);
-    const onRetryRef = useRef(onRetry);
-    useEffect(() => {
-        onRetryRef.current = onRetry;
-    }, [onRetry]);
-
-    // Reinicia el contador cuando termina un intento (manual o automático).
-    useEffect(() => {
-        if (!loadingArribos) {
-            // eslint-disable-next-line react-hooks/set-state-in-effect
-            setCountdown(AUTO_RETRY_SECONDS);
-        }
-    }, [loadingArribos]);
-
-    // Reintento automático visible: cuenta regresiva de 20s → onRetry().
-    useEffect(() => {
-        if (mode !== "no-data" || loadingArribos) return;
-        const id = setInterval(() => {
-            setCountdown((c) => {
-                if (c <= 1) {
-                    onRetryRef.current();
-                    return AUTO_RETRY_SECONDS;
-                }
-                return c - 1;
-            });
-        }, 1000);
-        return () => clearInterval(id);
-    }, [mode, loadingArribos]);
+    const countdown = useCountdown(retryAt);
 
     if (mode !== "no-data") {
         return (
@@ -71,22 +62,43 @@ export function ArrivalsEmpty({
         );
     }
 
+    const isBusinessError = errorInfo?.retriable === "none";
+    const isWarning = errorInfo?.severity === "warning";
+
     return (
-        <Card className="rounded-xl px-6 py-6 text-center font-sans text-sm text-muted-foreground">
-            {hasError ? (
-                <>
-                    <div className="mb-1.5 flex items-center justify-center gap-2 font-semibold text-foreground">
-                        <span aria-hidden>⚠️</span>
-                        El servicio de datos no responde
+        <Card
+            className={cn(
+                "rounded-xl px-6 py-6 text-center font-sans text-sm",
+                errorInfo
+                    ? isWarning
+                        ? "border-error/30 bg-error/5"
+                        : "border-secondary/25 bg-secondary/5"
+                    : undefined,
+            )}
+        >
+            {errorInfo ? (
+                // Título + mensaje en una sola región `status`: se anuncia una vez
+                // cuando cambia el tipo de error, no en cada tick del countdown.
+                <div role="status" aria-live="polite">
+                    <div
+                        className={cn(
+                            "mb-1.5 flex items-center justify-center gap-2 font-semibold",
+                            isWarning ? "text-error" : "text-foreground",
+                        )}
+                    >
+                        {isWarning ? (
+                            <IconAlertTriangle width={16} height={16} aria-hidden />
+                        ) : (
+                            <IconInfo width={16} height={16} aria-hidden />
+                        )}
+                        {errorInfo.title}
                     </div>
-                    <div className="mb-3.5 leading-relaxed">
-                        No es un problema tuyo ni de la app: la fuente oficial
-                        de la Municipalidad está tardando. Reintentamos
-                        automáticamente.
+                    <div className="mb-3.5 leading-relaxed text-muted-foreground">
+                        {errorInfo.message}
                     </div>
-                </>
+                </div>
             ) : (
-                <div className="mb-3.5 leading-relaxed">
+                <div className="mb-3.5 leading-relaxed text-muted-foreground">
                     La Municipalidad no informa arribos para esta parada en
                     este momento.
                     {isOffPeakNow() ? (
@@ -127,14 +139,16 @@ export function ArrivalsEmpty({
                 ) : null}
             </div>
 
-            <div
-                className="mt-3 font-mono text-[10px] text-muted-foreground"
-                aria-live="polite"
-            >
-                {loadingArribos
-                    ? "Consultando…"
-                    : `Reintentando automáticamente en ${countdown}s`}
-            </div>
+            {/* Errores de negocio no se arreglan reintentando: sin countdown. */}
+            {!isBusinessError ? (
+                <div className="mt-3 font-mono text-[10px] text-muted-foreground">
+                    {loadingArribos
+                        ? "Consultando…"
+                        : countdown !== null
+                          ? `Reintentando automáticamente en ${countdown}s`
+                          : null}
+                </div>
+            ) : null}
         </Card>
     );
 }
