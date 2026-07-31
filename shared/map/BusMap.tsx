@@ -17,6 +17,7 @@ import {
     envLocalSafeAreaBottom,
     envLocalSafeAreaTop,
 } from "@shared/map/leafletConfig";
+import { colorForRouteIndex } from "@shared/map/routeColors";
 
 const IconMaximize = () => <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>;
 const IconMinimize = () => <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M8 3v3a2 2 0 0 1-2 2H3m18 0h-3a2 2 0 0 1-2-2V3m0 18v-3a2 2 0 0 1 2-2h3M3 16h3a2 2 0 0 1 2 2v3"/></svg>;
@@ -29,15 +30,6 @@ function firstBusCoords(arribos: Arribo[]): [number, number] | null {
         if (!Number.isNaN(lat) && !Number.isNaN(lng) && lat !== 0) return [lat, lng];
     }
     return null;
-}
-
-/** Menor = más próximo en tiempo (para priorizar un ramal cuando hay varios arribos). */
-function etaMinutes(arriboStr: string): number {
-    const s = arriboStr.trim().toLowerCase();
-    if (s.includes("llegando")) return 0;
-    const m = s.match(/(\d+)\s*min\b/);
-    if (m) return parseInt(m[1], 10);
-    return 9999;
 }
 
 type RouteShape = { destinoMedio: string; abrevSMP: string; descripcion: string; points: [number, number][] };
@@ -229,6 +221,17 @@ const BusMap = React.memo(function BusMap({
         });
     }, [routePoints]);
 
+    // Un color estable por ramal (por posición, no por contenido): con 2+
+    // sentidos superpuestos, antes todo lo no-activo se pintaba igual (gris
+    // tenue) y era imposible distinguir un sentido de otro en el mapa.
+    const routeColorByDescripcion = useMemo(() => {
+        const map = new Map<string, string>();
+        groupedRoutes.forEach((route, i) => {
+            map.set(route.descripcion, colorForRouteIndex(i));
+        });
+        return map;
+    }, [groupedRoutes]);
+
     const paradaCoords = useMemo((): [number, number] | null => {
         let pLat = parseFloat(paradaLat);
         let pLon = parseFloat(paradaLon);
@@ -247,8 +250,16 @@ const BusMap = React.memo(function BusMap({
         return [pLat, pLon];
     }, [paradaLat, paradaLon, arribos, liveBuses]);
 
-    /** Qué trazos del GeoJSON van en azul: un solo ramal preferido (ETA + bandera), pistas de parada, o el más cercano a la parada. */
-    // eslint-disable-next-line react-hooks/preserve-manual-memoization
+    /**
+     * Qué trazos del GeoJSON van resaltados. Líneas con ramales de verdad (no
+     * sólo ida/vuelta, ej. 511) pueden tener una misma parada física servida
+     * por 2+ destinos distintos — `paradaBanderaAbrevs`/los arribos ya listan
+     * esas banderas. Antes esta lógica siempre colapsaba a UN solo ganador
+     * (por ETA o por distancia), así que si la parada realmente tenía 2
+     * destinos con arribos, el mapa sólo mostraba uno y el resto desaparecía
+     * sin explicación — mismatch entre la lista de arribos y el mapa. Ahora
+     * se resalta un trazo por cada bandera distinta presente.
+     */
     const activeDescripcionKeys = useMemo(() => {
         if (groupedRoutes.length === 0) return new Set<string>();
 
@@ -267,35 +278,32 @@ const BusMap = React.memo(function BusMap({
             return distSq;
         };
 
+        /** Mejor trazo para UNA bandera puntual: único match, o el más cercano a la parada si hay varios. */
+        const bestMatchFor = (bandera: string): string | null => {
+            const hits = groupedRoutes.filter((g) => banderaMatchesRoute(bandera, g));
+            if (hits.length === 0) return null;
+            if (hits.length === 1) return hits[0].descripcion;
+            const ranked = [...hits].sort((x, y) => distSqToParada(x) - distSqToParada(y));
+            return ranked[0].descripcion;
+        };
+
+        const matchAll = (banderas: Iterable<string>): Set<string> => {
+            const matched = new Set<string>();
+            for (const b of banderas) {
+                const best = bestMatchFor(b);
+                if (best) matched.add(best);
+            }
+            return matched;
+        };
+
         if (arribos.length === 0) {
-            const scoredEmpty = groupedRoutes.map((g) => {
-                const matchesHint =
-                    ramalHints.length > 0 &&
-                    (ramalHints.includes(g.abrevSMP) ||
-                        ramalHints.includes(g.destinoMedio) ||
-                        ramalHints.some(
-                            (h) =>
-                                (g.destinoMedio && h.includes(g.destinoMedio)) ||
-                                (g.destinoMedio && g.destinoMedio.includes(h)),
-                        ));
-                return {
-                    descripcion: g.descripcion,
-                    matchesHint,
-                    distSq: distSqToParada(g),
-                };
-            });
+            const hintMatches = matchAll(ramalHints);
+            if (hintMatches.size > 0) return hintMatches;
 
-            const hintHitsEmpty = scoredEmpty.filter((s) => s.matchesHint);
-            if (hintHitsEmpty.length === 1) {
-                return new Set([hintHitsEmpty[0].descripcion]);
-            }
-            if (hintHitsEmpty.length > 1) {
-                hintHitsEmpty.sort((a, b) => a.distSq - b.distSq);
-                return new Set([hintHitsEmpty[0].descripcion]);
-            }
-
-            if (hasParada && scoredEmpty.length > 0) {
-                const sorted = [...scoredEmpty].sort((a, b) => a.distSq - b.distSq);
+            if (hasParada && groupedRoutes.length > 0) {
+                const sorted = [...groupedRoutes].sort(
+                    (a, b) => distSqToParada(a) - distSqToParada(b),
+                );
                 const best = sorted[0];
                 if (best) return new Set([best.descripcion]);
             }
@@ -303,77 +311,20 @@ const BusMap = React.memo(function BusMap({
             return new Set<string>();
         }
 
-        const ramalesUpper = new Set(
-            arribos
-                .map((a) => {
-                    const txt = (
-                        a.DescripcionCartelBandera ??
-                        a.DescripcionBandera ??
-                        a.DescripcionCortaBandera ??
-                        ""
-                    );
-                    return String(txt).trim().toUpperCase();
-                })
-                .filter(Boolean),
+        // Todas las banderas realmente presentes en los arribos de esta
+        // parada — puede haber más de una si la parada sirve varios destinos.
+        const banderasEnArribos = new Set(
+            arribos.map((a) => arriboBanderaLabel(a).trim().toUpperCase()).filter(Boolean),
         );
 
-        const byEta = [...arribos].sort((a, b) => etaMinutes(a.Arribo) - etaMinutes(b.Arribo));
-        for (const a of byEta) {
-            const txt = arriboBanderaLabel(a).trim().toUpperCase();
-            if (!txt) continue;
-            const hits = groupedRoutes.filter((g) => banderaMatchesRoute(txt, g));
-            if (hits.length === 1) {
-                return new Set([hits[0].descripcion]);
-            }
-            if (hits.length > 1) {
-                const ranked = [...hits].sort((x, y) => distSqToParada(x) - distSqToParada(y));
-                return new Set([ranked[0].descripcion]);
-            }
-        }
+        const arriboMatches = matchAll(banderasEnArribos);
+        if (arriboMatches.size > 0) return arriboMatches;
 
-        const scored = groupedRoutes.map((g) => {
-            let matchesArribo = false;
-            for (const r of ramalesUpper) {
-                if (banderaMatchesRoute(r, g)) {
-                    matchesArribo = true;
-                    break;
-                }
-            }
-            const matchesHint =
-                ramalHints.length > 0 &&
-                (ramalHints.includes(g.abrevSMP) ||
-                    ramalHints.includes(g.destinoMedio) ||
-                    ramalHints.some(
-                        (h) =>
-                            (g.destinoMedio && h.includes(g.destinoMedio)) ||
-                            (g.destinoMedio && g.destinoMedio.includes(h)),
-                    ));
+        const hintMatches = matchAll(ramalHints);
+        if (hintMatches.size > 0) return hintMatches;
 
-            return {
-                descripcion: g.descripcion,
-                matchesArribo,
-                matchesHint,
-                distSq: distSqToParada(g),
-            };
-        });
-
-        const arriboHits = scored.filter((s) => s.matchesArribo);
-        if (arriboHits.length > 0) {
-            arriboHits.sort((a, b) => a.distSq - b.distSq);
-            return new Set([arriboHits[0].descripcion]);
-        }
-
-        const hintHits = scored.filter((s) => s.matchesHint);
-        if (hintHits.length === 1) {
-            return new Set([hintHits[0].descripcion]);
-        }
-        if (hintHits.length > 1) {
-            hintHits.sort((a, b) => a.distSq - b.distSq);
-            return new Set([hintHits[0].descripcion]);
-        }
-
-        if (hasParada && scored.length > 0) {
-            const sorted = [...scored].sort((a, b) => a.distSq - b.distSq);
+        if (hasParada && groupedRoutes.length > 0) {
+            const sorted = [...groupedRoutes].sort((a, b) => distSqToParada(a) - distSqToParada(b));
             const best = sorted[0];
             if (best) return new Set([best.descripcion]);
         }
@@ -384,7 +335,7 @@ const BusMap = React.memo(function BusMap({
     const busCoordsForOrient = useMemo(() => firstBusCoords(arribos), [arribos]);
 
     const routesForMap = useMemo(() => {
-        return groupedRoutes.map(({ descripcion, points }) => {
+        const routes = groupedRoutes.map(({ descripcion, points }) => {
             let pts = points;
             if (
                 activeDescripcionKeys.has(descripcion) &&
@@ -396,7 +347,37 @@ const BusMap = React.memo(function BusMap({
             }
             return { descripcion, points: pts };
         });
+        // El ramal activo se dibuja último (encima) para que no quede tapado
+        // por el resto de los sentidos donde el trazado se superpone.
+        return [...routes].sort((a, b) => {
+            const aActive = activeDescripcionKeys.has(a.descripcion) ? 1 : 0;
+            const bActive = activeDescripcionKeys.has(b.descripcion) ? 1 : 0;
+            return aActive - bActive;
+        });
     }, [groupedRoutes, activeDescripcionKeys, paradaCoords, busCoordsForOrient]);
+
+    // Cuando ya sabemos qué ramal es el relevante (arribo con bandera clara,
+    // o pista fuerte de la parada), mostrar SOLO ese trazado — ida y vuelta
+    // casi siempre comparten la mayor parte del recorrido, así que pintar
+    // ambos a la vez es más ruido que información. Sólo en el caso ambiguo
+    // (sin match, `activeDescripcionKeys` vacío) mostramos todos los ramales
+    // con su propio color + leyenda, para que el usuario pueda orientarse.
+    const visibleRoutes = useMemo(() => {
+        if (activeDescripcionKeys.size === 0) return routesForMap;
+        return routesForMap.filter(({ descripcion }) => activeDescripcionKeys.has(descripcion));
+    }, [routesForMap, activeDescripcionKeys]);
+
+    // Con un solo ramal activo lo pintamos en el azul "este es el que importa".
+    // Con 2+ (parada compartida por varios destinos) ese mismo azul para todos
+    // los volvería indistinguibles entre sí, así que cada uno usa su color de
+    // la paleta en vez del azul especial.
+    const isSingleActive = activeDescripcionKeys.size === 1;
+
+    // La leyenda sólo debe listar lo que efectivamente se está dibujando
+    // (`visibleRoutes`), no todos los ramales de la línea — si no, con una
+    // parada de 2 destinos entre 12 ramales totales mostraría los 12.
+    const visibleDescripciones = new Set(visibleRoutes.map((r) => r.descripcion));
+    const legendRoutes = groupedRoutes.filter((r) => visibleDescripciones.has(r.descripcion));
 
     const centerCoords = paradaCoords ?? fallbackCenter ?? null;
     if (!centerCoords) return null;
@@ -485,6 +466,67 @@ const BusMap = React.memo(function BusMap({
                 </div>
             ) : null}
 
+            {/* Leyenda de sentidos: sólo tiene sentido mostrarla cuando hay más de
+                un ramal pintado a la vez. En fullscreen se omite para no chocar
+                con la tarjeta de resumen inferior. */}
+            {!isFullscreen && visibleRoutes.length > 1 ? (
+                <div
+                    style={{
+                        position: "absolute",
+                        left: 12,
+                        bottom: envLocalSafeAreaBottom(12),
+                        zIndex: 1000,
+                        display: "flex",
+                        flexDirection: "column",
+                        gap: 5,
+                        maxWidth: 190,
+                        background: "var(--color-card)",
+                        border: "1px solid var(--color-border)",
+                        borderRadius: 10,
+                        padding: "8px 10px",
+                        boxShadow: "0 6px 16px rgba(0,0,0,0.6)",
+                    }}
+                >
+                    {legendRoutes.map((route, i) => {
+                        const isActive = activeDescripcionKeys.has(route.descripcion);
+                        const dotColor =
+                            isActive && isSingleActive
+                                ? "#0099ff"
+                                : (routeColorByDescripcion.get(route.descripcion) ?? "#777777");
+                        return (
+                            <div
+                                key={route.descripcion}
+                                style={{ display: "flex", alignItems: "center", gap: 6, opacity: isActive ? 1 : 0.75 }}
+                            >
+                                <span
+                                    style={{
+                                        width: 9,
+                                        height: 9,
+                                        borderRadius: "50%",
+                                        background: dotColor,
+                                        flexShrink: 0,
+                                        boxShadow: isActive ? "0 0 0 2px rgba(0,153,255,0.35)" : undefined,
+                                    }}
+                                />
+                                <span
+                                    style={{
+                                        fontFamily: "var(--font-mono)",
+                                        fontSize: 10.5,
+                                        fontWeight: isActive ? 700 : 500,
+                                        color: isActive ? "var(--color-foreground)" : "var(--color-muted-foreground)",
+                                        whiteSpace: "nowrap",
+                                        overflow: "hidden",
+                                        textOverflow: "ellipsis",
+                                    }}
+                                >
+                                    {route.destinoMedio || `Ramal ${i + 1}`}
+                                </span>
+                            </div>
+                        );
+                    })}
+                </div>
+            ) : null}
+
             {mapReady ? (
             <MapContainer center={centerCoords} zoom={paradaCoords ? 16 : fallbackZoom} scrollWheelZoom style={{ height: "100%", width: "100%", zIndex: 1, flex: 1, background: "#090909" }}>
                 <TileLayer
@@ -492,7 +534,7 @@ const BusMap = React.memo(function BusMap({
                     attribution="&copy; Google Maps"
                 />
 
-                {routesForMap.map(({ descripcion, points }) => {
+                {visibleRoutes.map(({ descripcion, points }) => {
                     const isActive = activeDescripcionKeys.has(descripcion);
 
                     const arrowMarkers = [];
@@ -510,9 +552,26 @@ const BusMap = React.memo(function BusMap({
                         }
                     }
 
+                    // Un solo activo: azul fuerte y sólido (igual que el ícono de
+                    // colectivo, "este es el que importa"). Con 2+ activos a la vez
+                    // (parada compartida por varios destinos) o ninguno (ambiguo),
+                    // cada trazo usa su propio color de la paleta — nunca gris
+                    // uniforme — para poder distinguirlos entre sí.
+                    const routeColor =
+                        isActive && isSingleActive
+                            ? "#0099ff"
+                            : (routeColorByDescripcion.get(descripcion) ?? "#777777");
+
                     return (
                         <Fragment key={descripcion}>
-                            <Polyline positions={points} color={isActive ? "#0099ff" : "#777777"} weight={isActive ? 8 : 4} opacity={isActive ? 1 : 0.4} lineCap="round" lineJoin="round" />
+                            <Polyline
+                                positions={points}
+                                color={routeColor}
+                                weight={isActive ? 8 : 5}
+                                opacity={isActive ? 1 : 0.65}
+                                lineCap="round"
+                                lineJoin="round"
+                            />
                             {arrowMarkers.map((arr, idx) => (
                                 <Marker key={`arr-${idx}`} position={arr.pos} icon={createArrowIcon(arr.bearing)} interactive={false} />
                             ))}
