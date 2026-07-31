@@ -27,9 +27,14 @@ export function withViewTransition(updater: () => void): void {
         document as unknown as { startViewTransition?: StartViewTransition }
     ).startViewTransition;
     if (typeof start === "function") {
+        // Si el DOM vuelve a cambiar mientras esta transición está en curso
+        // (ej. dos clicks rápidos que disparan withViewTransition seguido),
+        // el browser aborta la anterior y `finished` rechaza con
+        // InvalidStateError — es un abort esperado, no un bug, así que no
+        // debe quedar como unhandled rejection.
         start.call(document, () => {
             flushSync(updater);
-        });
+        }).finished.catch(() => {});
     } else {
         updater();
     }
