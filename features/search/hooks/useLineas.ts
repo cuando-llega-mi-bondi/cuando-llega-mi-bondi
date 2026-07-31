@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import useSWR from "swr";
 import type { Linea } from "@shared/types";
 import { swrFetcher } from "@shared/api/client";
+import { describeMgpError } from "@shared/api/errors";
 import { mergeLineasWithManual } from "@features/route/manualRoutes";
 import { getCache, setCache } from "@shared/storage/localCache";
 
@@ -22,8 +23,7 @@ export function useLineas(options: UseLineasOptions = {}) {
             dedupingInterval: 60_000,
             onSuccess: (res) =>
                 setCache(LINEAS_ACTION, mergeLineasWithManual(res.lineas ?? [])),
-            onError: (err) =>
-                options.onError?.(err?.message ?? "Error al cargar las líneas."),
+            onError: (err) => options.onError?.(describeMgpError(err).message),
         },
     );
 

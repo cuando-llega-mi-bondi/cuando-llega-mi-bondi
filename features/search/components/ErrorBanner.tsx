@@ -1,6 +1,7 @@
 "use client";
 
 import { IconX } from "@shared/icons/IconX";
+import { IconAlertTriangle } from "@shared/icons/IconAlertTriangle";
 
 interface ErrorBannerProps {
     message: string;
@@ -11,35 +12,26 @@ export function ErrorBanner({ message, onClose }: ErrorBannerProps) {
     if (!message) return null;
 
     return (
-        <div className="flex animate-slide-up items-start gap-3 rounded-xl border border-danger/35 bg-danger/12 px-4 py-3.5">
-            <span className="mt-0.5 shrink-0 text-danger">
-                <svg
-                    width="20"
-                    height="20"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                >
-                    <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z" />
-                    <path d="M12 9v4" />
-                    <path d="M12 17h.01" />
-                </svg>
+        <div
+            className="flex animate-slide-up items-start gap-3 rounded-xl border border-error/35 bg-error/12 px-4 py-3.5"
+            role="status"
+            aria-live="polite"
+        >
+            <span className="mt-0.5 shrink-0 text-error" aria-hidden>
+                <IconAlertTriangle width={20} height={20} />
             </span>
             <div className="flex-1">
-                <div className="mb-1 font-sans text-sm font-semibold tracking-[-0.01em] text-danger">
+                <div className="mb-1 font-sans text-sm font-semibold tracking-[-0.01em] text-error">
                     El servidor no responde
                 </div>
-                <div className="font-sans text-xs leading-relaxed text-danger/90">
+                <div className="font-sans text-xs leading-relaxed text-error/90">
                     {message}
                 </div>
             </div>
             <button
                 type="button"
                 onClick={onClose}
-                className="flex min-h-11 min-w-11 shrink-0 cursor-pointer items-center justify-center bg-transparent p-0 text-danger/70 transition-colors hover:text-danger"
+                className="flex min-h-11 min-w-11 shrink-0 cursor-pointer items-center justify-center bg-transparent p-0 text-error/70 transition-colors hover:text-error"
                 aria-label="Cerrar error"
             >
                 <IconX />
