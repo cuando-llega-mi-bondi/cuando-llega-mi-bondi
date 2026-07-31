@@ -1,4 +1,10 @@
 import { STATIC_REFERENCE_ACCIONES } from "@shared/api/staticReferenceAcciones";
+import {
+    MgpBusinessError,
+    MgpNetworkError,
+    MgpUnavailableError,
+    classifyUnavailableMessage,
+} from "@shared/api/errors";
 
 /**
  * Sirve líneas/calles/intersecciones/paradas/recorridos desde el dump local en
@@ -89,7 +95,31 @@ function defaultTimeoutSignal(): AbortSignal | undefined {
     return undefined;
 }
 
-export async function post(accion: string, params: ActionParams = {}, options?: { signal?: AbortSignal }) {
+export interface MgpResponseMeta {
+    /** `X-Cache` del proxy; `null` cuando la respuesta vino del catálogo estático. */
+    cache: "HIT" | "MISS" | "STALE" | null;
+    /** `X-Stale-Reason` del proxy (solo presente si `cache === "STALE"`). */
+    staleReason: string | null;
+}
+
+export interface MgpResult<T = unknown> {
+    data: T;
+    meta: MgpResponseMeta;
+}
+
+const STATIC_REFERENCE_META: MgpResponseMeta = { cache: null, staleReason: null };
+
+/**
+ * Pega a `mgp-proxy` (o al catálogo estático) y devuelve el body junto con la
+ * metadata de caché real del proxy (`X-Cache`/`X-Stale-Reason`), chequeando
+ * `CodigoEstado` antes de considerar la respuesta exitosa. Ver
+ * FRONTEND_INTEGRATION.md — un 200 no implica que haya datos útiles.
+ */
+export async function postWithMeta(
+    accion: string,
+    params: ActionParams = {},
+    options?: { signal?: AbortSignal },
+): Promise<MgpResult> {
     if (staticReferenceEnabled() && STATIC_REFERENCE_ACCIONES.has(accion)) {
         try {
             const q = new URLSearchParams({ accion, ...params }).toString();
@@ -105,7 +135,7 @@ export async function post(accion: string, params: ActionParams = {}, options?: 
                     : {}),
             });
             if (refRes.ok) {
-                return refRes.json();
+                return { data: await refRes.json(), meta: STATIC_REFERENCE_META };
             }
         } catch {
             // fallback a proxy MGP
@@ -125,49 +155,68 @@ export async function post(accion: string, params: ActionParams = {}, options?: 
     // shim (PascalCase MGP raw).
     const qs = new URLSearchParams(params).toString();
     const url = `${baseUrl}/mgp/${encodeURIComponent(accion)}${qs ? `?${qs}` : ""}`;
-    const res = await fetch(url, {
-        method: "GET",
-        signal: options?.signal ?? defaultTimeoutSignal(),
-    });
 
-    if (!res.ok) {
-        throw new Error(`HTTP ${res.status}`);
-    }
-
-    return res.json();
-}
-
-export class MgpError extends Error {
-    constructor(
-        message: string,
-        public readonly isNetwork: boolean,
-    ) {
-        super(message);
-        this.name = "MgpError";
-    }
-}
-
-export async function swrFetcher([accion, params]: SwrActionKey) {
+    let res: Response;
     try {
-        return await post(accion, params);
+        res = await fetch(url, {
+            method: "GET",
+            signal: options?.signal ?? defaultTimeoutSignal(),
+        });
     } catch (err: unknown) {
-        const error = err as { name?: string; message?: string };
-
-        if (
-            err instanceof TypeError ||
-            error?.name === "AbortError" ||
-            error?.name === "TimeoutError" ||
-            error?.message?.startsWith("Failed to fetch")
-        ) {
-            throw new MgpError(
-                "El servidor de la Municipalidad no responde. Verificá tu conexión e intentá de nuevo.",
-                true,
-            );
-        }
-
-        throw new MgpError(
-            `Error del servidor (${error?.message ?? "desconocido"}). Intentá de nuevo en unos momentos.`,
-            false,
+        const error = err as { name?: string };
+        const isTimeout = error?.name === "AbortError" || error?.name === "TimeoutError";
+        throw new MgpNetworkError(
+            isTimeout
+                ? "La consulta tardó demasiado."
+                : "El servidor de la Municipalidad no responde. Verificá tu conexión e intentá de nuevo.",
+            isTimeout,
         );
     }
+
+    if (res.status === 502) {
+        const body = await res.json().catch(() => ({ message: "" }));
+        const message: string = body?.message ?? "";
+        throw new MgpUnavailableError(message, classifyUnavailableMessage(message), 502);
+    }
+
+    if (!res.ok) {
+        throw new MgpUnavailableError(`HTTP ${res.status}`, "normal", res.status);
+    }
+
+    const cache = res.headers.get("X-Cache") as MgpResponseMeta["cache"];
+    const staleReason = res.headers.get("X-Stale-Reason");
+    const data = await res.json();
+
+    // TODO(verify): confirmar contra el proxy real que CodigoEstado/MensajeEstado
+    // vienen siempre en PascalCase (así los documenta FRONTEND_INTEGRATION.md); el
+    // fallback camelCase es defensivo por si alguna acción responde distinto.
+    const codigoEstado = data?.CodigoEstado ?? data?.codigoEstado;
+    if (typeof codigoEstado === "number" && codigoEstado !== 0) {
+        const mensajeEstado = data?.MensajeEstado ?? data?.mensajeEstado ?? "";
+        throw new MgpBusinessError(codigoEstado, mensajeEstado);
+    }
+
+    return { data, meta: { cache, staleReason } };
+}
+
+// Mismo contrato laxo que tenía `post()` antes (el body ya venía de
+// `res.json(): Promise<any>`); los ~10 call sites existentes tipan el shape
+// ellos mismos por acción.
+export async function post(
+    accion: string,
+    params: ActionParams = {},
+    options?: { signal?: AbortSignal },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+): Promise<any> {
+    return (await postWithMeta(accion, params, options)).data;
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export async function swrFetcher([accion, params]: SwrActionKey): Promise<any> {
+    return (await postWithMeta(accion, params)).data;
+}
+
+/** Variante de `swrFetcher` que también expone `X-Cache`/`X-Stale-Reason`. */
+export async function swrFetcherWithMeta([accion, params]: SwrActionKey): Promise<MgpResult> {
+    return postWithMeta(accion, params);
 }
