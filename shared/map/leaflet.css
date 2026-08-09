@@ -40,18 +40,35 @@
     }
 }
 
-.bus-icon-container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    margin-top: -30px;
-    margin-left: -32px;
-    transition: transform 0.2s;
+/* La raíz no recibe eventos: los recibe sólo `.bondi-sprite-hit`, que es más
+   chico que la celda. El evento igual burbujea hasta la raíz, así que los
+   handlers de Leaflet (popup, click) siguen funcionando, y el `:hover` también
+   se aplica a la raíz porque el target es un descendiente suyo. */
+.bondi-sprite {
+    pointer-events: none;
 }
 
-.bus-icon-container:hover {
-    transform: scale(1.15) rotate(-2deg);
+.bondi-sprite-img {
+    transition: transform 0.18s ease;
+    transform-origin: center;
+}
+
+.bondi-sprite-hit {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    pointer-events: auto;
+    cursor: pointer;
+}
+
+.bondi-sprite:hover {
     z-index: 1000 !important;
+}
+
+/* El hover escala el dibujo y no la raíz: la raíz la posiciona Leaflet con su
+   propio `transform` y pisarlo despegaría el marcador del punto GPS. */
+.bondi-sprite:hover .bondi-sprite-img {
+    transform: scale(1.15);
 }
 
 .stop-icon-clear {
@@ -92,11 +109,11 @@
         opacity: 0;
     }
 
-    .bus-icon-container {
+    .bondi-sprite-img {
         transition: none;
     }
 
-    .bus-icon-container:hover {
+    .bondi-sprite:hover .bondi-sprite-img {
         transform: none;
     }
 }

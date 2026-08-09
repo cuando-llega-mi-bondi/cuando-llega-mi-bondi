@@ -17,6 +17,8 @@ import {
     envLocalSafeAreaBottom,
     envLocalSafeAreaTop,
 } from "@shared/map/leafletConfig";
+import { headingFromRoute, headingHaciaParada } from "@shared/map/bus/busHeading";
+import { createBusSpriteIcon } from "@shared/map/bus/busSpriteIcon";
 
 const IconMaximize = () => <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>;
 const IconMinimize = () => <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M8 3v3a2 2 0 0 1-2 2H3m18 0h-3a2 2 0 0 1-2-2V3m0 18v-3a2 2 0 0 1 2-2h3M3 16h3a2 2 0 0 1 2 2v3"/></svg>;
@@ -398,6 +400,60 @@ const BusMap = React.memo(function BusMap({
         });
     }, [groupedRoutes, activeDescripcionKeys, paradaCoords, busCoordsForOrient]);
 
+    /**
+     * Arribos con coordenadas válidas más el rumbo con el que hay que dibujarlos.
+     *
+     * Cada bondi se orienta contra la traza de **su propia bandera**, no contra
+     * la que está pintada de azul. Las líneas traen ida y vuelta como banderas
+     * separadas que recorren la misma avenida en sentidos opuestos (la 522, por
+     * ejemplo, tiene "AL FARO" norte→sur y "A BERUTI Y 228" sur→norte), así que
+     * usar una sola traza para todos deja a los de la bandera contraria mirando
+     * exactamente 180° al revés.
+     *
+     * Se usan los puntos crudos de `groupedRoutes` y no los de `routesForMap`
+     * justamente porque el orden crudo del GDS ya es el sentido de circulación:
+     * de 142 banderas, 133 tienen su inversa cargada como bandera aparte.
+     * `routesForMap` en cambio da vuelta la traza activa con una heurística
+     * pensada para dibujar un trazo, que acá rompería el rumbo.
+     */
+    const rumbosPorArribo = useMemo<number[]>(() => {
+        // Sólo para arribos cuya bandera no matchea ningún ramal: ahí la traza
+        // activa orientada hacia la parada es la mejor conjetura disponible.
+        const activa = routesForMap.find((r) =>
+            activeDescripcionKeys.has(r.descripcion),
+        );
+        const trazaFallback = activa?.points ?? [];
+
+        return arribos.map((a) => {
+            const lat = parseFloat(a.Latitud);
+            const lng = parseFloat(a.Longitud);
+            if (Number.isNaN(lat) || Number.isNaN(lng) || lat === 0) return 0;
+
+            const bandera = arriboBanderaLabel(a).trim().toUpperCase();
+            const hits = bandera
+                ? groupedRoutes.filter((g) => banderaMatchesRoute(bandera, g))
+                : [];
+            // Las variantes "X B" de una misma bandera van para el mismo lado,
+            // así que cualquiera sirve; igual se prefiere la coincidencia exacta.
+            const propia =
+                hits.find(
+                    (g) => g.destinoMedio === bandera || g.abrevSMP === bandera,
+                ) ?? hits[0];
+
+            const pos: [number, number] = [lat, lng];
+            return (
+                headingFromRoute(pos, propia?.points ?? trazaFallback) ??
+                headingHaciaParada(pos, paradaCoords)
+            );
+        });
+    }, [
+        arribos,
+        groupedRoutes,
+        routesForMap,
+        activeDescripcionKeys,
+        paradaCoords,
+    ]);
+
     const centerCoords = paradaCoords ?? fallbackCenter ?? null;
     if (!centerCoords) return null;
 
@@ -579,35 +635,13 @@ const BusMap = React.memo(function BusMap({
                     const lon = parseFloat(a.Longitud);
                     if (Number.isNaN(lat) || Number.isNaN(lon) || lat === 0) return null;
 
-                    const html = `
-                        <div class="bus-icon-container">
-                            <svg width="56" height="36" viewBox="0 0 32 32" style="filter: drop-shadow(0 4px 6px rgba(0,0,0,0.5));">
-                                <rect x="2" y="8" width="28" height="15" rx="3" fill="#0099ff" />
-                                <rect x="5" y="10" width="5" height="5" rx="1" fill="#090909" />
-                                <rect x="12" y="10" width="6" height="5" rx="1" fill="#090909" />
-                                <rect x="20" y="10" width="7" height="5" rx="1" fill="#090909" />
-                                <rect x="28" y="18" width="2" height="3" fill="#ffffff" opacity="0.9" />
-                                <rect x="2" y="18" width="2" height="3" fill="#ef4444" opacity="0.8" />
-                                <rect x="2" y="16" width="28" height="1" fill="#fff" opacity="0.3" />
-                                <path d="M 6 23 a 3 3 0 0 1 6 0 z" fill="#090909" />
-                                <path d="M 20 23 a 3 3 0 0 1 6 0 z" fill="#090909" />
-                                <circle cx="9" cy="24" r="3" fill="#000" />
-                                <circle cx="23" cy="24" r="3" fill="#000" />
-                                <circle cx="9" cy="24" r="1.5" fill="#555" />
-                                <circle cx="23" cy="24" r="1.5" fill="#555" />
-                            </svg>
-                        </div>
-                    `;
-
-                    const BusIcon = L.divIcon({
-                        className: "custom-bus-icon",
-                        html,
-                        iconSize: [0, 0],
-                        iconAnchor: [0, 0],
-                    });
-
                     return (
-                        <Marker key={i} position={[lat, lon]} icon={BusIcon} zIndexOffset={100 + i}>
+                        <Marker
+                            key={i}
+                            position={[lat, lon]}
+                            icon={createBusSpriteIcon(rumbosPorArribo[i] ?? 0)}
+                            zIndexOffset={100 + i}
+                        >
                             <Popup>
                                 <div style={{ display: "flex", flexDirection: "column", gap: 3, padding: "2px 0" }}>
                                     <div style={{ background: "var(--color-secondary)", color: "#fff", padding: "3px 8px", borderRadius: "6px", fontFamily: "var(--font-display)", fontWeight: 900, fontSize: 16, display: "inline-block", width: "fit-content" }}>
