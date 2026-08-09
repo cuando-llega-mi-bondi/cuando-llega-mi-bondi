@@ -2,10 +2,11 @@ import { Button } from "@shared/ui/Button";
 
 interface MapErrorOverlayProps {
     message: string;
+    title?: string;
     onRetry: () => void;
 }
 
-export function MapErrorOverlay({ message, onRetry }: MapErrorOverlayProps) {
+export function MapErrorOverlay({ message, title, onRetry }: MapErrorOverlayProps) {
     return (
         <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 bg-background px-6">
             <div className="text-muted-foreground">
@@ -24,6 +25,11 @@ export function MapErrorOverlay({ message, onRetry }: MapErrorOverlayProps) {
                     <path d="M12 17h.01" />
                 </svg>
             </div>
+            {title ? (
+                <div className="max-w-[280px] text-center font-sans text-sm font-semibold leading-relaxed text-foreground">
+                    {title}
+                </div>
+            ) : null}
             <div className="max-w-[280px] text-center font-sans text-sm leading-relaxed text-muted-foreground">
                 {message}
             </div>

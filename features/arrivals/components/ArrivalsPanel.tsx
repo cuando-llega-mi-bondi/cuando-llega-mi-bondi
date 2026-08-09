@@ -22,7 +22,7 @@ import { LiveSharingBanner } from "./LiveSharingBanner";
 interface ArrivalsPanelProps {
     consult: Pick<
         ArrivalsConsultSession,
-        "isConsulting" | "selectedRamal" | "setSelectedRamal" | "paradaId" | "error"
+        "isConsulting" | "selectedRamal" | "setSelectedRamal" | "paradaId"
     >;
     arrivals: ArrivalsDataSession;
 }
@@ -44,7 +44,6 @@ export function ArrivalsPanel({ consult, arrivals }: ArrivalsPanelProps) {
         selectedRamal,
         setSelectedRamal,
         paradaId,
-        error,
         codLinea,
         lineaLabel = "",
         selectedParada,
@@ -62,6 +61,9 @@ export function ArrivalsPanel({ consult, arrivals }: ArrivalsPanelProps) {
         otrasLineas,
         loadingOtras,
         onSelectOtraLinea,
+        errorInfo,
+        retryAt,
+        isStale: isStaleFromProxy,
     } = arrivals;
 
     const { favoritos, removeFavorito } = useFavoritos();
@@ -127,7 +129,9 @@ export function ArrivalsPanel({ consult, arrivals }: ArrivalsPanelProps) {
     }, []);
 
     const elapsedMs = lastUpdate ? nowTick - lastUpdate.getTime() : null;
-    const isStale = elapsedMs !== null && elapsedMs > STALE_AFTER_MS;
+    // Señal real del proxy (X-Cache: STALE) + heurística de tiempo local como
+    // respaldo (ej. la pestaña estuvo en background y el polling no corrió).
+    const isStale = isStaleFromProxy || (elapsedMs !== null && elapsedMs > STALE_AFTER_MS);
 
     const hasArribos = displayArribos.length > 0;
     const hasLiveSharings = liveSharings.length > 0;
@@ -140,6 +144,7 @@ export function ArrivalsPanel({ consult, arrivals }: ArrivalsPanelProps) {
         hasArribos,
         hasLiveSharings,
         isConsulting,
+        hasErrored: errorInfo !== null,
     });
 
     if (view === "hidden") return null;
@@ -157,7 +162,11 @@ export function ArrivalsPanel({ consult, arrivals }: ArrivalsPanelProps) {
                                 "font-mono text-[10px]",
                                 isStale ? "font-semibold text-amarillo" : "text-muted-foreground",
                             )}
-                            title={lastUpdate?.toLocaleTimeString("es-AR")}
+                            title={
+                                errorInfo && view === "list"
+                                    ? `${errorInfo.title}: ${errorInfo.message}`
+                                    : lastUpdate?.toLocaleTimeString("es-AR")
+                            }
                         >
                             {isStale
                                 ? `Última info ${formatRelative(elapsedMs)}`
@@ -186,7 +195,8 @@ export function ArrivalsPanel({ consult, arrivals }: ArrivalsPanelProps) {
             ) : view === "empty" ? (
                 <ArrivalsEmpty
                     mode={isConsulting ? "no-data" : "prompt"}
-                    hasError={Boolean(error) && isConsulting}
+                    errorInfo={isConsulting ? errorInfo : null}
+                    retryAt={retryAt}
                     loadingArribos={loadingArribos}
                     selectedRamal={selectedRamal}
                     onRetry={fetchArribos}
@@ -236,7 +246,7 @@ export function ArrivalsPanel({ consult, arrivals }: ArrivalsPanelProps) {
                         {isCurrentFavorito ? "Quitar de favoritos" : "Guardar en favoritos"}
                     </button>
                     <div className="text-center font-mono text-[10px] text-muted-foreground">
-                        Actualización automática cada 60 s
+                        Actualización automática cada 25 s
                     </div>
                 </div>
             ) : null}

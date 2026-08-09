@@ -35,7 +35,15 @@ export async function resolveUbicacionFormularioPorParada(
         // Sin dump estático o línea desconocida: seguir con barrido vía acciones MGP.
     }
 
-    return scanUbicacionFormularioPorParada(codLinea, paradaId);
+    // El barrido corría antes fuera de cualquier try/catch: `post()` ahora
+    // puede lanzar MgpBusinessError ante línea/calle inválida durante el
+    // barrido, y sin este catch quedaba una promesa rechazada sin manejar en
+    // el único caller (useSearchFlow.ts), dejando `isResolving` trabado en true.
+    try {
+        return await scanUbicacionFormularioPorParada(codLinea, paradaId);
+    } catch {
+        return null;
+    }
 }
 
 async function scanUbicacionFormularioPorParada(

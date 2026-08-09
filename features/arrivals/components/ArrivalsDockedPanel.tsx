@@ -5,7 +5,6 @@ import { IconX } from "@shared/icons/IconX";
 import type { ArrivalsOverlaySession } from "@features/arrivals/types/arrivalsSession";
 import { resolveArrivalsPanelView } from "@features/arrivals/types/arrivalsSession";
 import { ArrivalsPanel } from "./ArrivalsPanel";
-import { ErrorBanner } from "@features/search/components/ErrorBanner";
 import { TelegramShareCTA } from "@features/search/components/TelegramShareCTA";
 import { cn } from "@shared/utils";
 
@@ -52,19 +51,25 @@ export function OverlayHeaderInfo({
     );
 }
 
-/** Cuerpo con arribos + errores (compartido sheet/panel). */
+/**
+ * Cuerpo con arribos + errores (compartido sheet/panel). El error de
+ * pre-consulta (`consult.error`, ej. fallo al cargar líneas) se muestra en
+ * `SearchFlow.tsx` — acá sólo importan los errores de arribos, que
+ * `ArrivalsPanel`/`ArrivalsEmpty` ya cubren con su propio `errorInfo`.
+ */
 export function OverlayBody({
     consult,
     arrivals,
 }: Pick<ArrivalsOverlaySession, "consult" | "arrivals">) {
-    const { isConsulting, error, setError } = consult;
-    const { displayArribos, loadingArribos } = arrivals;
+    const { isConsulting } = consult;
+    const { displayArribos, loadingArribos, errorInfo } = arrivals;
 
     const panelView = resolveArrivalsPanelView({
         loadingArribos,
         hasArribos: displayArribos.length > 0,
         hasLiveSharings: arrivals.liveSharings.length > 0,
         isConsulting,
+        hasErrored: errorInfo !== null,
     });
 
     return (
@@ -72,10 +77,6 @@ export function OverlayBody({
             {panelView !== "hidden" ? (
                 <ArrivalsPanel consult={consult} arrivals={arrivals} />
             ) : null}
-            <ErrorBanner
-                message={isConsulting ? error : ""}
-                onClose={() => setError("")}
-            />
         </div>
     );
 }
