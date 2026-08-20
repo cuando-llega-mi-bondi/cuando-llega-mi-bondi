@@ -4,8 +4,13 @@ const nextConfig: NextConfig = {
   /**
    * Output standalone para self-hosting con Docker. Genera `.next/standalone/`
    * con un server.js minimalista + solo los node_modules necesarios.
+   *
+   * Desactivado en Vercel (`VERCEL` viene seteado por su entorno de build):
+   * Vercel arma su propio bundle de funciones serverless y `standalone`
+   * choca con ese tracing — produce un ENOENT sobre
+   * `.next/next-server.js.nft.json` en el build.
    */
-  output: "standalone",
+  output: process.env.VERCEL ? undefined : "standalone",
 
   /**
    * Habilita Cache Components (PPR + `'use cache'`). Requerido por
