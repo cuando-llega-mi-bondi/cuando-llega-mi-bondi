@@ -1,6 +1,8 @@
 "use client";
 
 import { useCallback } from "react";
+import Link from "next/link";
+import { useReviewsUser } from "@features/reviews/hooks/useReviewsUser";
 import { IconBus } from "@shared/icons/IconBus";
 import { IconGithub } from "@shared/icons/IconGithub";
 import { IconLinkedin } from "@shared/icons/IconLinkedin";
@@ -190,6 +192,8 @@ function DevCard({ dev }: { dev: Developer }) {
 // ── Main component ───────────────────────────────────────────────────────────
 
 export function AcercaClient() {
+    const { user } = useReviewsUser();
+
     const handleShareWhatsApp = useCallback(() => {
         const text = encodeURIComponent(
             "Mirá esta app para ver cuándo llega el bondi en Mar del Plata 🚌 https://bondimdp.com.ar",
@@ -291,6 +295,41 @@ export function AcercaClient() {
                     </div>
 
                     <div className="space-y-10 lg:space-y-8">
+                        {/* ── TU CUENTA ─────────────────────────────── */}
+                        {user && (
+                            <section className="space-y-3">
+                                <h2 className="text-[10.4px] font-normal uppercase tracking-wider text-muted-foreground">
+                                    Tu cuenta
+                                </h2>
+                                <Link
+                                    href="/perfil"
+                                    className="flex items-center justify-between gap-3 rounded-xl border border-border bg-card p-4 no-underline transition-colors hover:border-secondary"
+                                >
+                                    <div className="min-w-0">
+                                        <p className="truncate text-[14px] font-semibold text-foreground">
+                                            {user.email}
+                                        </p>
+                                        <p className="text-[12px] text-muted-foreground opacity-80">
+                                            Cerrar sesión o eliminar tu cuenta
+                                        </p>
+                                    </div>
+                                    <svg
+                                        className="shrink-0 text-muted-foreground"
+                                        width="16"
+                                        height="16"
+                                        viewBox="0 0 24 24"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        strokeWidth="2.5"
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                    >
+                                        <polyline points="9 18 15 12 9 6" />
+                                    </svg>
+                                </Link>
+                            </section>
+                        )}
+
                         {/* ── HECHO POR ─────────────────────────────── */}
                         <section className="space-y-3">
                             <h2 className="text-[10.4px] font-normal uppercase tracking-wider text-muted-foreground">
