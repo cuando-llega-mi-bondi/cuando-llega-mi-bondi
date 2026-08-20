@@ -2,6 +2,10 @@ import type { Metadata } from "next";
 import { Suspense } from "react";
 import { ComoLlegoClient } from "@features/trip-planner/components/ComoLlegoClient";
 
+// TODO: Cache Components adoption. Refactor this route so this opt-out can be removed.
+// See: https://nextjs.org/docs/app/guides/migrating-to-cache-components
+export const instant = false;
+
 export const metadata: Metadata = {
     title: {
         absolute: "Cómo llego en bondi — BondiMDP",

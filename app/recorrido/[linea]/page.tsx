@@ -6,6 +6,10 @@ import { lineaToSlug } from "@/lib/server/lineaSlug";
 import RecorridoClient from "@features/route/components/RecorridoClient";
 import type { Linea } from "@shared/types";
 
+// TODO: Cache Components adoption. Refactor this route so this opt-out can be removed.
+// See: https://nextjs.org/docs/app/guides/migrating-to-cache-components
+export const instant = false;
+
 const BASE_URL = "https://bondimdp.com.ar";
 
 // ─── Static generation ─────────────────────────────────────────────────────────

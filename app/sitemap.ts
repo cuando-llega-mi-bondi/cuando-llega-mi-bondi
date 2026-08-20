@@ -1,10 +1,12 @@
 import { MetadataRoute } from "next";
+import { cacheLife } from "next/cache";
 import { getLineas } from "@/lib/server/loadStaticDump";
 import { lineaToSlug } from "@/lib/server/lineaSlug";
 
-export const revalidate = 3600; // Cachear por 1 hora
-
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+    "use cache";
+    cacheLife("hours");
+
     const baseUrl = "https://bondimdp.com.ar";
     const now = new Date();
 
