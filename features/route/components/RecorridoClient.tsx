@@ -15,6 +15,7 @@ import { MANUAL_LINES, MANUAL_ROUTES, mergeLineasWithManual } from "@features/ro
 import { supabase } from "@shared/infra/supabase";
 import { cn } from "@shared/utils";
 import {
+  LineDetailScreen,
   LineItem,
   LineSkeletons,
   MapErrorOverlay,
@@ -64,7 +65,7 @@ function normalizeRamal(value: string | null | undefined) {
 
 // ─── Main component ───────────────────────────────────────────────────────────
 
-type Step = "selector" | "map";
+type Step = "selector" | "detail" | "map";
 
 export default function RecorridoClient({ initialLineCode }: { initialLineCode?: string }) {
   const router = useRouter();
@@ -181,7 +182,10 @@ export default function RecorridoClient({ initialLineCode }: { initialLineCode?:
   }, [lines, search]);
 
   // ── Actions ──────────────────────────────────────────────────────────────────
-  async function selectLine(line: Linea) {
+  // Elegir una línea siempre abre su ficha (reseñas + resumen); `directToMap`
+  // salta directo al mapa — lo usan los deep links con ?linea= que ya buscaban
+  // el bondi en tiempo real y no quieren la parada intermedia de la ficha.
+  async function selectLine(line: Linea, opts?: { directToMap?: boolean }) {
     // Cancel any in-flight request from a previous selectLine call
     selectAbortRef.current?.abort();
     const controller = new AbortController();
@@ -191,7 +195,7 @@ export default function RecorridoClient({ initialLineCode }: { initialLineCode?:
       setSelectedLine(line);
       setMapLoading(true);
       setMapError(null);
-      setStep("map");
+      setStep(opts?.directToMap ? "map" : "detail");
       setRamales([]);
       setSelectedRamal(null);
       setParadas([]);
@@ -304,21 +308,29 @@ export default function RecorridoClient({ initialLineCode }: { initialLineCode?:
 
   useEffect(() => {
     if (deepLinkHandledRef.current || linesLoading || lines.length === 0) return;
-    const code = searchParams.get("linea")?.trim() || initialLineCode;
+    const fromQuery = searchParams.get("linea")?.trim();
+    const code = fromQuery || initialLineCode;
     if (!code) return;
     const line = lines.find((l) => l.CodigoLineaParada === code);
     if (!line) return;
     deepLinkHandledRef.current = true;
+    // ?linea= viene de un flujo que ya quería el mapa (Consultar/Paradas cerca);
+    // /recorrido/[linea] es la ficha SEO de la línea, abre en la ficha.
     // eslint-disable-next-line react-hooks/set-state-in-effect
-    void selectLine(line);
+    void selectLine(line, { directToMap: Boolean(fromQuery) });
     // Only replace URL when coming from ?linea= query param, not from /recorrido/[linea]
-    if (searchParams.get("linea")) {
+    if (fromQuery) {
       router.replace("/recorrido", { scroll: false });
     }
   }, [linesLoading, lines, searchParams, router, initialLineCode]);
 
   function goBack() {
-    // When rendered from /recorrido/[linea], navigate back to the line selector
+    // Desde el mapa, volver siempre a la ficha de la línea (no directo a la lista)
+    if (step === "map") {
+      withViewTransition(() => setStep("detail"));
+      return;
+    }
+    // Desde la ficha: si vinimos de /recorrido/[linea], volver a la lista completa
     if (initialLineCode) {
       router.push("/recorrido");
       return;
@@ -430,7 +442,7 @@ export default function RecorridoClient({ initialLineCode }: { initialLineCode?:
           </Link>
           <div className="min-w-0 flex-1">
             <div className="font-display text-[24px] font-semibold tracking-[-0.04em] text-text">
-              Explorar <span className="text-accent">Recorridos</span>
+              Explorar <span className="text-accent">Reseñas</span>
             </div>
             <div className="mt-0.5 font-mono text-[10px] text-text-dim">
               {linesLoading ? "Cargando líneas…" : `${lines.length} líneas disponibles`}
@@ -443,7 +455,7 @@ export default function RecorridoClient({ initialLineCode }: { initialLineCode?:
           <PageHeader
             as="h2"
             title="Explorar"
-            highlight="Recorridos"
+            highlight="Reseñas"
             subtitle={
               linesLoading
                 ? "Cargando líneas…"
@@ -469,22 +481,41 @@ export default function RecorridoClient({ initialLineCode }: { initialLineCode?:
         </div>
 
         <div className="flex-1 overflow-y-auto px-3 pb-45 pt-2 lg:px-8 lg:pt-6 lg:pb-10">
-          {linesLoading ? (
-            <LineSkeletons />
-          ) : filteredLines.length === 0 ? (
+          {filteredLines.length === 0 && !linesLoading ? (
             <div className="py-10 text-center font-mono text-[13px] text-text-dim">
               No se encontraron líneas para «{search}»
             </div>
           ) : (
-            <div className="lg:grid lg:grid-cols-2 lg:gap-x-3 xl:grid-cols-3">
-              {filteredLines.map((line) => (
-                <LineItem key={line.CodigoLineaParada} line={line} onSelect={selectLine} />
-              ))}
+            <div className="grid grid-cols-3 gap-2.5 sm:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
+              {linesLoading ? (
+                <LineSkeletons />
+              ) : (
+                filteredLines.map((line) => (
+                  <LineItem key={line.CodigoLineaParada} line={line} onSelect={selectLine} />
+                ))
+              )}
             </div>
           )}
         </div>
         <BottomNav />
       </div>
+    );
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────────
+  // DETAIL SCREEN (ficha de la línea: resumen + reseñas)
+  // ─────────────────────────────────────────────────────────────────────────────
+  if (step === "detail" && selectedLine) {
+    return (
+      <LineDetailScreen
+        line={selectedLine}
+        ramales={ramales}
+        loading={mapLoading}
+        error={mapError}
+        onBack={goBack}
+        onViewMap={() => withViewTransition(() => setStep("map"))}
+        onRetry={() => selectLine(selectedLine)}
+      />
     );
   }
 
@@ -572,7 +603,7 @@ export default function RecorridoClient({ initialLineCode }: { initialLineCode?:
           <MapErrorOverlay
             title={describeMgpError(mapError).title}
             message={describeMgpError(mapError).message}
-            onRetry={() => selectedLine && selectLine(selectedLine)}
+            onRetry={() => selectedLine && selectLine(selectedLine, { directToMap: true })}
           />
         ) : (
           <RouteMap

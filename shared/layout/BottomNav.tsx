@@ -3,9 +3,9 @@
 import { useMemo } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { Bus } from "lucide-react";
 import { IconSearch } from "@shared/icons/IconSearch";
 import { IconStar } from "@shared/icons/IconStar";
-import { IconMap } from "@shared/icons/IconMap";
 import { IconInfo } from "@shared/icons/IconInfo";
 import { IconBus } from "@shared/icons/IconBus";
 import { BrandLogo } from "@shared/ui/BrandLogo";
@@ -23,9 +23,9 @@ const NAV_ITEMS: { id: NavTab; label: string; href: string; icon: (active: boole
     },
     {
         id: "recorrido",
-        label: "Recorridos",
+        label: "Reseñas",
         href: "/recorrido",
-        icon: () => <IconMap className="h-[22px] w-[22px]" />,
+        icon: () => <Bus className="h-[22px] w-[22px]" />,
     },
     {
         id: "favoritos",

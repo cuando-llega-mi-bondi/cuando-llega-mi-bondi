@@ -1,4 +1,5 @@
 import type { Linea } from "@shared/types";
+import { lineaNumero } from "@features/route/lineaNumero";
 
 interface LineItemProps {
     line: Linea;
@@ -7,38 +8,22 @@ interface LineItemProps {
 
 export function LineItem({ line, onSelect }: LineItemProps) {
     const desc = line.Descripcion.trim();
+    const numero = lineaNumero(line);
 
     return (
         <button
             onClick={() => onSelect(line)}
-            className="mb-1.5 flex w-full cursor-pointer items-center gap-3 rounded-xl bg-card border border-border px-3.5 py-3 text-left transition hover:-translate-y-px hover:bg-muted hover:border-secondary hover:shadow-sm"
+            title={desc}
+            aria-label={`Línea ${numero} — ${desc} — ver reseñas y recorrido`}
+            className="flex aspect-[3/4] w-full cursor-pointer flex-col overflow-hidden rounded-2xl border border-border shadow-sm transition hover:-translate-y-0.5 hover:shadow-md active:scale-[0.98]"
         >
-            <div className="flex h-10 min-w-[52px] flex-shrink-0 items-center justify-center rounded-full border border-border bg-muted font-display text-[17px] font-medium tracking-tight text-foreground">
-                {line.CodigoLineaParada}
+            <div className="h-[16%] w-full shrink-0 bg-rosa" />
+            <div className="h-[10%] w-full shrink-0 bg-amarillo" />
+            <div className="flex flex-1 items-center justify-center bg-turquesa">
+                <span className="font-display text-3xl font-bold tracking-[-0.03em] text-white">
+                    {numero}
+                </span>
             </div>
-
-            <div className="min-w-0 flex-1">
-                <div className="truncate font-sans text-sm font-semibold text-foreground">
-                    {desc}
-                </div>
-                <div className="mt-0.5 font-mono text-[10px] text-muted-foreground">
-                    Ver recorrido en mapa
-                </div>
-            </div>
-
-            <svg
-                className="shrink-0 text-muted-foreground"
-                width="16"
-                height="16"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-            >
-                <polyline points="9 18 15 12 9 6" />
-            </svg>
         </button>
     );
 }
