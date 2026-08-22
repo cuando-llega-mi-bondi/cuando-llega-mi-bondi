@@ -7,8 +7,6 @@ import {
 } from "@features/sponsors/lib/purchases";
 import { getPayment } from "@/lib/mercadopago/client";
 
-export const runtime = "nodejs";
-
 const WEBHOOK_SECRET = process.env.MERCADOPAGO_WEBHOOK_SECRET;
 const MAX_WEBHOOK_AGE_SECONDS = 300;
 
