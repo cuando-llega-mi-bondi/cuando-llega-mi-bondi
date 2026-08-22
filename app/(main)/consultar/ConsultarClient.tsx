@@ -6,6 +6,7 @@ import { cn } from "@shared/utils";
 
 import { SearchFlow } from "@features/search/components/SearchFlow";
 import { FavoritosQuickList } from "@features/favorites/components/FavoritosQuickList";
+import { SponsorSlot } from "@features/sponsors/components/SponsorSlot";
 import { PageShell } from "@shared/layout/PageShell";
 import { PageHeader } from "@shared/layout/PageHeader";
 import { IconLocation } from "@shared/icons/IconLocation";
@@ -58,6 +59,7 @@ export function ConsultarClient({ children }: { children?: ReactNode }) {
           </div>
           <SearchFlow loadingArribos={false} />
           <FavoritosQuickList className="mt-6 hidden lg:block" />
+          <SponsorSlot />
         </div>
 
         <div className="hidden lg:relative lg:block lg:min-w-0 lg:flex-1 lg:overflow-hidden lg:rounded-2xl lg:border lg:border-border lg:bg-muted">

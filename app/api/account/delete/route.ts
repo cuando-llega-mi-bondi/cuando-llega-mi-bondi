@@ -1,14 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@supabase/supabase-js";
+import { createAdminClient } from "@/lib/server/supabaseAdmin";
+import { supabaseSecretKey, supabaseUrl } from "@/lib/server/supabaseEnv";
 
 /**
  * Borra la cuenta del usuario autenticado. Antes de borrar el auth user,
  * anonimiza sus reseñas (display_name → "Usuario eliminado", user_id →
  * null) en vez de dejarlas caer por el ON DELETE CASCADE de la FK — quedan
- * públicas pero ya no editables por nadie. Necesita el service role key:
+ * públicas pero ya no editables por nadie. Necesita SUPABASE_SECRET_KEY:
  * ni el borrado de `auth.users` ni el update sin dueño (falla el RLS
  * `WITH CHECK` de `reviews_update_own` porque el user_id nuevo es null)
- * se pueden hacer con la anon key.
+ * se pueden hacer con la publishable key.
  */
 export async function POST(req: NextRequest) {
     const token = req.headers.get("authorization")?.replace(/^Bearer\s+/i, "");
@@ -16,13 +17,11 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ error: "No autenticado" }, { status: 401 });
     }
 
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-    if (!supabaseUrl || !serviceRoleKey) {
+    if (!supabaseUrl() || !supabaseSecretKey()) {
         return NextResponse.json({ error: "Servicio no configurado" }, { status: 500 });
     }
 
-    const admin = createClient(supabaseUrl, serviceRoleKey);
+    const admin = createAdminClient();
 
     const { data: userData, error: userError } = await admin.auth.getUser(token);
     if (userError || !userData.user) {

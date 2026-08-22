@@ -185,9 +185,22 @@ export default function PrivacidadPage() {
                     </Section>
 
                     {/* ── PUBLICIDAD ──────────────────────────────────── */}
-                    <Section title="Publicidad — Google AdSense">
+                    <Section title="Publicidad">
                         <p>
-                            Mostramos anuncios a través de{" "}
+                            Además de AdSense, se puede comprar un lugar publicitario
+                            autoservicio en Consultar. Las condiciones, incluida la falta de
+                            garantía de resultados, están en los{" "}
+                            <a
+                                href="/terminos"
+                                className="underline decoration-border underline-offset-2 hover:text-foreground"
+                            >
+                                Términos del lugar
+                            </a>
+                            . Van rotulados como «Publicidad» y al tocarlos vas al sitio del
+                            anunciante.
+                        </p>
+                        <p>
+                            También mostramos anuncios a través de{" "}
                             <ExtLink href="https://policies.google.com/technologies/ads">
                                 Google AdSense
                             </ExtLink>

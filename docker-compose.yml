@@ -7,7 +7,7 @@ services:
       # Docker Compose las va a tomar automáticamente de tu archivo .env
       args:
         - NEXT_PUBLIC_SUPABASE_URL
-        - NEXT_PUBLIC_SUPABASE_ANON_KEY
+        - NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY
         - NEXT_PUBLIC_TELEGRAM_BOT_USERNAME
         - NEXT_PUBLIC_CLARITY_PROJECT_ID
         - NEXT_PUBLIC_GA_MEASUREMENT_ID

@@ -120,7 +120,7 @@ Contexto del algoritmo, modelo de costos y grafo: [docs/trip-planner.md](docs/tr
 Resumen en el [README](README.md). Tabla completa: [docs/env-reference.md](docs/env-reference.md).
 
 - **Obligatoria para arribos en vivo:** `NEXT_PUBLIC_CUANDO_API_URL`
-- **Telegram + mapa en vivo:** `TELEGRAM_BOT_TOKEN`, `NEXT_PUBLIC_TELEGRAM_BOT_USERNAME`, `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+- **Telegram + mapa en vivo:** `TELEGRAM_BOT_TOKEN`, `NEXT_PUBLIC_TELEGRAM_BOT_USERNAME`, `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`
 
 ## Convenciones de código
 

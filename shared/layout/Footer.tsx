@@ -14,7 +14,14 @@ export function Footer() {
                     href="/privacidad"
                     className="underline decoration-border underline-offset-2 transition-colors hover:text-foreground"
                 >
-                    Política de privacidad
+                    Privacidad
+                </Link>
+                {" · "}
+                <Link
+                    href="/terminos"
+                    className="underline decoration-border underline-offset-2 transition-colors hover:text-foreground"
+                >
+                    Términos del lugar
                 </Link>
             </p>
         </footer>

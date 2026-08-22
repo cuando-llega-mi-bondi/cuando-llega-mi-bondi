@@ -1,12 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
+import { supabaseUrl, supabasePublishableKey } from "@/lib/server/supabaseEnv";
 import { parseLiveSharePayload } from "@features/live-sharing/lib/liveSharePayload";
 
-// We use service_role client in the backend to ensure we can update rows
-// Note: If you don't have service_role, anon key works if RLS allows public anonymous updates
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
-const supabase = createClient(supabaseUrl, supabaseKey);
+const supabase = createClient(supabaseUrl() ?? "", supabasePublishableKey() ?? "");
 
 export async function POST(req: NextRequest) {
   try {
