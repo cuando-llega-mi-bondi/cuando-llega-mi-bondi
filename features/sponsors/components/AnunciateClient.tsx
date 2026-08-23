@@ -139,14 +139,16 @@ export function AnunciateClient() {
           </p>
           <p className="mt-2 text-[16px] font-bold">En Consultar, en el celular</p>
           <p className="mt-1 text-[13px] leading-relaxed text-muted-foreground">
-            Abajo de «elegí la línea», uno arriba del otro. El 1 se ve primero.
-            Que esté publicado no quiere decir que lo vayan a tocar.
+            Abajo de «elegí la línea», dos recuadros. Se ordenan solos por lo
+            que se paga: el que puso más plata se ve arriba, sin importar cuál
+            de los dos casilleros compraste. Que esté publicado no quiere
+            decir que lo vayan a tocar.
           </p>
         </section>
 
         <section className="space-y-2">
           <p className="font-mono text-[10px] tracking-[1.4px] text-muted-foreground">
-            QUÉ LUGAR COMPRÁS
+            QUÉ CASILLERO DESAFIÁS
           </p>
           <div className="grid grid-cols-2 gap-2">
             {AD_SLOTS.map((item) => {
@@ -215,8 +217,9 @@ export function AnunciateClient() {
               ¿A DÓNDE LOS MANDÁS?
             </p>
             <p className="text-[13px] text-muted-foreground">
-              El que toque tu aviso cae acá. El iconito sale de la red o del
-              favicon de tu sitio (caché de Google, al toque).
+              El que toque tu aviso cae acá. Si tu link tiene imagen para
+              compartir (og:image) la mostramos de fondo; si no, usamos el
+              ícono de la red o el favicon.
             </p>
             <div className="grid grid-cols-2 gap-2">
               {PLATFORMS.map((item) => {
@@ -269,8 +272,8 @@ export function AnunciateClient() {
               <p className="flex items-center gap-2 text-[12px] text-muted-foreground">
                 <AdIcon href={composedHref} title={title || destination} size="sm" />
                 {detectAdPlatform(composedHref) === "web"
-                  ? "El iconito sale del favicon de tu sitio. Si no tiene, ponemos la inicial."
-                  : "Este iconito va a aparecer en tu tarjeta."}
+                  ? "Si tu sitio no tiene og:image, mostramos el favicon o, si no tiene, la inicial."
+                  : "Este iconito va a aparecer si tu link no tiene imagen para compartir."}
               </p>
             ) : null}
           </div>
@@ -301,6 +304,19 @@ export function AnunciateClient() {
               className={FIELD}
             />
           </label>
+
+          {title.trim() && composedHref ? (
+            <div className="rounded-2xl border border-border bg-muted/40 p-3">
+              <p className="mb-2 font-mono text-[10px] tracking-[1.4px] text-muted-foreground">
+                ASÍ SE VE EN CONSULTAR
+              </p>
+              <AdCreativeCard
+                title={title.trim()}
+                tagline={tagline.trim() || null}
+                href={composedHref}
+              />
+            </div>
+          ) : null}
 
           <div className="space-y-2">
             <p className="font-mono text-[10px] tracking-[1.4px] text-muted-foreground">
@@ -371,19 +387,6 @@ export function AnunciateClient() {
               </p>
             ) : null}
           </div>
-
-          {title.trim() && composedHref ? (
-            <div className="rounded-2xl border border-border bg-muted/40 p-3">
-              <p className="mb-2 font-mono text-[10px] tracking-[1.4px] text-muted-foreground">
-                ASÍ SE VE EN CONSULTAR
-              </p>
-              <AdCreativeCard
-                title={title.trim()}
-                tagline={tagline.trim() || null}
-                href={composedHref}
-              />
-            </div>
-          ) : null}
 
           {error ? (
             <p className="text-[13px] text-error" role="alert">

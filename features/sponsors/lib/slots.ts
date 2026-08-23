@@ -3,8 +3,8 @@ export const AD_SLOT_IDS = ["consultar", "consultar-2"] as const;
 export type AdSlotId = (typeof AD_SLOT_IDS)[number];
 
 export const AD_SLOTS: { id: AdSlotId; label: string; blurb: string }[] = [
-  { id: "consultar", label: "Lugar 1", blurb: "El de arriba. Se ve primero." },
-  { id: "consultar-2", label: "Lugar 2", blurb: "Justo abajo. Misma plata, un toque menos visto." },
+  { id: "consultar", label: "Casillero A", blurb: "Se ordena por lo que se paga: el que más puso entre los dos se ve arriba." },
+  { id: "consultar-2", label: "Casillero B", blurb: "Mismo trato que el otro casillero: no importa cuál elegís, gana el que más paga." },
 ];
 
 export function isAdSlotId(value: string): value is AdSlotId {

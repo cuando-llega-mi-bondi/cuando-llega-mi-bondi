@@ -1,5 +1,9 @@
+"use client";
+
+import { useState } from "react";
 import { AdIcon } from "./AdIcon";
 import { IconExternalLink } from "@shared/icons/IconExternalLink";
+import { useOgImage } from "@features/sponsors/hooks/useOgImage";
 import { cn } from "@shared/utils";
 
 export function AdCreativeCard({
@@ -13,6 +17,10 @@ export function AdCreativeCard({
   href: string;
   className?: string;
 }) {
+  const ogImageUrl = useOgImage(href);
+  const [imageFailed, setImageFailed] = useState(false);
+  const showImage = Boolean(ogImageUrl) && !imageFailed;
+
   return (
     <a
       href={href}
@@ -20,22 +28,44 @@ export function AdCreativeCard({
       rel="noopener noreferrer sponsored"
       aria-label={`Conocer: ${title}`}
       className={cn(
-        "flex min-h-11 items-center gap-3 rounded-2xl border border-border bg-card px-3 py-3 transition-colors hover:border-secondary/40",
+        "relative flex min-h-12 items-center gap-3 overflow-hidden rounded-2xl border border-border bg-card px-3.5 py-4 transition-colors hover:border-secondary/40",
         className,
       )}
     >
-      <AdIcon href={href} title={title} />
-      <span className="min-w-0 flex-1">
-        <span className="block truncate text-[14px] font-bold text-foreground">{title}</span>
-        {tagline ? (
-          <span className="mt-0.5 block truncate text-[12px] leading-snug text-muted-foreground">
-            {tagline}
-          </span>
-        ) : null}
-      </span>
-      <span className="inline-flex shrink-0 items-center gap-1 whitespace-nowrap text-[12px] font-bold text-secondary">
-        Conocer
-        <IconExternalLink className="h-3.5 w-3.5" aria-hidden />
+      {showImage ? (
+        <>
+          {/* eslint-disable-next-line @next/next/no-img-element -- og:image externa, no next/image */}
+          <img
+            src={ogImageUrl ?? undefined}
+            alt=""
+            aria-hidden
+            className="absolute inset-y-0 left-0 h-full w-[48%] object-cover"
+            onError={() => setImageFailed(true)}
+          />
+          {/* atenúa capturas claras para que integren con el tema oscuro antes del degradado */}
+          <div aria-hidden className="absolute inset-y-0 left-0 w-[48%] bg-black/20" />
+          {/* mismo ancho que la imagen: llega a opacidad total justo en su borde recto,
+              así el recorte real nunca queda expuesto */}
+          <div
+            aria-hidden
+            className="absolute inset-y-0 left-0 w-[48%] bg-gradient-to-r from-transparent via-card/80 to-card"
+          />
+        </>
+      ) : null}
+      <span className={cn("relative flex min-w-0 flex-1 items-center gap-3", showImage && "pl-[36%]")}>
+        {!showImage ? <AdIcon href={href} title={title} /> : null}
+        <span className="min-w-0 flex-1">
+          <span className="line-clamp-2 min-h-10 text-[14px] font-bold leading-snug text-foreground">{title}</span>
+          {tagline ? (
+            <span className="mt-0.5 block truncate text-[12px] leading-snug text-muted-foreground">
+              {tagline}
+            </span>
+          ) : null}
+        </span>
+        <span className="inline-flex shrink-0 items-center gap-1 whitespace-nowrap text-[12px] font-bold text-secondary">
+          Conocer
+          <IconExternalLink className="h-3.5 w-3.5" aria-hidden />
+        </span>
       </span>
     </a>
   );
