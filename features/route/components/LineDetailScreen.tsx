@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect } from "react";
 import { ReviewsPanel } from "@features/reviews/components/ReviewsPanel";
 import { describeMgpError } from "@shared/api/errors";
 import { BottomNav } from "@shared/layout/BottomNav";
@@ -39,6 +40,13 @@ export function LineDetailScreen({
     onViewMap,
     onRetry,
 }: LineDetailScreenProps) {
+    // Si el buscador de la lista seguía enfocado, iOS/Android dejan el teclado
+    // abierto al entrar a la ficha. Cerrar ese foco: las reseñas se leen, no se escriben.
+    useEffect(() => {
+        const active = document.activeElement;
+        if (active instanceof HTMLElement) active.blur();
+    }, []);
+
     return (
         <div className="flex min-h-pwa-shell flex-col bg-background pb-nav lg:pl-60">
             <div className="relative h-56 shrink-0 overflow-hidden bg-secondary">

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Button } from "@shared/ui/Button";
 import { RatingStars } from "./RatingStars";
 import type { LineaReview } from "../types";
@@ -25,8 +25,27 @@ export function ReviewForm({ lineaNombre, initial, defaultDisplayName, onSubmit,
     const [displayName, setDisplayName] = useState(initial?.displayName ?? defaultDisplayName);
     const [submitting, setSubmitting] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const userChoseFieldRef = useRef(false);
 
     const canSubmit = rating > 0 && displayName.trim().length > 0 && !submitting;
+
+    // Al montar, iOS/Android a veces enfocan el primer input y abren el teclado.
+    useEffect(() => {
+        const blurIfUnwanted = () => {
+            if (userChoseFieldRef.current) return;
+            const active = document.activeElement;
+            if (active instanceof HTMLInputElement || active instanceof HTMLTextAreaElement) {
+                active.blur();
+            }
+        };
+        blurIfUnwanted();
+        const t = window.setTimeout(blurIfUnwanted, 100);
+        return () => window.clearTimeout(t);
+    }, []);
+
+    function markFieldChosen() {
+        userChoseFieldRef.current = true;
+    }
 
     async function handleSubmit() {
         if (!canSubmit) return;
@@ -58,6 +77,7 @@ export function ReviewForm({ lineaNombre, initial, defaultDisplayName, onSubmit,
                 type="text"
                 value={displayName}
                 onChange={(e) => setDisplayName(e.target.value)}
+                onPointerDown={markFieldChosen}
                 placeholder="Tu nombre"
                 maxLength={DISPLAY_NAME_MAX_LENGTH}
                 className="input w-full"
@@ -65,6 +85,7 @@ export function ReviewForm({ lineaNombre, initial, defaultDisplayName, onSubmit,
             <textarea
                 value={comment}
                 onChange={(e) => setComment(e.target.value)}
+                onPointerDown={markFieldChosen}
                 placeholder="Contá tu experiencia (opcional)"
                 maxLength={COMMENT_MAX_LENGTH}
                 rows={3}

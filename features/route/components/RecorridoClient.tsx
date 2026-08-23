@@ -162,11 +162,13 @@ export default function RecorridoClient({ initialLineCode }: { initialLineCode?:
       .finally(() => setLinesLoading(false));
   }, []);
 
-  // Auto-focus search when selector appears
+  // Desktop: enfocar el buscador al abrir la lista. En mobile el focus abre el
+  // teclado y tapa las líneas; el usuario lo abre cuando toca el campo.
   useEffect(() => {
-    if (step === "selector") {
-      setTimeout(() => searchRef.current?.focus(), 100);
-    }
+    if (step !== "selector") return;
+    if (!window.matchMedia("(min-width: 1024px)").matches) return;
+    const t = window.setTimeout(() => searchRef.current?.focus(), 100);
+    return () => window.clearTimeout(t);
   }, [step]);
 
   // ── Filtered lines ───────────────────────────────────────────────────────────
@@ -186,6 +188,7 @@ export default function RecorridoClient({ initialLineCode }: { initialLineCode?:
   // salta directo al mapa — lo usan los deep links con ?linea= que ya buscaban
   // el bondi en tiempo real y no quieren la parada intermedia de la ficha.
   async function selectLine(line: Linea, opts?: { directToMap?: boolean }) {
+    searchRef.current?.blur();
     // Cancel any in-flight request from a previous selectLine call
     selectAbortRef.current?.abort();
     const controller = new AbortController();
