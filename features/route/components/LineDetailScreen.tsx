@@ -1,14 +1,16 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { ReviewsPanel } from "@features/reviews/components/ReviewsPanel";
 import { describeMgpError } from "@shared/api/errors";
 import { BottomNav } from "@shared/layout/BottomNav";
 import { Button } from "@shared/ui/Button";
 import { Spinner } from "@shared/ui/Spinner";
+import { IconShare } from "@shared/icons/IconShare";
 import type { Linea } from "@shared/types";
-import type { RamalData } from "@features/route/types";
 import { lineaNumero } from "@features/route/lineaNumero";
+import { lineaToSlug } from "@/lib/server/lineaSlug";
+import { cn } from "@shared/utils";
 
 const IconBack = () => (
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -23,7 +25,6 @@ const IconMapPin = () => (
 
 interface LineDetailScreenProps {
     line: Linea;
-    ramales: RamalData[];
     loading: boolean;
     error: unknown;
     onBack: () => void;
@@ -33,7 +34,6 @@ interface LineDetailScreenProps {
 
 export function LineDetailScreen({
     line,
-    ramales,
     loading,
     error,
     onBack,
@@ -46,6 +46,32 @@ export function LineDetailScreen({
         const active = document.activeElement;
         if (active instanceof HTMLElement) active.blur();
     }, []);
+
+    const numero = lineaNumero(line);
+    const [shareStatus, setShareStatus] = useState<"idle" | "copied" | "shared">("idle");
+
+    const handleShare = useCallback(async () => {
+        const url = `${window.location.origin}/recorrido/${lineaToSlug(line.Descripcion)}`;
+        const text = `¿Viajaste en la línea ${numero}? Contá cómo te fue y ayudá a otros pasajeros en Bondi MDP.`;
+
+        if (navigator.share) {
+            try {
+                await navigator.share({ title: `Línea ${numero} — Bondi MDP`, text, url });
+                setShareStatus("shared");
+            } catch {
+                return; // el usuario canceló
+            }
+        } else {
+            try {
+                await navigator.clipboard.writeText(`${text} ${url}`);
+                setShareStatus("copied");
+            } catch {
+                window.prompt("Copiá este link:", url);
+                return;
+            }
+        }
+        setTimeout(() => setShareStatus("idle"), 2500);
+    }, [line.Descripcion, numero]);
 
     return (
         <div className="flex min-h-pwa-shell flex-col bg-background pb-nav lg:pl-60">
@@ -70,11 +96,13 @@ export function LineDetailScreen({
             <div className="flex-1 px-4 pb-8 pt-4 lg:px-8 lg:pt-6">
                 <div className="flex items-center gap-2.5">
                     <span className="shrink-0 rounded-full border border-secondary/45 bg-secondary/12 px-3 py-1 font-display text-lg font-semibold tracking-[-0.03em] text-secondary">
-                        {lineaNumero(line)}
+                        {numero}
                     </span>
-                    <h1 className="min-w-0 truncate font-sans text-lg font-semibold tracking-[-0.02em] text-foreground">
-                        {line.Descripcion}
-                    </h1>
+                    {line.Descripcion.trim() !== numero && (
+                        <h1 className="min-w-0 truncate font-sans text-lg font-semibold tracking-[-0.02em] text-foreground">
+                            {line.Descripcion}
+                        </h1>
+                    )}
                 </div>
 
                 {loading ? (
@@ -95,20 +123,6 @@ export function LineDetailScreen({
                             Reintentar
                         </button>
                     </div>
-                ) : ramales.length > 0 ? (
-                    <div className="-mx-4 mt-3 overflow-x-auto px-4 [scrollbar-width:none] lg:-mx-8 lg:px-8">
-                        <div className="flex w-max gap-2">
-                            {ramales.map((ramal) => (
-                                <span
-                                    key={ramal.key}
-                                    className="flex items-center gap-1.5 whitespace-nowrap rounded-full border border-border bg-muted px-3.5 py-[7px] font-sans text-[13px] font-medium tracking-[-0.01em] text-muted-foreground"
-                                >
-                                    <span className="h-2 w-2 shrink-0 rounded-full bg-muted-foreground/35" />
-                                    {ramal.label}
-                                </span>
-                            ))}
-                        </div>
-                    </div>
                 ) : null}
 
                 <Button variant="secondary" size="md" onClick={onViewMap} className="mt-4 w-full gap-2">
@@ -117,9 +131,29 @@ export function LineDetailScreen({
                 </Button>
 
                 <div className="mt-6">
-                    <p className="mb-2.5 font-sans text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
-                        Calificaciones
-                    </p>
+                    <div className="mb-2.5 flex items-center justify-between gap-2">
+                        <p className="font-sans text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+                            Calificaciones
+                        </p>
+                        <button
+                            type="button"
+                            onClick={handleShare}
+                            aria-label="Compartir línea e invitar a dejar una reseña"
+                            className={cn(
+                                "flex shrink-0 cursor-pointer items-center gap-1.5 rounded-full border px-3 py-1 font-sans text-[11px] font-medium tracking-[-0.01em] transition",
+                                shareStatus === "idle"
+                                    ? "border-border text-muted-foreground hover:border-secondary hover:text-foreground"
+                                    : "border-success/50 bg-success/10 text-success",
+                            )}
+                        >
+                            <IconShare className="h-3.5 w-3.5 shrink-0" />
+                            {shareStatus === "idle"
+                                ? "Compartir"
+                                : shareStatus === "copied"
+                                ? "¡Copiado!"
+                                : "¡Enviado!"}
+                        </button>
+                    </div>
                     <ReviewsPanel lineaCodigo={line.CodigoLineaParada} lineaNombre={line.Descripcion} />
                 </div>
             </div>

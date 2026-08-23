@@ -1,18 +1,19 @@
+import Link from "next/link";
 import type { Linea } from "@shared/types";
 import { lineaNumero } from "@features/route/lineaNumero";
+import { lineaToSlug } from "@/lib/server/lineaSlug";
 
 interface LineItemProps {
     line: Linea;
-    onSelect: (line: Linea) => void;
 }
 
-export function LineItem({ line, onSelect }: LineItemProps) {
+export function LineItem({ line }: LineItemProps) {
     const desc = line.Descripcion.trim();
     const numero = lineaNumero(line);
 
     return (
-        <button
-            onClick={() => onSelect(line)}
+        <Link
+            href={`/recorrido/${lineaToSlug(line.Descripcion)}`}
             title={desc}
             aria-label={`Línea ${numero} — ${desc} — ver reseñas y recorrido`}
             className="flex aspect-[3/4] w-full cursor-pointer flex-col overflow-hidden rounded-2xl border border-border shadow-sm transition hover:-translate-y-0.5 hover:shadow-md active:scale-[0.98]"
@@ -24,6 +25,6 @@ export function LineItem({ line, onSelect }: LineItemProps) {
                     {numero}
                 </span>
             </div>
-        </button>
+        </Link>
     );
 }

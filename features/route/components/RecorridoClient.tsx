@@ -494,7 +494,7 @@ export default function RecorridoClient({ initialLineCode }: { initialLineCode?:
                 <LineSkeletons />
               ) : (
                 filteredLines.map((line) => (
-                  <LineItem key={line.CodigoLineaParada} line={line} onSelect={selectLine} />
+                  <LineItem key={line.CodigoLineaParada} line={line} />
                 ))
               )}
             </div>
@@ -512,7 +512,6 @@ export default function RecorridoClient({ initialLineCode }: { initialLineCode?:
     return (
       <LineDetailScreen
         line={selectedLine}
-        ramales={ramales}
         loading={mapLoading}
         error={mapError}
         onBack={goBack}
