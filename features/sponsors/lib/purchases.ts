@@ -1,12 +1,22 @@
 import { createAdminClient } from "@/lib/server/supabaseAdmin";
-import { adSlotFloorArs, adSlotStepArs, minNextAmountArs } from "@features/sponsors/lib/pricing";
-import { AD_SLOTS, adSlotMeta, isAdSlotId, type AdSlotId } from "@features/sponsors/lib/slots";
+import {
+  AD_PODIUM_SIZE,
+  compareAdBids,
+  minToEnterArs,
+  minToLeadArs,
+} from "@features/sponsors/lib/board";
+import { adSlotFloorArs, adSlotStepArs } from "@features/sponsors/lib/pricing";
 import { supabase as publicSupabase } from "@shared/infra/supabase";
 
 export type AdPurchaseStatus = "pending" | "approved" | "rejected";
 
+/** Columnas del aviso que son públicas (el resto queda sin GRANT para anon). */
+const BOARD_COLUMNS = "id, title, href, tagline, amount_ars, created_at";
+
+/** Tope de lo que trae el historial de una: son pocos y no queremos paginar todavía. */
+const HISTORY_LIMIT = 30;
+
 export interface AdPurchaseInsert {
-  slot_id: AdSlotId;
   title: string;
   href: string;
   tagline: string | null;
@@ -18,86 +28,127 @@ export interface AdPurchaseInsert {
 
 export interface AdPurchase {
   id: string;
-  slot_id: AdSlotId;
   title: string;
   href: string;
   tagline: string | null;
   amount_ars: number;
   status: AdPurchaseStatus;
   went_live: boolean;
+  created_at: string;
   mercadopago_preference_id: string | null;
   mercadopago_payment_id: string | null;
   payer_email: string | null;
 }
 
-export interface AdSlotView {
-  id: AdSlotId;
-  label: string;
-  blurb: string;
-  occupied: boolean;
-  title: string | null;
-  href: string | null;
+export interface AdBoardEntry {
+  id: string;
+  title: string;
+  href: string;
   tagline: string | null;
   amountArs: number;
-  minNextArs: number;
+  since: string;
+}
+
+export interface AdBoardView {
+  /** Ya ordenado: el primero es el que más puso. Puede venir corto o vacío. */
+  podium: AdBoardEntry[];
+  podiumSize: number;
+  minToEnterArs: number;
+  minToLeadArs: number;
   stepArs: number;
   floorArs: number;
 }
 
-type SlotRow = {
-  id?: string | null;
+export interface AdHistoryView {
+  /** Del más reciente al más viejo, incluidos los que están al aire ahora. */
+  entries: AdBoardEntry[];
+  total: number;
+}
+
+type BoardRow = {
+  id: string;
   title: string | null;
   href: string | null;
   tagline: string | null;
   amount_ars: number | null;
+  created_at: string;
 };
 
-function toSlotView(id: AdSlotId, row: SlotRow | null): AdSlotView {
-  const meta = adSlotMeta(id);
-  const amountArs = Math.max(0, Math.trunc(Number(row?.amount_ars ?? 0)));
-  const occupied = Boolean(row?.href && row?.title);
+function toBoardEntry(row: BoardRow): AdBoardEntry | null {
+  if (!row.title || !row.href) return null;
   return {
-    id,
-    label: meta.label,
-    blurb: meta.blurb,
-    occupied,
-    title: occupied ? row?.title ?? null : null,
-    href: occupied ? row?.href ?? null : null,
-    tagline: occupied ? row?.tagline ?? null : null,
-    amountArs: occupied ? amountArs : 0,
-    minNextArs: minNextAmountArs(occupied ? amountArs : 0),
-    stepArs: adSlotStepArs(),
-    floorArs: adSlotFloorArs(),
+    id: row.id,
+    title: row.title,
+    href: row.href,
+    tagline: row.tagline,
+    amountArs: Math.max(0, Math.trunc(Number(row.amount_ars ?? 0))),
+    since: row.created_at,
   };
 }
 
-export async function getAdSlotsView(): Promise<AdSlotView[]> {
-  const { data, error } = await publicSupabase
-    .from("ad_slot")
-    .select("id, title, href, tagline, amount_ars")
-    .in("id", AD_SLOTS.map((slot) => slot.id));
-
-  if (error) {
-    console.error("ad_slot read failed:", error.message);
-    return AD_SLOTS.map((slot) => toSlotView(slot.id, null));
-  }
-
-  const byId = new Map((data ?? []).map((row) => [row.id, row]));
-  return AD_SLOTS.map((slot) => toSlotView(slot.id, byId.get(slot.id) ?? null));
+function emptyBoard(): AdBoardView {
+  const floorArs = adSlotFloorArs();
+  const stepArs = adSlotStepArs();
+  return {
+    podium: [],
+    podiumSize: AD_PODIUM_SIZE,
+    minToEnterArs: minToEnterArs([], floorArs, stepArs),
+    minToLeadArs: minToLeadArs([], floorArs, stepArs),
+    stepArs,
+    floorArs,
+  };
 }
 
-export async function getAdSlotView(slotId: AdSlotId): Promise<AdSlotView> {
+export async function getAdBoard(): Promise<AdBoardView> {
   const { data, error } = await publicSupabase
-    .from("ad_slot")
-    .select("id, title, href, tagline, amount_ars")
-    .eq("id", slotId)
-    .maybeSingle();
+    .from("ad_purchases")
+    .select(BOARD_COLUMNS)
+    .eq("status", "approved")
+    .order("amount_ars", { ascending: false })
+    .order("created_at", { ascending: true })
+    .limit(AD_PODIUM_SIZE);
 
   if (error) {
-    console.error("ad_slot read failed:", error.message);
-    return toSlotView(slotId, null);
+    console.error("ad board read failed:", error.message);
+    return emptyBoard();
   }
-  return toSlotView(slotId, data);
+
+  const floorArs = adSlotFloorArs();
+  const stepArs = adSlotStepArs();
+  const podium = ((data ?? []) as BoardRow[])
+    .map(toBoardEntry)
+    .filter((entry): entry is AdBoardEntry => entry !== null)
+    .sort(compareAdBids);
+  const amounts = podium.map((entry) => entry.amountArs);
+
+  return {
+    podium,
+    podiumSize: AD_PODIUM_SIZE,
+    minToEnterArs: minToEnterArs(amounts, floorArs, stepArs),
+    minToLeadArs: minToLeadArs(amounts, floorArs, stepArs),
+    stepArs,
+    floorArs,
+  };
+}
+
+export async function getAdHistory(): Promise<AdHistoryView> {
+  const { data, error, count } = await publicSupabase
+    .from("ad_purchases")
+    .select(BOARD_COLUMNS, { count: "exact" })
+    .eq("status", "approved")
+    .order("created_at", { ascending: false })
+    .limit(HISTORY_LIMIT);
+
+  if (error) {
+    console.error("ad history read failed:", error.message);
+    return { entries: [], total: 0 };
+  }
+
+  const entries = ((data ?? []) as BoardRow[])
+    .map(toBoardEntry)
+    .filter((entry): entry is AdBoardEntry => entry !== null);
+
+  return { entries, total: count ?? entries.length };
 }
 
 export async function createAdPurchase(data: AdPurchaseInsert): Promise<{ id: string }> {
@@ -141,13 +192,12 @@ export async function getAdPurchase(id: string): Promise<AdPurchase | null> {
   const { data, error } = await supabase
     .from("ad_purchases")
     .select(
-      "id, slot_id, title, href, tagline, amount_ars, status, went_live, mercadopago_preference_id, mercadopago_payment_id, payer_email",
+      "id, title, href, tagline, amount_ars, status, went_live, created_at, mercadopago_preference_id, mercadopago_payment_id, payer_email",
     )
     .eq("id", id)
     .maybeSingle();
 
   if (error || !data) return null;
-  if (!isAdSlotId(String(data.slot_id))) return null;
   return data as AdPurchase;
 }
 
@@ -173,30 +223,33 @@ export async function updateAdPurchaseStatusAtomically(
   return (updated?.length ?? 0) > 0;
 }
 
-/** Takes that slot only if this bid is strictly higher than the current amount. */
-export async function tryClaimAdSlot(purchase: AdPurchase): Promise<boolean> {
+/**
+ * Cuántos pagos aprobados le ganan a este: 0 es el puesto 1. Se calcula contra
+ * la tabla en vez de guardarse, así el puesto no queda viejo si aparece un pago
+ * más alto (o si le damos de baja a alguien a mano).
+ */
+export async function getAdPurchaseRank(purchase: AdPurchase): Promise<number> {
   const supabase = createAdminClient();
-  const { data, error } = await supabase
-    .from("ad_slot")
-    .update({
-      purchase_id: purchase.id,
-      title: purchase.title,
-      href: purchase.href,
-      tagline: purchase.tagline,
-      amount_ars: purchase.amount_ars,
-      updated_at: new Date().toISOString(),
-    })
-    .eq("id", purchase.slot_id)
-    .lt("amount_ars", purchase.amount_ars)
-    .select("id");
+  const { count, error } = await supabase
+    .from("ad_purchases")
+    .select("id", { count: "exact", head: true })
+    .eq("status", "approved")
+    .neq("id", purchase.id)
+    .or(
+      `amount_ars.gt.${purchase.amount_ars},and(amount_ars.eq.${purchase.amount_ars},created_at.lt."${purchase.created_at}")`,
+    );
 
   if (error) {
-    console.error("Error claiming ad slot:", error);
-    throw new Error("Failed to claim ad slot");
+    console.error("Error ranking ad purchase:", error);
+    throw new Error("Failed to rank purchase");
   }
+  return count ?? 0;
+}
 
-  const live = (data?.length ?? 0) > 0;
-  if (live) {
+/** Marca el pago recién aprobado si entró al podio. Devuelve si salió al aire. */
+export async function settleApprovedPurchase(purchase: AdPurchase): Promise<boolean> {
+  const live = (await getAdPurchaseRank(purchase)) < AD_PODIUM_SIZE;
+  if (live && !purchase.went_live) {
     await updateAdPurchase(purchase.id, { went_live: true, updated_at: new Date().toISOString() });
   }
   return live;

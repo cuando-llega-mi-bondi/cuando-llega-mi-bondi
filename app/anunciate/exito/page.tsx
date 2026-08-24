@@ -14,6 +14,7 @@ function PaymentResult() {
   const purchaseId = useSearchParams().get("purchase");
   const [status, setStatus] = useState<Status>(purchaseId ? "loading" : "error");
   const [wentLive, setWentLive] = useState(false);
+  const [rank, setRank] = useState<number | null>(null);
 
   const verify = useCallback(async (id: string) => {
     try {
@@ -22,8 +23,9 @@ function PaymentResult() {
         setStatus("error");
         return;
       }
-      const data = (await res.json()) as { status: string; wentLive?: boolean };
+      const data = (await res.json()) as { status: string; wentLive?: boolean; rank?: number | null };
       setWentLive(Boolean(data.wentLive));
+      setRank(typeof data.rank === "number" ? data.rank : null);
       if (data.status === "approved") setStatus("approved");
       else if (data.status === "pending") setStatus("pending");
       else setStatus("rejected");
@@ -53,9 +55,12 @@ function PaymentResult() {
         ) : null}
         {status === "approved" && wentLive ? (
           <div className="space-y-3">
-            <p className="text-[18px] font-bold">Ya estás en Bondi MDP.</p>
+            <p className="text-[18px] font-bold">
+              Ya estás en Bondi MDP{rank ? `, en el puesto ${rank}` : ""}.
+            </p>
             <p className="text-[15px] text-muted-foreground">
-              Tu link aparece en Consultar hasta que alguien ponga más.
+              Tu link aparece en Consultar mientras sigas entre los dos que más
+              pusieron.
             </p>
             <Link href="/consultar" className="btn-pill btn-primary inline-flex min-h-11 items-center px-5 font-bold">
               Ver el lugar
@@ -66,7 +71,8 @@ function PaymentResult() {
           <div className="space-y-3">
             <p className="text-[18px] font-bold">El pago salió bien, pero el lugar ya no estaba.</p>
             <p className="text-[15px] text-muted-foreground">
-              Alguien puso más mientras estabas en MercadoPago. Escribinos y vemos el reintegro.
+              Mientras estabas en MercadoPago pusieron más y quedaste fuera del
+              ranking. Escribinos y vemos el reintegro.
             </p>
             <Link href="/anunciate" className="btn-pill btn-secondary inline-flex min-h-11 items-center px-5 font-bold">
               Intentar de nuevo

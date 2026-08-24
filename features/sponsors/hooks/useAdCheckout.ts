@@ -9,7 +9,6 @@ export function useAdCheckout() {
 
   const submitCheckout = useCallback(
     async (payload: {
-      slotId: string;
       title: string;
       href: string;
       tagline?: string;

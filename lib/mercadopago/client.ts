@@ -19,7 +19,6 @@ interface CreateAdPreferenceParams {
   title: string;
   amountArs: number;
   purchaseId: string;
-  slotLabel?: string;
   buyerEmail?: string;
 }
 
@@ -27,18 +26,16 @@ export async function createAdPreference({
   title,
   amountArs,
   purchaseId,
-  slotLabel,
   buyerEmail,
 }: CreateAdPreferenceParams) {
   const baseUrl = validateBaseUrl(process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000");
-  const place = slotLabel ?? "Lugar";
 
   return preference.create({
     body: {
       items: [
         {
           id: "consultar-ad-slot",
-          title: `${place} en Bondi MDP: ${title}`.slice(0, 250),
+          title: `Publicidad en Bondi MDP: ${title}`.slice(0, 250),
           quantity: 1,
           unit_price: amountArs,
           currency_id: "ARS",

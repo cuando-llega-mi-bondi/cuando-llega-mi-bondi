@@ -4,6 +4,8 @@ import { BottomNav } from "@shared/layout/BottomNav";
 import { PageShell } from "@shared/layout/PageShell";
 import { Footer } from "@shared/layout/Footer";
 import { BrandLogo } from "@shared/ui/BrandLogo";
+import { AD_PODIUM_SIZE } from "@features/sponsors/lib/board";
+import { adSlotFloorArs, adSlotStepArs, formatArs } from "@features/sponsors/lib/pricing";
 
 export const metadata: Metadata = {
     title: {
@@ -16,7 +18,7 @@ export const metadata: Metadata = {
     },
 };
 
-const LAST_UPDATED = "22 de agosto de 2026";
+const LAST_UPDATED = "24 de agosto de 2026";
 
 function Section({
     title,
@@ -55,9 +57,10 @@ export default function TerminosPage() {
                         Bondi MDP es una app para ver cuándo llega el colectivo en Mar del
                         Plata. Los «lugares» son avisos rotulados como publicidad en
                         Consultar — abajo de elegir la línea, sobre todo en el celular.
-                        Hay dos recuadros, uno arriba del otro. Cada uno se subasta
-                        aparte: el que más pone en ese recuadro, se queda. No hay otro
-                        criterio: ni calidad, ni antigüedad, ni nada. Es plata y listo.
+                        Hay dos recuadros, uno arriba del otro, y no se compran por
+                        separado: es un solo ranking. Se publican los dos avisos que más
+                        pagaron, y el que más puso va arriba. No hay otro criterio: ni
+                        calidad, ni antigüedad, ni nada. Es plata y listo.
                     </p>
                     <p>
                         Bondi MDP es un proyecto independiente, de código abierto. No es
@@ -80,8 +83,8 @@ export default function TerminosPage() {
                         Bondi MDP no se hace cargo de ningún resultado. Ni de visitas, ni
                         de clics, ni de ventas, ni de seguidores, ni de que la app se haga
                         más conocida, ni de lo que pase después con lo que publicaste.
-                        Comprás que tu link se muestre en ese recuadro mientras nadie pague
-                        más, y nada más que eso.
+                        Comprás que tu link se muestre mientras sigas entre los dos que
+                        más pagaron, y nada más que eso.
                     </p>
                     <p>
                         Puede entrar mucha gente a Consultar o puede no entrar nadie a
@@ -91,9 +94,10 @@ export default function TerminosPage() {
 
                 <Section title="Cómo funciona">
                     <ul className="list-disc space-y-2 pl-5">
-                        <li>Hay dos recuadros. Cada uno se compra aparte.</li>
-                        <li>Un recuadro vacío sale $1.000.</li>
-                        <li>Para sacar a alguien de ese recuadro tenés que poner al menos $1.000 más que esa persona.</li>
+                        <li>Hay {AD_PODIUM_SIZE} lugares y un solo ranking: se publican los {AD_PODIUM_SIZE} que más pagaron.</li>
+                        <li>Mientras sobre un lugar, publicar sale {formatArs(adSlotFloorArs())}.</li>
+                        <li>Con los {AD_PODIUM_SIZE} lugares ocupados tenés que poner al menos {formatArs(adSlotStepArs())} más que el último para entrar, y {formatArs(adSlotStepArs())} más que el primero para quedar arriba.</li>
+                        <li>Cuánto pagó cada aviso es público: queda en el historial de Anunciate, con el nombre y el link que pusiste.</li>
                         <li>Tu aviso depende solo de cuánto pusiste. Te pueden sacar un segundo después de pagar y no hay devolución por eso: es el juego.</li>
                         <li>No hay tiempo mínimo ni lugar asegurado.</li>
                     </ul>
@@ -175,7 +179,7 @@ export default function TerminosPage() {
                 <Section title="Tus datos">
                     <p>
                         Guardamos lo mínimo: lo que escribiste en el aviso —que ya es
-                        público—, cuánto pagaste, cuándo, que aceptaste estos términos, y
+                        público, junto con cuánto pagaste y cuándo—, que aceptaste estos términos, y
                         el identificador que nos devuelve Mercado Pago para reconocer tu
                         pago.
                     </p>

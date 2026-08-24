@@ -5,7 +5,7 @@ import { AnunciateClient } from "@features/sponsors/components/AnunciateClient";
 export const metadata: Metadata = {
   title: "Anunciate",
   description:
-    "Comprá un lugar publicitario en Bondi MDP. Hay dos recuadros en Consultar; cada uno se subasta aparte. No hay garantía de visitas ni ventas.",
+    "Comprá un lugar publicitario en Bondi MDP. Se publican los dos que más pagaron en Consultar. No hay garantía de visitas ni ventas.",
   alternates: { canonical: "/anunciate" },
 };
 

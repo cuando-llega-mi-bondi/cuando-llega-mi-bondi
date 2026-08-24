@@ -7,19 +7,14 @@ function readPositiveInt(raw: string | undefined, fallback: number): number {
   return n;
 }
 
+/** Lo mínimo que sale publicar cuando hay un puesto libre. */
 export function adSlotFloorArs(): number {
   return readPositiveInt(process.env.AD_SLOT_FLOOR_ARS, DEFAULT_FLOOR_ARS);
 }
 
+/** Cuánto hay que sumarle a alguien para pasarlo en el ranking. */
 export function adSlotStepArs(): number {
   return readPositiveInt(process.env.AD_SLOT_STEP_ARS, DEFAULT_STEP_ARS);
-}
-
-/** Precio mínimo para sacar al ocupante actual. Si el lugar está libre, es el piso. */
-export function minNextAmountArs(currentAmountArs: number): number {
-  const current = Number.isFinite(currentAmountArs) ? Math.max(0, Math.trunc(currentAmountArs)) : 0;
-  if (current <= 0) return adSlotFloorArs();
-  return current + adSlotStepArs();
 }
 
 export function formatArs(amount: number): string {

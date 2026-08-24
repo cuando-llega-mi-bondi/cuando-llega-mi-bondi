@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState, type ReactNode } from "react";
+import { useMemo, useState, type ReactNode } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import useSWR from "swr";
@@ -8,9 +8,9 @@ import { IconIg } from "@shared/icons/IconIg";
 import { IconXBrand } from "@shared/icons/IconXBrand";
 import { IconExternalLink } from "@shared/icons/IconExternalLink";
 import { IconYoutube } from "@shared/icons/IconYoutube";
-import type { AdSlotView } from "@features/sponsors/lib/purchases";
+import type { AdBoardView } from "@features/sponsors/lib/purchases";
 import { formatArs } from "@features/sponsors/lib/pricing";
-import { AD_SLOTS, isAdSlotId, type AdSlotId } from "@features/sponsors/lib/slots";
+import { AD_PODIUM_SIZE } from "@features/sponsors/lib/board";
 import {
   type AdPlatform,
   detectAdPlatform,
@@ -18,6 +18,7 @@ import {
 } from "@features/sponsors/lib/destination";
 import { useAdCheckout } from "@features/sponsors/hooks/useAdCheckout";
 import { AdCreativeCard } from "./AdCreativeCard";
+import { AdHistory } from "./AdHistory";
 import { AdIcon } from "./AdIcon";
 import { Footer } from "@shared/layout/Footer";
 import { Header } from "@shared/layout/Header";
@@ -53,23 +54,20 @@ function prefixFor(platform: AdPlatform): string | null {
   return null;
 }
 
-async function fetchSlots(url: string): Promise<{ slots: AdSlotView[] }> {
+async function fetchBoard(url: string): Promise<AdBoardView> {
   const res = await fetch(url, { cache: "no-store" });
-  if (!res.ok) throw new Error("No se pudo cargar el lugar");
-  return res.json() as Promise<{ slots: AdSlotView[] }>;
+  if (!res.ok) throw new Error("No se pudo cargar el ranking");
+  return res.json() as Promise<AdBoardView>;
 }
 
 export function AnunciateClient() {
   const params = useSearchParams();
-  const requested = params.get("slot");
-  const { data } = useSWR("/api/ads/slot", fetchSlots, {
+  const wantsFirst = params.get("puesto") === "1";
+  const { data: board } = useSWR("/api/ads/board", fetchBoard, {
     revalidateOnFocus: true,
   });
   const { submitCheckout, isSubmitting, error } = useAdCheckout();
 
-  const [slotId, setSlotId] = useState<AdSlotId>(
-    requested && isAdSlotId(requested) ? requested : "consultar",
-  );
   const [title, setTitle] = useState("");
   const [tagline, setTagline] = useState("");
   const [platform, setPlatform] = useState<AdPlatform>("instagram");
@@ -79,29 +77,24 @@ export function AnunciateClient() {
   const [amountFocused, setAmountFocused] = useState(false);
   const [acceptedTerms, setAcceptedTerms] = useState(false);
 
-  useEffect(() => {
-    if (requested && isAdSlotId(requested)) setSlotId(requested);
-  }, [requested]);
+  const podium = useMemo(() => board?.podium ?? [], [board]);
+  const min = board?.minToEnterArs ?? 1_000;
+  const lead = board?.minToLeadArs ?? 1_000;
+  const step = board?.stepArs ?? 1_000;
 
-  const slots = data?.slots ?? [];
-  const slot = slots.find((item) => item.id === slotId) ?? slots[0];
-
-  useEffect(() => {
-    if (!slot) return;
-    setAmount((current) => {
-      if (current == null || current < slot.minNextArs) return slot.minNextArs;
-      return current;
-    });
-  }, [slot]);
-
-  const min = slot?.minNextArs ?? 1_000;
-  const step = slot?.stepArs ?? 1_000;
-  const liveAmount = amount ?? min;
+  // El monto arranca en el mínimo (o en lo que sale quedar primero si vino de
+  // ese link) y se recalcula solo si el ranking se mueve mientras completás:
+  // derivarlo evita tener que pisar el estado desde un efecto.
+  const liveAmount = Math.max(amount ?? (wantsFirst ? lead : min), min);
   const draftNumber = Number(digitsOnly(amountDraft));
   const amountValid =
     liveAmount >= min &&
     liveAmount <= MAX_AMOUNT_ARS &&
     !(amountFocused && (!amountDraft || !Number.isFinite(draftNumber) || draftNumber < min));
+
+  // Empatar no alcanza: a igual monto gana el que pagó primero, igual que en el
+  // ranking real.
+  const projectedRank = podium.filter((entry) => entry.amountArs >= liveAmount).length + 1;
 
   function commitAmount(raw: string): number {
     const parsed = Number(digitsOnly(raw));
@@ -113,6 +106,12 @@ export function AnunciateClient() {
 
   function bumpAmount(delta: number) {
     const next = clampAmount(liveAmount + delta, min);
+    setAmount(next);
+    setAmountDraft(String(next));
+  }
+
+  function pickAmount(raw: number) {
+    const next = clampAmount(raw, min);
     setAmount(next);
     setAmountDraft(String(next));
   }
@@ -130,7 +129,7 @@ export function AnunciateClient() {
         <PageHeader
           title="Comprá"
           highlight="un lugar"
-          subtitle="Dos recuadros en Consultar. Cada uno se subasta aparte."
+          subtitle="Dos lugares en Consultar. Los ganan los dos que más pagaron."
         />
 
         <section className="rounded-2xl border border-border bg-card p-4">
@@ -139,71 +138,99 @@ export function AnunciateClient() {
           </p>
           <p className="mt-2 text-[16px] font-bold">En Consultar, en el celular</p>
           <p className="mt-1 text-[13px] leading-relaxed text-muted-foreground">
-            Abajo de «elegí la línea», dos recuadros. Se ordenan solos por lo
-            que se paga: el que puso más plata se ve arriba, sin importar cuál
-            de los dos casilleros compraste. Que esté publicado no quiere
-            decir que lo vayan a tocar.
+            Abajo de «elegí la línea» hay dos recuadros, y no se eligen: es un solo
+            ranking por plata. El que más puso va primero, el segundo abajo, y del
+            tercero para atrás no se ve. Que esté publicado no quiere decir que lo
+            vayan a tocar.
           </p>
         </section>
 
         <section className="space-y-2">
           <p className="font-mono text-[10px] tracking-[1.4px] text-muted-foreground">
-            QUÉ CASILLERO DESAFIÁS
+            CÓMO ESTÁ AHORA
           </p>
-          <div className="grid grid-cols-2 gap-2">
-            {AD_SLOTS.map((item) => {
-              const live = slots.find((s) => s.id === item.id);
-              const active = slotId === item.id;
+          <ol className="space-y-2">
+            {Array.from({ length: AD_PODIUM_SIZE }, (_, index) => {
+              const entry = podium[index];
+              const rank = index + 1;
               return (
-                <button
-                  key={item.id}
-                  type="button"
-                  onClick={() => {
-                    setSlotId(item.id);
-                    if (live) setAmount(live.minNextArs);
-                  }}
-                  className={cn(
-                    "flex min-h-12 flex-col items-start rounded-2xl border px-3 py-3 text-left transition-colors",
-                    active
-                      ? "border-secondary bg-secondary/15 text-foreground"
-                      : "border-border bg-card text-muted-foreground hover:border-secondary/40",
-                  )}
+                <li
+                  key={entry?.id ?? `libre-${rank}`}
+                  className="flex items-center gap-3 rounded-2xl border border-border bg-card px-3.5 py-3"
                 >
-                  <span className="text-[13px] font-bold text-foreground">{item.label}</span>
-                  <span className="mt-0.5 text-[11px] leading-snug">{item.blurb}</span>
-                  <span className="mt-1 text-[11px] font-semibold text-secondary">
-                    Desde {formatArs(live?.minNextArs ?? 1_000)}
+                  <span
+                    aria-hidden
+                    className={cn(
+                      "flex h-6 w-6 shrink-0 items-center justify-center rounded-full font-mono text-[12px] font-black",
+                      rank === 1 ? "bg-amarillo text-background" : "bg-muted text-muted-foreground",
+                    )}
+                  >
+                    {rank}
                   </span>
-                </button>
+                  {entry ? (
+                    <>
+                      <AdIcon href={entry.href} title={entry.title} size="sm" />
+                      <span className="line-clamp-1 min-w-0 flex-1 text-[14px] font-bold text-foreground">
+                        {entry.title}
+                      </span>
+                      <span className="shrink-0 text-[13px] font-black tabular-nums text-amarillo">
+                        {formatArs(entry.amountArs)}
+                      </span>
+                    </>
+                  ) : (
+                    <span className="flex-1 text-[14px] text-muted-foreground">
+                      Libre — sale {formatArs(board?.floorArs ?? 1_000)}
+                    </span>
+                  )}
+                </li>
               );
             })}
+          </ol>
+          <div className="grid grid-cols-2 gap-2">
+            <button
+              type="button"
+              onClick={() => pickAmount(min)}
+              className={cn(
+                "flex min-h-12 flex-col items-start rounded-2xl border px-3 py-2.5 text-left transition-colors",
+                liveAmount < lead
+                  ? "border-secondary bg-secondary/15"
+                  : "border-border bg-card hover:border-secondary/40",
+              )}
+            >
+              <span className="text-[12px] font-bold text-foreground">Entrar al ranking</span>
+              <span className="mt-0.5 text-[13px] font-black tabular-nums text-secondary">
+                {formatArs(min)}
+              </span>
+            </button>
+            <button
+              type="button"
+              onClick={() => pickAmount(lead)}
+              className={cn(
+                "flex min-h-12 flex-col items-start rounded-2xl border px-3 py-2.5 text-left transition-colors",
+                liveAmount >= lead
+                  ? "border-amarillo bg-amarillo/10"
+                  : "border-border bg-card hover:border-secondary/40",
+              )}
+            >
+              <span className="text-[12px] font-bold text-foreground">Quedar primero</span>
+              <span className="mt-0.5 text-[13px] font-black tabular-nums text-amarillo">
+                {formatArs(lead)}
+              </span>
+            </button>
           </div>
-          {slot?.occupied && slot.title && slot.href ? (
-            <div className="space-y-1.5 pt-1">
-              <p className="text-[12px] text-muted-foreground">Ahora en {slot.label}:</p>
-              <AdCreativeCard title={slot.title} tagline={slot.tagline} href={slot.href} />
-              <p className="text-[13px] text-muted-foreground">
-                {slot.amountArs > 0
-                  ? `Pagó ${formatArs(slot.amountArs)}. Para sacarlo: ${formatArs(slot.minNextArs)}.`
-                  : `El lugar sale ${formatArs(slot.minNextArs)}.`}
-              </p>
-            </div>
-          ) : (
-            <p className="text-[13px] text-muted-foreground">
-              {slot?.label ?? "Este lugar"} está libre. El primero en pagar{" "}
-              {formatArs(min)} se queda.
-            </p>
-          )}
+          <p className="text-[13px] text-muted-foreground">
+            Te pueden pasar en cualquier momento: si dos ponen más que vos, salís
+            del aire.
+          </p>
         </section>
 
         <form
           className="space-y-4"
           onSubmit={(e) => {
             e.preventDefault();
-            if (!acceptedTerms || !composedHref || !slot) return;
+            if (!acceptedTerms || !composedHref || !board) return;
             const amountArs = commitAmount(amountFocused ? amountDraft : String(liveAmount));
             void submitCheckout({
-              slotId: slot.id,
               title: title.trim(),
               href: composedHref,
               tagline: tagline.trim() || undefined,
@@ -379,7 +406,9 @@ export function AnunciateClient() {
               </button>
             </div>
             <p className="text-center text-[12px] text-muted-foreground">
-              Mínimo {formatArs(min)}. Escribí el número si querés poner más de una.
+              {amountValid
+                ? `Con esto quedás en el puesto ${projectedRank}. Mínimo ${formatArs(min)}.`
+                : `Mínimo ${formatArs(min)}. Escribí el número si querés poner más.`}
             </p>
             {amountFocused && amountDraft && draftNumber > 0 && draftNumber < min ? (
               <p className="text-center text-[12px] text-error" role="status">
@@ -400,8 +429,8 @@ export function AnunciateClient() {
             </p>
             <p className="mt-1 text-[13px] leading-relaxed text-muted-foreground">
               Pagás para que se publique tu link, rotulado como publicidad. No
-              hay visitas mínimas, clics, clientes ni ventas aseguradas. Ese lugar
-              es tuyo hasta que alguien ponga más en el mismo recuadro. Bondi MDP no
+              hay visitas mínimas, clics, clientes ni ventas aseguradas. El lugar
+              es tuyo mientras sigas entre los dos que más pusieron. Bondi MDP no
               revisa ni recomienda lo que aparezca.
             </p>
           </section>
@@ -427,7 +456,7 @@ export function AnunciateClient() {
           <button
             type="submit"
             disabled={
-              isSubmitting || !title.trim() || !composedHref || !acceptedTerms || !amountValid || !slot
+              isSubmitting || !title.trim() || !composedHref || !acceptedTerms || !amountValid || !board
             }
             className={cn(
               "btn-pill btn-primary inline-flex w-full min-h-12 items-center justify-center px-4 text-[15px] font-bold",
@@ -435,12 +464,14 @@ export function AnunciateClient() {
           >
             {isSubmitting
               ? "Llevándote a MercadoPago…"
-              : `Llévate ${slot?.label ?? "el lugar"} por ${formatArs(liveAmount)}`}
+              : `Quedate el puesto ${projectedRank} por ${formatArs(liveAmount)}`}
           </button>
           <p className="text-center text-[12px] text-muted-foreground">
             Pago seguro a través de MercadoPago.
           </p>
         </form>
+
+        <AdHistory liveIds={podium.map((entry) => entry.id)} />
 
         <p className="text-[12px] leading-relaxed text-muted-foreground">
           Al pagar aceptás los{" "}

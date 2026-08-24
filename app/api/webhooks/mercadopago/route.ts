@@ -2,7 +2,7 @@ import { createHmac, timingSafeEqual } from "crypto";
 import { NextResponse } from "next/server";
 import {
   getAdPurchase,
-  tryClaimAdSlot,
+  settleApprovedPurchase,
   updateAdPurchaseStatusAtomically,
 } from "@features/sponsors/lib/purchases";
 import { getPayment } from "@/lib/mercadopago/client";
@@ -97,7 +97,7 @@ export async function POST(request: Request) {
 
     if (updated && status === "approved") {
       const purchase = await getAdPurchase(payment.external_reference);
-      if (purchase) await tryClaimAdSlot(purchase);
+      if (purchase) await settleApprovedPurchase(purchase);
     }
 
     return NextResponse.json({ received: true });

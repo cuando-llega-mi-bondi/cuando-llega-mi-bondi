@@ -2,17 +2,11 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { parseAdHref } from "@features/sponsors/lib/href";
 import { formatArs } from "@features/sponsors/lib/pricing";
-import {
-  createAdPurchase,
-  getAdSlotView,
-  updateAdPurchase,
-} from "@features/sponsors/lib/purchases";
-import { isAdSlotId } from "@features/sponsors/lib/slots";
+import { createAdPurchase, getAdBoard, updateAdPurchase } from "@features/sponsors/lib/purchases";
 import { createAdPreference } from "@/lib/mercadopago/client";
 import { isAdCheckoutConfigured } from "@/lib/server/supabaseAdmin";
 
 const checkoutSchema = z.object({
-  slotId: z.string().min(1).max(64),
   title: z.string().trim().min(2).max(80),
   href: z.string().trim().min(4).max(2048),
   tagline: z.string().trim().max(140).optional(),
@@ -57,16 +51,11 @@ export async function POST(request: Request) {
       );
     }
 
-    if (!isAdSlotId(validation.data.slotId)) {
-      return NextResponse.json({ error: "Ese lugar no existe" }, { status: 400 });
-    }
-
-    const slotId = validation.data.slotId;
-    const slot = await getAdSlotView(slotId);
+    const board = await getAdBoard();
     const { title, tagline, amountArs, email } = validation.data;
-    if (amountArs < slot.minNextArs) {
+    if (amountArs < board.minToEnterArs) {
       return NextResponse.json(
-        { error: `Tenés que poner al menos ${formatArs(slot.minNextArs)}` },
+        { error: `Tenés que poner al menos ${formatArs(board.minToEnterArs)}` },
         { status: 409 },
       );
     }
@@ -75,7 +64,6 @@ export async function POST(request: Request) {
     }
 
     const purchase = await createAdPurchase({
-      slot_id: slotId,
       title,
       href,
       tagline: tagline?.trim() ? tagline.trim() : null,
@@ -89,7 +77,6 @@ export async function POST(request: Request) {
       title,
       amountArs,
       purchaseId: purchase.id,
-      slotLabel: slot.label,
       buyerEmail: email,
     });
 

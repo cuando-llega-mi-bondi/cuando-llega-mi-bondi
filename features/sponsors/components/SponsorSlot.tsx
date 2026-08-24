@@ -1,35 +1,30 @@
 "use client";
 
-import type { AdSlotView } from "@features/sponsors/lib/purchases";
-import { AD_SLOTS, type AdSlotId } from "@features/sponsors/lib/slots";
+import type { AdBoardEntry, AdBoardView } from "@features/sponsors/lib/purchases";
+import { AD_PODIUM_SIZE } from "@features/sponsors/lib/board";
 import { formatArs } from "@features/sponsors/lib/pricing";
 import { AdCreativeCard } from "./AdCreativeCard";
 import { cn } from "@shared/utils";
 import Link from "next/link";
 import useSWR from "swr";
 
-type SlotsPayload = { slots: AdSlotView[] };
+const POSITIONS = Array.from({ length: AD_PODIUM_SIZE }, (_, i) => i + 1);
 
-function emptySlots(): AdSlotView[] {
-  return AD_SLOTS.map((slot) => ({
-    id: slot.id,
-    label: slot.label,
-    blurb: slot.blurb,
-    occupied: false,
-    title: null,
-    href: null,
-    tagline: null,
-    amountArs: 0,
-    minNextArs: 1_000,
+function emptyBoard(): AdBoardView {
+  return {
+    podium: [],
+    podiumSize: AD_PODIUM_SIZE,
+    minToEnterArs: 1_000,
+    minToLeadArs: 1_000,
     stepArs: 1_000,
     floorArs: 1_000,
-  }));
+  };
 }
 
-async function fetchSlots(url: string): Promise<SlotsPayload> {
+async function fetchBoard(url: string): Promise<AdBoardView> {
   const res = await fetch(url, { cache: "no-store" });
-  if (!res.ok) throw new Error("slot");
-  return res.json() as Promise<SlotsPayload>;
+  if (!res.ok) throw new Error("board");
+  return res.json() as Promise<AdBoardView>;
 }
 
 function RankBadge({ top }: { top: boolean }) {
@@ -48,8 +43,15 @@ function RankBadge({ top }: { top: boolean }) {
   );
 }
 
-function SlotCard({ slot, rank }: { slot: AdSlotView; rank: 1 | 2 }) {
-  const href = `/anunciate?slot=${slot.id}` as const;
+function PositionCard({
+  entry,
+  rank,
+  priceArs,
+}: {
+  entry: AdBoardEntry | null;
+  rank: number;
+  priceArs: number;
+}) {
   const top = rank === 1;
 
   const eyebrow = (
@@ -61,25 +63,34 @@ function SlotCard({ slot, rank }: { slot: AdSlotView; rank: 1 | 2 }) {
     </span>
   );
 
-  if (slot.occupied && slot.href && slot.title) {
+  const frame = cn(
+    "space-y-2",
+    top &&
+      "rounded-2xl bg-gradient-to-br from-amarillo/15 to-transparent p-2.5 shadow-[0_0_20px_-6px_rgba(249,205,74,0.45)] ring-1 ring-amarillo/30",
+  );
+
+  if (entry) {
     return (
-      <div className={cn("space-y-2", top && "rounded-2xl bg-gradient-to-br from-amarillo/15 to-transparent p-2.5 shadow-[0_0_20px_-6px_rgba(249,205,74,0.45)] ring-1 ring-amarillo/30")}>
+      <div className={frame}>
         <div className="flex items-center justify-between gap-2">
           {eyebrow}
-          <Link href={href} className="text-[11px] font-medium text-secondary hover:text-foreground">
-            Reemplazalo desde {formatArs(slot.minNextArs)}
+          <Link
+            href={top ? "/anunciate?puesto=1" : "/anunciate"}
+            className="text-[11px] font-medium text-secondary hover:text-foreground"
+          >
+            {top ? "Pasalo" : "Reemplazalo"} desde {formatArs(priceArs)}
           </Link>
         </div>
-        <AdCreativeCard title={slot.title} tagline={slot.tagline} href={slot.href} />
+        <AdCreativeCard title={entry.title} tagline={entry.tagline} href={entry.href} />
       </div>
     );
   }
 
   return (
-    <div className={cn("space-y-2", top && "rounded-2xl bg-gradient-to-br from-amarillo/15 to-transparent p-2.5 shadow-[0_0_20px_-6px_rgba(249,205,74,0.45)] ring-1 ring-amarillo/30")}>
+    <div className={frame}>
       {eyebrow}
       <Link
-        href={href}
+        href="/anunciate"
         className={cn(
           "flex flex-col justify-center rounded-2xl border border-dashed px-3 transition-colors",
           top
@@ -91,7 +102,7 @@ function SlotCard({ slot, rank }: { slot: AdSlotView; rank: 1 | 2 }) {
           Este lugar está libre
         </span>
         <span className="mt-0.5 text-[12px] text-muted-foreground">
-          Poné tu link desde {formatArs(slot.minNextArs)}
+          Poné tu link desde {formatArs(priceArs)}
         </span>
       </Link>
     </div>
@@ -99,12 +110,12 @@ function SlotCard({ slot, rank }: { slot: AdSlotView; rank: 1 | 2 }) {
 }
 
 export function SponsorSlot({ className }: { className?: string }) {
-  const { data, error } = useSWR("/api/ads/slot", fetchSlots, {
+  const { data, error } = useSWR("/api/ads/board", fetchBoard, {
     refreshInterval: 30_000,
     revalidateOnFocus: true,
   });
-  const slots = data?.slots ?? (error ? emptySlots() : null);
-  if (!slots) {
+  const board = data ?? (error ? emptyBoard() : null);
+  if (!board) {
     return <aside aria-hidden className={cn("mt-6 h-[180px]", className)} />;
   }
 
@@ -118,11 +129,20 @@ export function SponsorSlot({ className }: { className?: string }) {
           Anunciate
         </Link>
       </div>
-      {[...slots]
-        .sort((a, b) => Number(b.occupied) - Number(a.occupied) || b.amountArs - a.amountArs)
-        .map((slot, index) => (
-          <SlotCard key={slot.id as AdSlotId} slot={slot} rank={index === 0 ? 1 : 2} />
-        ))}
+      {POSITIONS.map((rank) => {
+        const entry = board.podium[rank - 1] ?? null;
+        // Para el puesto 1 hay que pasar al primero; para el resto alcanza con
+        // superar al último que está al aire (o pagar el piso si sobra lugar).
+        const priceArs = rank === 1 && entry ? board.minToLeadArs : board.minToEnterArs;
+        return (
+          <PositionCard
+            key={entry?.id ?? `libre-${rank}`}
+            entry={entry}
+            rank={rank}
+            priceArs={priceArs}
+          />
+        );
+      })}
     </aside>
   );
 }
