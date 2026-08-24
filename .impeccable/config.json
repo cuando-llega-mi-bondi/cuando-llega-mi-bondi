@@ -1,0 +1,14 @@
+{
+  "detector": {
+    "ignoreRules": [],
+    "ignoreFiles": [],
+    "ignoreValues": [
+      {
+        "rule": "bounce-easing",
+        "value": "cubic-bezier(0.34, 1.56, 0.64, 1)",
+        "createdAt": "2026-08-24T00:37:57.938Z",
+        "reason": "Documented as the standard spring easing in DESIGN.md, used app-wide"
+      }
+    ]
+  }
+}

@@ -62,3 +62,6 @@ node_modules/
 
 # claude
 .claude
+
+# impeccable design-hook cache (config.json itself is versioned)
+.impeccable/hook.cache.json
