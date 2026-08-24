@@ -8,7 +8,6 @@ import { LandingAuthors } from "./LandingAuthors";
 import { LandingSponsors } from "./LandingSponsors";
 import { LandingFaq } from "./LandingFaq";
 import { LandingCta } from "./LandingCta";
-import { RouteDivider } from "./LandingDecor";
 import { ParallaxDecor } from "./ParallaxDecor";
 import { Reveal } from "./Reveal";
 import { HomeIntro } from "./HomeIntro";
@@ -36,27 +35,21 @@ export function LandingPage() {
           <Reveal>
             <LandingFeatures />
           </Reveal>
-          <RouteDivider />
           <Reveal>
             <LandingTestimonials />
           </Reveal>
-          <RouteDivider />
           <Reveal>
             <LandingStats />
           </Reveal>
-          <RouteDivider />
           <Reveal>
             <SocialTestimonials />
           </Reveal>
-          <RouteDivider />
           <Reveal>
             <LandingAuthors />
           </Reveal>
-          <RouteDivider />
           <Reveal>
             <LandingSponsors />
           </Reveal>
-          <RouteDivider />
           <LandingFaq />
           <Reveal>
             <LandingCta />

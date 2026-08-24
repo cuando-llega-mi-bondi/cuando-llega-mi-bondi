@@ -5,8 +5,12 @@ import { motion, useScroll, useTransform, useReducedMotion } from "motion/react"
 
 const MAP_SVG = "/mar-del-plata-mapa-bg.svg";
 
+// El mapa es `fixed` y cubre TODO el scroll de la página (no solo el hero),
+// así que esta viñeta queda "pegada" en el mismo punto de la pantalla sin
+// importar la sección — tiene que ser casi imperceptible, no un vignette de
+// hero clásico, o se ve como un corte fijo en cualquier lado que scrolleés.
 const MAP_MASK =
-  "radial-gradient(120% 85% at 50% 42%, black 28%, transparent 80%)";
+  "radial-gradient(160% 130% at 50% 40%, black 60%, transparent 100%)";
 
 /** Static glow layer, shared between the reduced-motion and animated variants. */
 function Glows() {
@@ -60,6 +64,7 @@ export function ParallaxDecor() {
         aria-hidden
         className="pointer-events-none fixed inset-0 z-0"
         style={{
+          height: "150vh",
           y: reduceMotion ? 0 : glowY,
           willChange: "transform",
           backfaceVisibility: "hidden",

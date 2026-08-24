@@ -22,28 +22,9 @@ export function BlueprintGrid({ className }: { className?: string }) {
 /** Small turquoise pill label sitting above a section heading. */
 export function SectionEyebrow({ children }: { children: ReactNode }) {
   return (
-    <span className="mb-5 inline-flex items-center gap-2 rounded-full border border-[#2bb3a8]/40 bg-[#2bb3a8]/10 px-4 py-1.5 text-[12px] font-bold uppercase tracking-[0.18em] text-[#2bb3a8]">
-      <span className="h-1.5 w-1.5 rounded-full bg-[#2bb3a8]" />
+    <span className="mb-5 inline-flex items-center gap-2 rounded-full border border-secondary/40 bg-secondary/10 px-4 py-1.5 text-[12px] font-bold uppercase tracking-[0.18em] text-secondary">
+      <span className="h-1.5 w-1.5 rounded-full bg-secondary" />
       {children}
     </span>
-  );
-}
-
-/** Animated dashed "route" that visually connects two stacked sections. */
-export function RouteDivider() {
-  return (
-    <div
-      aria-hidden
-      className="mx-auto flex max-w-6xl items-center gap-3 px-8 py-2"
-    >
-      <span className="h-1.5 w-1.5 rounded-full bg-amarillo/70" />
-      <div className="route-dash-line h-px flex-1 opacity-70" />
-      <span className="relative flex h-3 w-3 items-center justify-center">
-        <span className="absolute h-3 w-3 animate-route-pulse rounded-full bg-amarillo" />
-        <span className="h-1.5 w-1.5 rounded-full bg-amarillo" />
-      </span>
-      <div className="route-dash-line h-px flex-1 opacity-70" />
-      <span className="h-1.5 w-1.5 rounded-full bg-amarillo/70" />
-    </div>
   );
 }
