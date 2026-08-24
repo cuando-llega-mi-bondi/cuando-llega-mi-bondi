@@ -41,6 +41,7 @@
   --animate-route-flow: route-flow 2.4s linear infinite;
   --animate-route-draw: route-draw 2.6s ease-out both;
   --animate-route-pulse: route-pulse 2.2s ease-in-out infinite;
+  --animate-marquee: marquee 36s linear infinite;
 }
 
 @layer base {
@@ -284,19 +285,11 @@ html.dark *::-webkit-scrollbar-thumb {
   50%      { opacity: 0;    transform: scale(2.4); }
 }
 
-/* Horizontal marching-ants line used as a section divider */
-.route-dash-line {
-  background-image: repeating-linear-gradient(
-    to right,
-    rgba(249, 205, 74, 0.55) 0 8px,
-    transparent 8px 16px
-  );
-  background-size: 16px 100%;
-  animation: route-dash-move 0.9s linear infinite;
-}
-
-@keyframes route-dash-move {
-  to { background-position: 16px 0; }
+/* Fila de testimonios que se desliza sin fin — el contenido se duplica en el
+   componente, -50% vuelve exactamente al punto de partida visual. */
+@keyframes marquee {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
 }
 
 .arrival-row {
@@ -321,7 +314,7 @@ html.dark *::-webkit-scrollbar-thumb {
   .animate-route-flow,
   .animate-route-draw,
   .animate-route-pulse,
-  .route-dash-line {
+  .animate-marquee {
     animation: none !important;
   }
   .arrival-row,
