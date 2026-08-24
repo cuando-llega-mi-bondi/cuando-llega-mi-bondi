@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { LandingSection } from "./LandingSection";
 import { Reveal } from "./Reveal";
 import { FaqAccordion } from "./FaqAccordion";
@@ -58,7 +59,29 @@ export function LandingFaq() {
           highlight="frecuentes"
           description="Todo lo que querés saber antes de usar Bondi MDP."
         >
-          <FaqAccordion items={FAQ_ITEMS} />
+          {/* Sidebar + lista en vez de header centrado sobre acordeón: usa
+              todo el ancho de la sección (como el resto de la página) sin
+              volver a la grilla de 2 columnas que "inflaba" a la vecina. */}
+          <div className="grid gap-8 lg:grid-cols-[280px_1fr] lg:gap-10">
+            <div>
+              <h3 className="text-xl font-bold tracking-tight text-foreground">
+                ¿Tenés dudas?
+              </h3>
+              <p className="mt-2 text-[14px] leading-relaxed text-muted-foreground">
+                Te respondemos directo, sin tickets ni bots. Si encontraste un
+                error, falta una línea o los horarios no coinciden con la
+                realidad, contanos: la app mejora con lo que reporta la gente
+                que la usa todos los días.
+              </p>
+              <Link
+                href="/acerca"
+                className="mt-4 inline-flex items-center justify-center rounded-full bg-amarillo px-5 py-2.5 text-[13px] font-bold text-primary-foreground transition hover:opacity-90 active:scale-[0.98]"
+              >
+                Escribinos
+              </Link>
+            </div>
+            <FaqAccordion items={FAQ_ITEMS} />
+          </div>
         </LandingSection>
       </Reveal>
     </>
