@@ -1,5 +1,6 @@
 import type { SVGProps } from "react";
 import { LandingSection } from "./LandingSection";
+import { SpotlightCard } from "./SpotlightCard";
 import { IconGithub } from "@shared/icons/IconGithub";
 import { IconLinkedin } from "@shared/icons/IconLinkedin";
 import { IconExternalLink } from "@shared/icons/IconExternalLink";
@@ -62,10 +63,10 @@ const AUTHORS: Author[] = [
   },
 ];
 
-function AuthorCard({ author }: { author: Author }) {
+function AuthorCard({ author, index }: { author: Author; index: number }) {
   return (
-    <div className="rounded-2xl border border-border bg-card p-6 transition-colors hover:border-[#2bb3a8]/40">
-      <div className="flex items-center gap-4">
+    <SpotlightCard index={index} tint="rgba(36,144,138,0.16)" className="p-6">
+      <div className="relative flex items-center gap-4">
         <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-amarillo/30 bg-amarillo/10 text-[15px] font-black text-amarillo">
           {author.initials}
         </div>
@@ -75,7 +76,7 @@ function AuthorCard({ author }: { author: Author }) {
         </div>
       </div>
 
-      <p className="mt-4 text-[12px] text-muted-foreground opacity-80">
+      <p className="relative mt-4 text-[12px] text-muted-foreground opacity-80">
         <a
           href={author.education.href}
           target="_blank"
@@ -95,7 +96,10 @@ function AuthorCard({ author }: { author: Author }) {
         </a>
       </p>
 
-      <div className="mt-4 flex flex-wrap gap-2">
+      {/* grid de 3 en vez de flex-wrap: con 5 links, flex-wrap dejaba el
+          último (Instagram) solo en su fila, colgado. Grid fijo reparte
+          3+2 siempre, ninguna fila queda con un solo chip suelto. */}
+      <div className="relative mt-4 grid grid-cols-3 gap-2">
         {author.links.map(({ platform, label, href }) => {
           const Icon = ICONS[platform];
           return (
@@ -105,15 +109,15 @@ function AuthorCard({ author }: { author: Author }) {
               target="_blank"
               rel="noopener noreferrer"
               aria-label={`${author.name} en ${label}`}
-              className="flex items-center gap-2 rounded-lg border border-border bg-muted px-3 py-2 text-[13px] font-medium text-muted-foreground transition-colors hover:border-[#2bb3a8]/50 hover:text-foreground"
+              className="flex items-center justify-center gap-2 rounded-lg border border-border bg-muted px-3 py-2 text-[13px] font-medium text-muted-foreground transition-colors hover:border-secondary/50 hover:text-foreground"
             >
-              <Icon className="h-4 w-4" />
+              <Icon className="h-4 w-4 shrink-0" />
               {label}
             </a>
           );
         })}
       </div>
-    </div>
+    </SpotlightCard>
   );
 }
 
@@ -125,9 +129,9 @@ export function LandingAuthors() {
       highlight="marplatenses"
       description="Un proyecto independiente y de código abierto, creado por dos estudiantes de Mar del Plata."
     >
-      <div className="mx-auto grid max-w-3xl gap-6 md:grid-cols-2">
-        {AUTHORS.map((author) => (
-          <AuthorCard key={author.name} author={author} />
+      <div className="grid gap-6 md:grid-cols-2">
+        {AUTHORS.map((author, i) => (
+          <AuthorCard key={author.name} author={author} index={i} />
         ))}
       </div>
     </LandingSection>
