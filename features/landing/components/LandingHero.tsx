@@ -5,9 +5,16 @@ import { ArrowRight, Bus, MapPin, Search, Zap } from "lucide-react";
 import { motion, useScroll, useTransform, useReducedMotion } from "motion/react";
 import { BrandLogo } from "@shared/ui/BrandLogo";
 
-// Palette locked to the dark marketing look regardless of the active theme.
-const AMARILLO = "#f9cd4a";
-const NAVY = "#0f2d4a";
+// Tokens del sistema (DESIGN.md), no hex sueltos — el hero fuerza `.dark` en
+// LandingPage así que --secondary/--foreground resuelven siempre a los
+// valores de modo oscuro. NAVY usa --primary-foreground, no --foreground:
+// es el par de contraste fijo del amarillo (regla dura de DESIGN.md), no debe
+// invertirse si el tema cambia.
+const AMARILLO = "var(--mdp-amarillo)";
+const NAVY = "var(--primary-foreground)";
+// bg-[#0c243c] abajo (chasis del teléfono) es intencional: un tono "hardware"
+// más oscuro que --card a propósito, no una superficie de la app — no hay
+// token de sistema para esto.
 
 const FEATURES = [
   {
@@ -15,8 +22,8 @@ const FEATURES = [
     label: "GPS en vivo",
     detail: " — sabé exactamente dónde está tu bondi",
   },
-  { icon: Zap, label: "Sin cuentas, sin esperas", detail: "" },
-  { icon: Bus, label: "Incluye línea 221", detail: "" },
+  { icon: Zap, label: "Sin cuentas, sin esperas", detail: " — entrá y consultá directo" },
+  { icon: Bus, label: "Incluye línea 221", detail: " — que no está en la app oficial" },
 ] as const;
 
 /** Animated dashed transit route that snakes across the hero background. */
@@ -113,26 +120,26 @@ function HeroRoute() {
 function PhoneMock() {
   return (
     <div className="relative mx-auto w-full max-w-[340px] rotate-[3deg]">
-      <div className="absolute -inset-6 rounded-[3rem] bg-gradient-to-tr from-[#1d7570]/25 to-[#f9cd4a]/25 blur-3xl" />
+      <div className="absolute -inset-6 rounded-[3rem] bg-gradient-to-tr from-secondary/25 to-amarillo/25 blur-3xl" />
 
       <div className="relative overflow-hidden rounded-[2.25rem] border border-white/10 bg-[#0c243c] p-3 shadow-2xl">
         {/* Header */}
         <div className="flex items-center justify-between px-2 pt-1 pb-3">
-          <BrandLogo size="md" className="text-[#eef4fa]" />
-          <span className="inline-flex items-center gap-1.5 rounded-full border border-[#2bb3a8]/40 bg-[#2bb3a8]/10 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-[#2bb3a8]">
-            <span className="h-1.5 w-1.5 rounded-full bg-[#2bb3a8]" />
+          <BrandLogo size="md" className="text-foreground" />
+          <span className="inline-flex items-center gap-1.5 rounded-full border border-secondary/40 bg-secondary/10 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-secondary">
+            <span className="h-1.5 w-1.5 rounded-full bg-secondary" />
             Vivo
           </span>
         </div>
 
         {/* Search */}
-        <div className="mb-3 flex items-center gap-2 rounded-2xl border border-white/10 bg-[#0f2d4a] px-3.5 py-3 text-[13px] text-[#93a9bf]">
+        <div className="mb-3 flex items-center gap-2 rounded-2xl border border-white/10 bg-background px-3.5 py-3 text-[13px] text-muted-foreground">
           <Search className="h-4 w-4" />
           Buscar línea…
         </div>
 
         {/* Mini live map */}
-        <div className="relative mb-3 h-[190px] overflow-hidden rounded-2xl border border-white/10 bg-[#0f2d4a]">
+        <div className="relative mb-3 h-[190px] overflow-hidden rounded-2xl border border-white/10 bg-background">
           <div
             className="absolute inset-0 opacity-60"
             style={{
@@ -160,33 +167,33 @@ function PhoneMock() {
           </svg>
           {/* 221 marker */}
           <div className="absolute right-8 top-[58%] flex -translate-y-1/2 items-center gap-1.5">
-            <span className="rounded-md bg-[#0c243c] px-1.5 py-0.5 text-[11px] font-bold text-[#eef4fa] shadow">
+            <span className="rounded-md bg-[#0c243c] px-1.5 py-0.5 text-[11px] font-bold text-foreground shadow">
               221
             </span>
             <span className="relative flex h-4 w-4 items-center justify-center">
-              <span className="absolute h-4 w-4 animate-route-pulse rounded-full bg-[#f9cd4a]" />
-              <span className="h-3 w-3 rounded-full border-2 border-[#0c243c] bg-[#f9cd4a]" />
+              <span className="absolute h-4 w-4 animate-route-pulse rounded-full bg-amarillo" />
+              <span className="h-3 w-3 rounded-full border-2 border-[#0c243c] bg-amarillo" />
             </span>
           </div>
         </div>
 
         {/* Arrivals list */}
         <div className="space-y-2">
-          <div className="flex items-center justify-between rounded-2xl border border-[#f9cd4a]/30 bg-[#f9cd4a]/10 px-3.5 py-3">
+          <div className="flex items-center justify-between rounded-2xl border border-amarillo/30 bg-amarillo/10 px-3.5 py-3">
             <div>
-              <div className="text-lg font-black text-[#f9cd4a]">221</div>
-              <div className="text-[11px] text-[#93a9bf]">Centro — Terminal</div>
+              <div className="text-lg font-black text-amarillo">221</div>
+              <div className="text-[11px] text-muted-foreground">Centro — Terminal</div>
             </div>
-            <span className="rounded-lg bg-[#f9cd4a] px-2.5 py-1 text-[12px] font-bold text-[#0c243c]">
+            <span className="rounded-lg bg-amarillo px-2.5 py-1 text-[12px] font-bold text-primary-foreground">
               3 min
             </span>
           </div>
-          <div className="flex items-center justify-between rounded-2xl border border-white/10 bg-[#0f2d4a] px-3.5 py-3">
+          <div className="flex items-center justify-between rounded-2xl border border-white/10 bg-background px-3.5 py-3">
             <div>
-              <div className="text-lg font-black text-[#eef4fa]">561</div>
-              <div className="text-[11px] text-[#93a9bf]">Güemes — Puerto</div>
+              <div className="text-lg font-black text-foreground">561</div>
+              <div className="text-[11px] text-muted-foreground">Güemes — Puerto</div>
             </div>
-            <span className="rounded-lg bg-[#2bb3a8]/15 px-2.5 py-1 text-[12px] font-bold text-[#2bb3a8]">
+            <span className="rounded-lg bg-secondary/15 px-2.5 py-1 text-[12px] font-bold text-secondary">
               9 min
             </span>
           </div>
@@ -198,7 +205,7 @@ function PhoneMock() {
 
 export function LandingHero() {
   return (
-    <section className="relative overflow-hidden text-[#eef4fa]">
+    <section className="relative overflow-hidden text-foreground">
       {/* Animated route */}
       <HeroRoute />
 
@@ -206,19 +213,19 @@ export function LandingHero() {
         <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-16">
           {/* Copy */}
           <div className="text-center lg:text-left">
-            <div className="mb-7 inline-flex items-center gap-2 rounded-full border border-[#2bb3a8]/40 bg-[#2bb3a8]/10 px-4 py-1.5">
-              <span className="h-2 w-2 animate-pulse rounded-full bg-[#2bb3a8]" />
-              <span className="text-[12px] font-bold uppercase tracking-[0.18em] text-[#2bb3a8]">
+            <div className="mb-7 inline-flex items-center gap-2 rounded-full border border-secondary/40 bg-secondary/10 px-4 py-1.5">
+              <span className="h-2 w-2 animate-pulse rounded-full bg-secondary" />
+              <span className="text-[12px] font-bold uppercase tracking-[0.18em] text-secondary">
                 GPS en tiempo real
               </span>
             </div>
 
             <h1 className="mb-6 text-5xl font-black leading-[0.95] tracking-tight lg:text-7xl">
               <span className="block">Movéte mejor</span>
-              <span className="block text-[#f9cd4a]">por Mar del Plata.</span>
+              <span className="block text-amarillo">por Mar del Plata.</span>
             </h1>
 
-            <p className="mx-auto mb-9 max-w-lg text-lg leading-relaxed text-[#93a9bf] lg:mx-0 lg:text-xl">
+            <p className="mx-auto mb-9 max-w-lg text-lg leading-relaxed text-muted-foreground lg:mx-0 lg:text-xl">
               Tiempos de arribo en vivo. La interfaz de transporte que la ciudad
               se merecía.
             </p>
@@ -226,11 +233,11 @@ export function LandingHero() {
             <ul className="mb-10 space-y-3 text-left">
               {FEATURES.map(({ icon: Icon, label, detail }) => (
                 <li key={label} className="flex items-center gap-3">
-                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-[#f9cd4a]/25 bg-[#f9cd4a]/10">
-                    <Icon className="h-4 w-4 text-[#f9cd4a]" />
+                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-amarillo/25 bg-amarillo/10">
+                    <Icon className="h-4 w-4 text-amarillo" />
                   </span>
-                  <span className="text-[15px] text-[#cddae7]">
-                    <span className="font-semibold text-[#eef4fa]">{label}</span>
+                  <span className="text-[15px] text-foreground/85">
+                    <span className="font-semibold text-foreground">{label}</span>
                     {detail}
                   </span>
                 </li>
@@ -240,13 +247,13 @@ export function LandingHero() {
             <div className="flex items-center justify-center gap-5 lg:justify-start">
               <Link
                 href="/consultar"
-                className="inline-flex items-center justify-center gap-2 rounded-full bg-[#f9cd4a] px-7 py-3.5 text-[15px] font-bold text-[#0c243c] transition hover:opacity-90 active:scale-[0.98]"
+                className="inline-flex items-center justify-center gap-2 rounded-full bg-amarillo px-7 py-3.5 text-[15px] font-bold text-primary-foreground transition hover:opacity-90 active:scale-[0.98]"
               >
                 Consultá gratis
                 <ArrowRight className="h-4 w-4" />
               </Link>
-              <span className="text-[14px] font-medium text-[#93a9bf]">
-                bondimdp.com.ar
+              <span className="text-[14px] font-medium text-muted-foreground">
+                Sin instalar nada, andá directo
               </span>
             </div>
           </div>
