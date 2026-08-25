@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { parseAdHref } from "@features/sponsors/lib/href";
-import { resolveOgImage } from "@features/sponsors/lib/ogImage";
+import { resolveOgMeta, type OgMeta } from "@features/sponsors/lib/ogImage";
+
+const EMPTY_META: OgMeta = { image: null, title: null, description: null };
 
 export async function GET(request: Request) {
   const raw = new URL(request.url).searchParams.get("href") ?? "";
@@ -9,13 +11,12 @@ export async function GET(request: Request) {
   try {
     href = parseAdHref(raw);
   } catch {
-    return NextResponse.json({ image: null }, { status: 400 });
+    return NextResponse.json(EMPTY_META, { status: 400 });
   }
 
-  const image = await resolveOgImage(href).catch(() => null);
+  const meta = await resolveOgMeta(href).catch(() => EMPTY_META);
 
-  return NextResponse.json(
-    { image },
-    { headers: { "Cache-Control": "public, max-age=3600, stale-while-revalidate=86400" } },
-  );
+  return NextResponse.json(meta, {
+    headers: { "Cache-Control": "public, max-age=3600, stale-while-revalidate=86400" },
+  });
 }

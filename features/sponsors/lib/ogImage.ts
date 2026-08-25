@@ -42,18 +42,29 @@ function decodeHtmlEntities(raw: string): string {
     .replace(/&quot;/g, '"')
     .replace(/&#39;/g, "'")
     .replace(/&lt;/g, "<")
-    .replace(/&gt;/g, ">");
+    .replace(/&gt;/g, ">")
+    // Referencias numéricas: &#064; (decimal) y &#x2022; (hex) — Instagram
+    // codifica así el "@" y el "•" en sus og:title.
+    .replace(/&#x([0-9a-f]+);/gi, (_, hex: string) => String.fromCodePoint(parseInt(hex, 16)))
+    .replace(/&#(\d+);/g, (_, dec: string) => String.fromCodePoint(parseInt(dec, 10)));
 }
 
-function extractMetaImage(html: string): string | null {
-  const tags = html.match(/<meta\s+[^>]*>/gi) ?? [];
-  for (const prop of ["og:image:secure_url", "og:image", "twitter:image"]) {
+function extractMetaContent(tags: string[], properties: string[]): string | null {
+  for (const prop of properties) {
     const propRe = new RegExp(`(?:property|name)=["']${prop}["']`, "i");
     const tag = tags.find((t) => propRe.test(t));
     const content = tag?.match(/content=["']([^"']+)["']/i)?.[1];
-    if (content) return decodeHtmlEntities(content);
+    if (content) return decodeHtmlEntities(content).trim() || null;
   }
   return null;
+}
+
+function extractMetaTitle(html: string, tags: string[]): string | null {
+  const fromMeta = extractMetaContent(tags, ["og:title", "twitter:title"]);
+  if (fromMeta) return fromMeta;
+  const titleTag = html.match(/<title[^>]*>([^<]*)<\/title>/i)?.[1];
+  const decoded = titleTag ? decodeHtmlEntities(titleTag).trim() : "";
+  return decoded || null;
 }
 
 async function fetchFollowingRedirects(startUrl: URL): Promise<Response | null> {
@@ -95,7 +106,16 @@ async function fetchFollowingRedirects(startUrl: URL): Promise<Response | null> 
   return null;
 }
 
-export async function resolveOgImage(href: string): Promise<string | null> {
+export interface OgMeta {
+  image: string | null;
+  title: string | null;
+  description: string | null;
+}
+
+const EMPTY_META: OgMeta = { image: null, title: null, description: null };
+
+/** Trae el `<head>` de la página (hasta MAX_HEAD_BYTES) siguiendo redirects, o null si no se puede. */
+async function fetchHead(href: string): Promise<{ html: string; base: URL } | null> {
   let url: URL;
   try {
     url = new URL(href);
@@ -124,15 +144,33 @@ export async function resolveOgImage(href: string): Promise<string | null> {
     reader.cancel().catch(() => {});
   }
 
-  const image = extractMetaImage(html);
-  if (!image) return null;
+  return { html, base: new URL(res.url || url) };
+}
 
-  try {
-    const absolute = new URL(image, res.url || url);
-    return absolute.protocol === "http:" || absolute.protocol === "https:"
-      ? absolute.toString()
-      : null;
-  } catch {
-    return null;
+/** Imagen, título y descripción en un solo fetch — se usan para la preview y para sugerir título/texto. */
+export async function resolveOgMeta(href: string): Promise<OgMeta> {
+  const head = await fetchHead(href);
+  if (!head) return EMPTY_META;
+  const { html, base } = head;
+
+  const tags = html.match(/<meta\s+[^>]*>/gi) ?? [];
+  const rawImage = extractMetaContent(tags, ["og:image:secure_url", "og:image", "twitter:image"]);
+  const description = extractMetaContent(tags, ["og:description", "twitter:description", "description"]);
+  const title = extractMetaTitle(html, tags);
+
+  let image: string | null = null;
+  if (rawImage) {
+    try {
+      const absolute = new URL(rawImage, base);
+      image = absolute.protocol === "http:" || absolute.protocol === "https:" ? absolute.toString() : null;
+    } catch {
+      image = null;
+    }
   }
+
+  return { image, title, description };
+}
+
+export async function resolveOgImage(href: string): Promise<string | null> {
+  return (await resolveOgMeta(href)).image;
 }
