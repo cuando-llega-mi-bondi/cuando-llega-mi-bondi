@@ -14,9 +14,12 @@
 
 import { flushSync } from "react-dom";
 
-type StartViewTransition = (
-    cb: () => void | Promise<void>,
-) => { finished: Promise<void> };
+type ViewTransition = {
+    ready: Promise<void>;
+    updateCallbackDone: Promise<void>;
+    finished: Promise<void>;
+};
+type StartViewTransition = (cb: () => void | Promise<void>) => ViewTransition;
 
 export function withViewTransition(updater: () => void): void {
     if (typeof document === "undefined") {
@@ -27,14 +30,19 @@ export function withViewTransition(updater: () => void): void {
         document as unknown as { startViewTransition?: StartViewTransition }
     ).startViewTransition;
     if (typeof start === "function") {
-        // Si el DOM vuelve a cambiar mientras esta transición está en curso
-        // (ej. dos clicks rápidos que disparan withViewTransition seguido),
-        // el browser aborta la anterior y `finished` rechaza con
-        // InvalidStateError — es un abort esperado, no un bug, así que no
-        // debe quedar como unhandled rejection.
-        start.call(document, () => {
+        // El browser puede abortar la transición en curso — dos clicks rápidos
+        // que disparan withViewTransition seguido, o el viewport cambiando de
+        // tamaño a mitad de camino (ej. el teclado abriéndose/cerrándose en
+        // mobile). Cuando eso pasa, `ready` rechaza con InvalidStateError
+        // ("Skipping view transition...") aunque `finished` siga resolviendo
+        // bien — es un abort esperado, no un bug, así que ninguna de las
+        // promesas del objeto debe quedar como unhandled rejection.
+        const transition = start.call(document, () => {
             flushSync(updater);
-        }).finished.catch(() => {});
+        });
+        transition.ready.catch(() => {});
+        transition.updateCallbackDone.catch(() => {});
+        transition.finished.catch(() => {});
     } else {
         updater();
     }
