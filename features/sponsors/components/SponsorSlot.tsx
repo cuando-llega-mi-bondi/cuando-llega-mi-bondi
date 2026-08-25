@@ -143,6 +143,12 @@ export function SponsorSlot({ className }: { className?: string }) {
           />
         );
       })}
+      <Link
+        href="/anunciantes"
+        className="block text-center text-[11px] font-medium text-secondary hover:text-foreground"
+      >
+        Ver más anunciantes
+      </Link>
     </aside>
   );
 }
