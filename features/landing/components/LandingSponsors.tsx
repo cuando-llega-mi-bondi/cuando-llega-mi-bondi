@@ -1,8 +1,5 @@
 "use client";
 
-import Link from "next/link";
-import { Megaphone } from "lucide-react";
-import { motion } from "motion/react";
 import { SPONSORS, type Sponsor } from "@features/sponsors/data/sponsors";
 import { LandingSection } from "./LandingSection";
 import { SpotlightCard } from "./SpotlightCard";
@@ -30,36 +27,6 @@ function SponsorCard({ sponsor, index }: { sponsor: Sponsor; index: number }) {
   );
 }
 
-/**
- * Con pocos sponsors, la sección de "empresas que nos apoyan" se ve vacía —
- * este slot invita a sumarse en vez de dejar el espacio muerto. Mismo
- * lenguaje de "casillero libre con borde punteado" que ya usa SponsorSlot en
- * /consultar, no la tarjeta sólida de SpotlightCard (acá señala "vacío,
- * disponible", no contenido real).
- */
-function BecomeSponsorCard({ index }: { index: number }) {
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 28 }}
-      whileInView={{
-        opacity: 1,
-        y: 0,
-        transition: { duration: 0.55, delay: index * 0.1, ease: [0.16, 1, 0.3, 1] },
-      }}
-      viewport={{ once: true, margin: "0px 0px -80px 0px" }}
-    >
-      <Link
-        href="/anunciate"
-        className="flex min-w-[220px] flex-col items-center justify-center gap-2 rounded-2xl border border-dashed border-secondary/40 bg-card/60 px-10 py-6 text-center transition-colors hover:border-secondary"
-      >
-        <Megaphone className="h-6 w-6 text-secondary" strokeWidth={2} />
-        <span className="text-[14px] font-bold text-foreground">¿Tu marca acá?</span>
-        <span className="text-[12px] font-medium text-secondary">Anunciate →</span>
-      </Link>
-    </motion.div>
-  );
-}
-
 export function LandingSponsors() {
   return (
     <LandingSection
@@ -72,7 +39,6 @@ export function LandingSponsors() {
         {SPONSORS.map((sponsor, i) => (
           <SponsorCard key={sponsor.name} sponsor={sponsor} index={i} />
         ))}
-        <BecomeSponsorCard index={SPONSORS.length} />
       </div>
     </LandingSection>
   );
