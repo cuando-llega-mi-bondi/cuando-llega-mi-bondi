@@ -2,6 +2,15 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   /**
+   * Next 16 bloquea por default requests cross-origin a assets/endpoints
+   * dev-only (RSC payloads, HMR). Sin esto, compartir el dev server vía un
+   * túnel (cloudflared) deja el front colgado en "Cargando..." porque el
+   * fetch a /api/reference llega con un origin distinto de localhost y el
+   * dev server lo descarta.
+   */
+  allowedDevOrigins: ["*.trycloudflare.com"],
+
+  /**
    * Output standalone para self-hosting con Docker. Genera `.next/standalone/`
    * con un server.js minimalista + solo los node_modules necesarios.
    *
