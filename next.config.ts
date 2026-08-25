@@ -68,7 +68,10 @@ const nextConfig: NextConfig = {
   },
 
   /**
-   * Compatibilidad: links viejos con ?tab=favoritos redirigen a /favoritos
+   * Compatibilidad: links viejos con ?tab=favoritos redirigen a /favoritos.
+   * Alias en inglés (/about, /contact, /privacy) -> páginas reales en
+   * español: varias herramientas de auditoría para agentes buscan estas
+   * rutas convencionales para verificar "trust anchor pages".
    */
   async redirects() {
     return [
@@ -78,6 +81,9 @@ const nextConfig: NextConfig = {
         destination: "/favoritos",
         permanent: false,
       },
+      { source: "/about", destination: "/acerca", permanent: true },
+      { source: "/contact", destination: "/contacto", permanent: true },
+      { source: "/privacy", destination: "/privacidad", permanent: true },
     ];
   },
 };
