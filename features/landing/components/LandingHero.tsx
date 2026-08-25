@@ -220,10 +220,13 @@ export function LandingHero() {
               </span>
             </div>
 
-            <h1 className="mb-6 text-5xl font-black leading-[0.95] tracking-tight lg:text-7xl">
+            {/* h2, no h1: el h1 real y SEO-optimizado vive en HomeIntro (sr-only,
+                justo antes en el DOM). Dos h1 en la misma página leen como
+                estructura de encabezados "plana" para crawlers/agentes. */}
+            <h2 className="mb-6 text-5xl font-black leading-[0.95] tracking-tight lg:text-7xl">
               <span className="block">Movéte mejor</span>
               <span className="block text-amarillo">por Mar del Plata.</span>
-            </h1>
+            </h2>
 
             <p className="mx-auto mb-9 max-w-lg text-lg leading-relaxed text-muted-foreground lg:mx-0 lg:text-xl">
               Tiempos de arribo en vivo. La interfaz de transporte que la ciudad
