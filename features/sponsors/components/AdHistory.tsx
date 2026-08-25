@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import useSWR from "swr";
+import { Rocket } from "lucide-react";
 import type { AdHistoryView } from "@features/sponsors/lib/purchases";
 import { formatArs } from "@features/sponsors/lib/pricing";
 import { AdIcon } from "./AdIcon";
@@ -54,7 +55,8 @@ export function AdHistory({
       </div>
       <ul className="divide-y divide-border overflow-hidden rounded-2xl border border-border bg-card">
         {entries.map((entry) => {
-          const live = liveIds.includes(entry.id);
+          const podiumRank = liveIds.indexOf(entry.id);
+          const live = podiumRank !== -1;
           const mine = mineIds?.includes(entry.id) ?? false;
           return (
             <li key={entry.id} className="flex flex-wrap items-center gap-x-3 gap-y-2 px-3.5 py-3">
@@ -71,12 +73,17 @@ export function AdHistory({
                 <span className="mt-0.5 flex items-center gap-1.5 text-[11px] text-muted-foreground">
                   {formatSince(entry.since)}
                   {live ? (
-                    <span className="rounded-full bg-secondary/15 px-1.5 py-0.5 font-bold text-secondary">
-                      al aire
+                    <span
+                      className={cn(
+                        "shrink-0 whitespace-nowrap rounded-full px-1.5 py-0.5 font-bold",
+                        podiumRank === 0 ? "bg-amarillo/15 text-amarillo" : "bg-secondary/15 text-secondary",
+                      )}
+                    >
+                      Top {podiumRank + 1}
                     </span>
                   ) : null}
                   {mine ? (
-                    <span className="rounded-full bg-amarillo/15 px-1.5 py-0.5 font-bold text-amarillo">
+                    <span className="shrink-0 whitespace-nowrap rounded-full bg-amarillo/15 px-1.5 py-0.5 font-bold text-amarillo">
                       tuyo
                     </span>
                   ) : null}
@@ -92,9 +99,10 @@ export function AdHistory({
               </span>
               <Link
                 href={`/anunciate/boost/${entry.id}`}
-                className="btn-pill btn-secondary shrink-0 px-2.5 py-1 text-[11px] font-bold"
+                aria-label={`Potenciar ${entry.title}`}
+                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-secondary text-secondary-foreground transition-opacity hover:opacity-90"
               >
-                Potenciar
+                <Rocket className="h-4 w-4" strokeWidth={2.5} />
               </Link>
             </li>
           );

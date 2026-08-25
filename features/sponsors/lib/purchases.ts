@@ -158,11 +158,10 @@ export async function getAdHistory(): Promise<AdHistoryView> {
   const groups = await fetchApprovedGroups();
   if (!groups) return { entries: [], total: 0 };
 
-  const entries = [...groups]
-    .sort((a, b) => b.since.localeCompare(a.since))
-    .slice(0, HISTORY_LIMIT);
-
-  return { entries, total: groups.length };
+  // Mismo orden que el podio (monto desc, empate lo gana quien pagó primero):
+  // así "Ya pasaron por acá" se lee como el ranking completo, no como un log
+  // cronológico donde los montos saltan sin criterio.
+  return { entries: groups.slice(0, HISTORY_LIMIT), total: groups.length };
 }
 
 export async function createAdPurchase(data: AdPurchaseInsert): Promise<{ id: string }> {
