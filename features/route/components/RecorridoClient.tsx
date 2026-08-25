@@ -478,7 +478,7 @@ export default function RecorridoClient({ initialLineCode }: { initialLineCode?:
               placeholder="Buscar línea por número o destino…"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="box-border w-full rounded-full border border-border bg-card py-[11px] pl-10 pr-3.5 font-sans text-sm text-text outline-none transition-colors placeholder:text-muted-foreground focus:border-secondary"
+              className="box-border w-full rounded-full border border-border bg-card py-[11px] pl-10 pr-3.5 font-sans text-[16px] text-text outline-none transition-colors placeholder:text-muted-foreground focus:border-secondary"
             />
           </div>
         </div>

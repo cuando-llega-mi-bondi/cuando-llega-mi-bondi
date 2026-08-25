@@ -372,7 +372,8 @@ html.dark *::-webkit-scrollbar-thumb {
   min-height: 44px;
   padding: 0.75rem 0.875rem;
   color: var(--foreground);
-  font-size: 0.875rem;
+  /* 16px mínimo: menos de eso, iOS Safari hace zoom automático al enfocar. */
+  font-size: 1rem;
   transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
 

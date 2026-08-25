@@ -526,7 +526,7 @@ export function ComoLlegoClient() {
                                 </div>
                                 <div className="relative min-w-0 flex-1 flex items-center">
                                     <input
-                                        className="min-w-0 w-full rounded-xl border border-border bg-muted/40 dark:bg-muted/10 px-3 py-2.5 pr-9 text-sm text-foreground placeholder:text-muted-foreground/60 focus:border-sky-500/40 focus:outline-none transition-all"
+                                        className="min-w-0 w-full rounded-xl border border-border bg-muted/40 dark:bg-muted/10 px-3 py-2.5 pr-9 text-[16px] text-foreground placeholder:text-muted-foreground/60 focus:border-sky-500/40 focus:outline-none transition-all"
                                         placeholder="Origen: Dirección, lugar o GPS"
                                         value={origin.text}
                                         enterKeyHint="search"
@@ -578,7 +578,7 @@ export function ComoLlegoClient() {
                                 </div>
                                 <div className="relative min-w-0 flex-1 flex items-center">
                                     <input
-                                        className="min-w-0 w-full rounded-xl border border-border bg-muted/40 dark:bg-muted/10 px-3 py-2.5 pr-9 text-sm text-foreground placeholder:text-muted-foreground/60 focus:border-sky-500/40 focus:outline-none transition-all"
+                                        className="min-w-0 w-full rounded-xl border border-border bg-muted/40 dark:bg-muted/10 px-3 py-2.5 pr-9 text-[16px] text-foreground placeholder:text-muted-foreground/60 focus:border-sky-500/40 focus:outline-none transition-all"
                                         placeholder="Destino: Dirección o lugar"
                                         value={dest.text}
                                         enterKeyHint="search"

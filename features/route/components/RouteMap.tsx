@@ -598,7 +598,7 @@ export default function RouteMap({
               onChange={(e) => setSearch(e.target.value)}
               style={{
                 width: "100%", background: "var(--surface2)", border: "1px solid var(--border)",
-                borderRadius: 8, color: "var(--text)", fontFamily: "var(--body)", fontSize: 13,
+                borderRadius: 8, color: "var(--text)", fontFamily: "var(--body)", fontSize: 16,
                 padding: "8px 10px 8px 32px", outline: "none", boxSizing: "border-box",
               }}
             />
