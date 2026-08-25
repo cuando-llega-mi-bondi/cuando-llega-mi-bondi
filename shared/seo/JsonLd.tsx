@@ -43,7 +43,20 @@ export function JsonLd() {
         "@type": "Organization",
         "name": "Bondi MDP",
         "url": "https://bondimdp.com.ar",
-        "logo": "https://bondimdp.com.ar/icon-512x512.png"
+        "logo": "https://bondimdp.com.ar/icon-512x512.png",
+        "contactPoint": {
+            "@type": "ContactPoint",
+            "contactType": "customer support",
+            "email": "maticelizramos@gmail.com",
+            "url": "https://bondimdp.com.ar/contacto",
+            "availableLanguage": ["Spanish", "English"],
+        },
+        "address": {
+            "@type": "PostalAddress",
+            "addressLocality": "Mar del Plata",
+            "addressRegion": "Buenos Aires",
+            "addressCountry": "AR",
+        },
     };
 
     const webSite = {
