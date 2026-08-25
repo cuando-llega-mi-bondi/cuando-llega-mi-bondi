@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import useSWR from "swr";
 import type { AdHistoryView } from "@features/sponsors/lib/purchases";
 import { formatArs } from "@features/sponsors/lib/pricing";
@@ -25,12 +26,21 @@ function formatSince(iso: string): string {
 
 /**
  * Todos los pagos aprobados, del más nuevo al más viejo. Sirve de prueba de que
- * el lugar se usa y de referencia de cuánto se viene pagando.
+ * el lugar se usa y de referencia de cuánto se viene pagando. Cada fila tiene
+ * un botón "Potenciar" que lleva a la pantalla dedicada para sumarle plata a
+ * ese aviso, sin tener que volver a cargar sus datos.
  */
-export function AdHistory({ liveIds }: { liveIds: string[] }) {
+export function AdHistory({
+  liveIds,
+  mineIds,
+}: {
+  liveIds: string[];
+  mineIds?: string[];
+}) {
   const { data } = useSWR("/api/ads/history", fetchHistory, { revalidateOnFocus: false });
   const entries = data?.entries ?? [];
   if (entries.length === 0) return null;
+  const total = data?.total ?? entries.length;
 
   return (
     <section className="space-y-2">
@@ -39,14 +49,15 @@ export function AdHistory({ liveIds }: { liveIds: string[] }) {
           YA PASARON POR ACÁ
         </p>
         <p className="text-[11px] text-muted-foreground">
-          {data?.total === 1 ? "1 negocio" : `${data?.total ?? entries.length} negocios`}
+          {total === 1 ? "1 negocio" : `${total} negocios`}
         </p>
       </div>
       <ul className="divide-y divide-border overflow-hidden rounded-2xl border border-border bg-card">
         {entries.map((entry) => {
           const live = liveIds.includes(entry.id);
+          const mine = mineIds?.includes(entry.id) ?? false;
           return (
-            <li key={entry.id} className="flex items-center gap-3 px-3.5 py-3">
+            <li key={entry.id} className="flex flex-wrap items-center gap-x-3 gap-y-2 px-3.5 py-3">
               <AdIcon href={entry.href} title={entry.title} size="sm" />
               <span className="min-w-0 flex-1">
                 <a
@@ -64,6 +75,11 @@ export function AdHistory({ liveIds }: { liveIds: string[] }) {
                       al aire
                     </span>
                   ) : null}
+                  {mine ? (
+                    <span className="rounded-full bg-amarillo/15 px-1.5 py-0.5 font-bold text-amarillo">
+                      tuyo
+                    </span>
+                  ) : null}
                 </span>
               </span>
               <span
@@ -74,6 +90,12 @@ export function AdHistory({ liveIds }: { liveIds: string[] }) {
               >
                 {formatArs(entry.amountArs)}
               </span>
+              <Link
+                href={`/anunciate/boost/${entry.id}`}
+                className="btn-pill btn-secondary shrink-0 px-2.5 py-1 text-[11px] font-bold"
+              >
+                Potenciar
+              </Link>
             </li>
           );
         })}

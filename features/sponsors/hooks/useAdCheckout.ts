@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useRef, useState } from "react";
+import { rememberAdPurchaseId } from "@features/sponsors/lib/myAds";
 
 export function useAdCheckout() {
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -9,11 +10,12 @@ export function useAdCheckout() {
 
   const submitCheckout = useCallback(
     async (payload: {
-      title: string;
-      href: string;
+      title?: string;
+      href?: string;
       tagline?: string;
       amountArs: number;
       acceptedTerms: true;
+      boostedFromId?: string;
     }) => {
       if (guard.current) return;
       setError(null);
@@ -25,9 +27,14 @@ export function useAdCheckout() {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload),
         });
-        const data = (await res.json()) as { error?: string; initPoint?: string };
+        const data = (await res.json()) as {
+          error?: string;
+          initPoint?: string;
+          purchaseId?: string;
+        };
         if (!res.ok) throw new Error(data.error || "No se pudo iniciar el pago");
         if (data.initPoint) {
+          if (data.purchaseId) rememberAdPurchaseId(data.purchaseId);
           window.location.href = data.initPoint;
           return;
         }

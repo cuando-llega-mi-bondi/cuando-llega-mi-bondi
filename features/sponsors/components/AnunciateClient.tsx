@@ -16,6 +16,7 @@ import {
   detectAdPlatform,
   tryComposeAdHref,
 } from "@features/sponsors/lib/destination";
+import { getRememberedAdPurchaseIds } from "@features/sponsors/lib/myAds";
 import { useAdCheckout } from "@features/sponsors/hooks/useAdCheckout";
 import { AdCreativeCard } from "./AdCreativeCard";
 import { AdHistory } from "./AdHistory";
@@ -76,6 +77,7 @@ export function AnunciateClient() {
   const [amountDraft, setAmountDraft] = useState("");
   const [amountFocused, setAmountFocused] = useState(false);
   const [acceptedTerms, setAcceptedTerms] = useState(false);
+  const [rememberedIds] = useState(() => getRememberedAdPurchaseIds());
 
   const podium = useMemo(() => board?.podium ?? [], [board]);
   const min = board?.minToEnterArs ?? 1_000;
@@ -471,7 +473,7 @@ export function AnunciateClient() {
           </p>
         </form>
 
-        <AdHistory liveIds={podium.map((entry) => entry.id)} />
+        <AdHistory liveIds={podium.map((entry) => entry.id)} mineIds={rememberedIds} />
 
         <p className="text-[12px] leading-relaxed text-muted-foreground">
           Al pagar aceptás los{" "}

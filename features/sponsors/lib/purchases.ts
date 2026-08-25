@@ -2,18 +2,21 @@ import { createAdminClient } from "@/lib/server/supabaseAdmin";
 import {
   AD_PODIUM_SIZE,
   compareAdBids,
+  groupAdContributions,
   minToEnterArs,
   minToLeadArs,
+  type AdContribution,
 } from "@features/sponsors/lib/board";
 import { adSlotFloorArs, adSlotStepArs } from "@features/sponsors/lib/pricing";
+import { DEV_FIXTURE_ADS } from "@features/sponsors/lib/devFixture";
 import { supabase as publicSupabase } from "@shared/infra/supabase";
 
 export type AdPurchaseStatus = "pending" | "approved" | "rejected";
 
 /** Columnas del aviso que son públicas (el resto queda sin GRANT para anon). */
-const BOARD_COLUMNS = "id, title, href, tagline, amount_ars, created_at";
+const BOARD_COLUMNS = "id, title, href, tagline, amount_ars, created_at, boosted_from_id";
 
-/** Tope de lo que trae el historial de una: son pocos y no queremos paginar todavía. */
+/** Tope de cuántos grupos (negocios) trae el historial: son pocos y no queremos paginar todavía. */
 const HISTORY_LIMIT = 30;
 
 export interface AdPurchaseInsert {
@@ -24,6 +27,8 @@ export interface AdPurchaseInsert {
   status: "pending";
   payer_email: string;
   accepted_terms_at: string;
+  /** Si es un boost, el id del aviso raíz al que se suma este pago. */
+  boosted_from_id: string | null;
 }
 
 export interface AdPurchase {
@@ -38,6 +43,7 @@ export interface AdPurchase {
   mercadopago_preference_id: string | null;
   mercadopago_payment_id: string | null;
   payer_email: string | null;
+  boosted_from_id: string | null;
 }
 
 export interface AdBoardEntry {
@@ -72,12 +78,14 @@ type BoardRow = {
   tagline: string | null;
   amount_ars: number | null;
   created_at: string;
+  boosted_from_id: string | null;
 };
 
-function toBoardEntry(row: BoardRow): AdBoardEntry | null {
+function toContribution(row: BoardRow): AdContribution | null {
   if (!row.title || !row.href) return null;
   return {
     id: row.id,
+    boostedFromId: row.boosted_from_id,
     title: row.title,
     href: row.href,
     tagline: row.tagline,
@@ -99,26 +107,41 @@ function emptyBoard(): AdBoardView {
   };
 }
 
-export async function getAdBoard(): Promise<AdBoardView> {
+/**
+ * Trae todas las filas aprobadas y las agrupa (raíz + sus boosts). Sin
+ * `.limit`: agrupar después de cortar podría perder boosts de un aviso que
+ * quedó afuera de la página. La tabla es chica, no hace falta paginar acá.
+ *
+ * En dev se suman los avisos ficticios de `devFixture.ts` (aunque la query
+ * real falle o esté vacía) para poder testear el ranking/boost visualmente
+ * sin depender de datos reales ni de que la migración ya esté aplicada.
+ */
+async function fetchApprovedGroups() {
   const { data, error } = await publicSupabase
     .from("ad_purchases")
     .select(BOARD_COLUMNS)
-    .eq("status", "approved")
-    .order("amount_ars", { ascending: false })
-    .order("created_at", { ascending: true })
-    .limit(AD_PODIUM_SIZE);
+    .eq("status", "approved");
 
   if (error) {
-    console.error("ad board read failed:", error.message);
-    return emptyBoard();
+    console.error("ad purchases read failed:", error.message);
+    if (DEV_FIXTURE_ADS.length === 0) return null;
   }
+
+  const contributions = error
+    ? []
+    : ((data ?? []) as BoardRow[]).map(toContribution).filter((row): row is AdContribution => row !== null);
+
+  const groups = [...groupAdContributions(contributions), ...DEV_FIXTURE_ADS];
+  return groups.sort(compareAdBids);
+}
+
+export async function getAdBoard(): Promise<AdBoardView> {
+  const groups = await fetchApprovedGroups();
+  if (!groups) return emptyBoard();
 
   const floorArs = adSlotFloorArs();
   const stepArs = adSlotStepArs();
-  const podium = ((data ?? []) as BoardRow[])
-    .map(toBoardEntry)
-    .filter((entry): entry is AdBoardEntry => entry !== null)
-    .sort(compareAdBids);
+  const podium = groups.slice(0, AD_PODIUM_SIZE);
   const amounts = podium.map((entry) => entry.amountArs);
 
   return {
@@ -132,23 +155,14 @@ export async function getAdBoard(): Promise<AdBoardView> {
 }
 
 export async function getAdHistory(): Promise<AdHistoryView> {
-  const { data, error, count } = await publicSupabase
-    .from("ad_purchases")
-    .select(BOARD_COLUMNS, { count: "exact" })
-    .eq("status", "approved")
-    .order("created_at", { ascending: false })
-    .limit(HISTORY_LIMIT);
+  const groups = await fetchApprovedGroups();
+  if (!groups) return { entries: [], total: 0 };
 
-  if (error) {
-    console.error("ad history read failed:", error.message);
-    return { entries: [], total: 0 };
-  }
+  const entries = [...groups]
+    .sort((a, b) => b.since.localeCompare(a.since))
+    .slice(0, HISTORY_LIMIT);
 
-  const entries = ((data ?? []) as BoardRow[])
-    .map(toBoardEntry)
-    .filter((entry): entry is AdBoardEntry => entry !== null);
-
-  return { entries, total: count ?? entries.length };
+  return { entries, total: groups.length };
 }
 
 export async function createAdPurchase(data: AdPurchaseInsert): Promise<{ id: string }> {
@@ -192,7 +206,7 @@ export async function getAdPurchase(id: string): Promise<AdPurchase | null> {
   const { data, error } = await supabase
     .from("ad_purchases")
     .select(
-      "id, title, href, tagline, amount_ars, status, went_live, created_at, mercadopago_preference_id, mercadopago_payment_id, payer_email",
+      "id, title, href, tagline, amount_ars, status, went_live, created_at, mercadopago_preference_id, mercadopago_payment_id, payer_email, boosted_from_id",
     )
     .eq("id", id)
     .maybeSingle();
@@ -224,26 +238,30 @@ export async function updateAdPurchaseStatusAtomically(
 }
 
 /**
- * Cuántos pagos aprobados le ganan a este: 0 es el puesto 1. Se calcula contra
- * la tabla en vez de guardarse, así el puesto no queda viejo si aparece un pago
- * más alto (o si le damos de baja a alguien a mano).
+ * Puesto del GRUPO al que pertenece este pago (0 es el puesto 1): su propio
+ * total si es una raíz, o el total de la raíz que boostea. Se recalcula
+ * contra la tabla en vez de guardarse, así no queda viejo si cambia algún
+ * monto o aparece un boost nuevo.
  */
 export async function getAdPurchaseRank(purchase: AdPurchase): Promise<number> {
   const supabase = createAdminClient();
-  const { count, error } = await supabase
+  const { data, error } = await supabase
     .from("ad_purchases")
-    .select("id", { count: "exact", head: true })
-    .eq("status", "approved")
-    .neq("id", purchase.id)
-    .or(
-      `amount_ars.gt.${purchase.amount_ars},and(amount_ars.eq.${purchase.amount_ars},created_at.lt."${purchase.created_at}")`,
-    );
+    .select("id, title, href, tagline, amount_ars, created_at, boosted_from_id")
+    .eq("status", "approved");
 
   if (error) {
     console.error("Error ranking ad purchase:", error);
     throw new Error("Failed to rank purchase");
   }
-  return count ?? 0;
+
+  const contributions = ((data ?? []) as BoardRow[])
+    .map(toContribution)
+    .filter((row): row is AdContribution => row !== null);
+  const groups = groupAdContributions(contributions).sort(compareAdBids);
+  const rootId = purchase.boosted_from_id ?? purchase.id;
+  const rank = groups.findIndex((group) => group.id === rootId);
+  return rank === -1 ? groups.length : rank;
 }
 
 /** Marca el pago recién aprobado si entró al podio. Devuelve si salió al aire. */

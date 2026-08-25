@@ -2,18 +2,30 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { parseAdHref } from "@features/sponsors/lib/href";
 import { formatArs } from "@features/sponsors/lib/pricing";
-import { createAdPurchase, getAdBoard, updateAdPurchase } from "@features/sponsors/lib/purchases";
+import {
+  createAdPurchase,
+  getAdBoard,
+  getAdPurchase,
+  updateAdPurchase,
+} from "@features/sponsors/lib/purchases";
 import { createAdPreference } from "@/lib/mercadopago/client";
 import { isAdCheckoutConfigured } from "@/lib/server/supabaseAdmin";
 
-const checkoutSchema = z.object({
-  title: z.string().trim().min(2).max(80),
-  href: z.string().trim().min(4).max(2048),
-  tagline: z.string().trim().max(140).optional(),
-  amountArs: z.number().int().positive().max(2_000_000),
-  email: z.string().email().max(255).optional(),
-  acceptedTerms: z.literal(true),
-});
+const checkoutSchema = z
+  .object({
+    title: z.string().trim().min(2).max(80).optional(),
+    href: z.string().trim().min(4).max(2048).optional(),
+    tagline: z.string().trim().max(140).optional(),
+    amountArs: z.number().int().positive().max(2_000_000),
+    email: z.string().email().max(255).optional(),
+    acceptedTerms: z.literal(true),
+    boostedFromId: z.string().uuid().optional(),
+  })
+  .superRefine((data, ctx) => {
+    if (data.boostedFromId) return;
+    if (!data.title) ctx.addIssue({ code: "custom", path: ["title"], message: "Falta el título" });
+    if (!data.href) ctx.addIssue({ code: "custom", path: ["href"], message: "Falta el link" });
+  });
 
 const MAX_CHECKOUT_AMOUNT = 2_000_000;
 
@@ -41,36 +53,56 @@ export async function POST(request: Request) {
       );
     }
 
-    let href: string;
-    try {
-      href = parseAdHref(validation.data.href);
-    } catch (error) {
-      return NextResponse.json(
-        { error: error instanceof Error ? error.message : "El link es inválido" },
-        { status: 400 },
-      );
-    }
-
-    const board = await getAdBoard();
-    const { title, tagline, amountArs, email } = validation.data;
-    if (amountArs < board.minToEnterArs) {
-      return NextResponse.json(
-        { error: `Tenés que poner al menos ${formatArs(board.minToEnterArs)}` },
-        { status: 409 },
-      );
-    }
+    const { amountArs, email, boostedFromId } = validation.data;
     if (amountArs > MAX_CHECKOUT_AMOUNT) {
       return NextResponse.json({ error: "El monto supera el máximo" }, { status: 400 });
+    }
+
+    let title: string;
+    let href: string;
+    let tagline: string | null;
+
+    if (boostedFromId) {
+      // Un boost no "entra" al ranking desde cero: se suma a un aviso que ya
+      // está aprobado, así que el piso mínimo no aplica acá. El contenido
+      // sale de la raíz, no de lo que mande el cliente — evita que alguien
+      // boostee un id ajeno con un título/link distinto.
+      const root = await getAdPurchase(boostedFromId);
+      if (!root || root.status !== "approved") {
+        return NextResponse.json({ error: "Ese aviso no existe o no está aprobado" }, { status: 404 });
+      }
+      title = root.title;
+      href = root.href;
+      tagline = root.tagline;
+    } else {
+      try {
+        href = parseAdHref(validation.data.href!);
+      } catch (error) {
+        return NextResponse.json(
+          { error: error instanceof Error ? error.message : "El link es inválido" },
+          { status: 400 },
+        );
+      }
+      const board = await getAdBoard();
+      if (amountArs < board.minToEnterArs) {
+        return NextResponse.json(
+          { error: `Tenés que poner al menos ${formatArs(board.minToEnterArs)}` },
+          { status: 409 },
+        );
+      }
+      title = validation.data.title!;
+      tagline = validation.data.tagline?.trim() ? validation.data.tagline.trim() : null;
     }
 
     const purchase = await createAdPurchase({
       title,
       href,
-      tagline: tagline?.trim() ? tagline.trim() : null,
+      tagline,
       amount_ars: amountArs,
       status: "pending",
       payer_email: email || "pending@checkout",
       accepted_terms_at: new Date().toISOString(),
+      boosted_from_id: boostedFromId ?? null,
     });
 
     const mpPreference = await createAdPreference({
