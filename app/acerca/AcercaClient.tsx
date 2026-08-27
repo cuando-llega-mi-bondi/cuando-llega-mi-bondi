@@ -384,6 +384,39 @@ export function AcercaClient() {
                     </div>
                 </section>
 
+                {/* ── BLOG ──────────────────────────────────────────── */}
+                <section className="space-y-3">
+                    <h2 className="text-[10.4px] font-normal uppercase tracking-wider text-muted-foreground">
+                        Blog
+                    </h2>
+                    <Link
+                        href="/blog"
+                        className="flex items-center justify-between gap-3 rounded-xl border border-border bg-card p-4 no-underline transition-colors hover:border-secondary"
+                    >
+                        <div className="min-w-0">
+                            <p className="text-[14px] font-semibold text-foreground">
+                                Comparativas y guías
+                            </p>
+                            <p className="text-[12px] text-muted-foreground opacity-80">
+                                Bondi MDP vs. la app oficial, y cómo saber cuándo llega el colectivo
+                            </p>
+                        </div>
+                        <svg
+                            className="shrink-0 text-muted-foreground"
+                            width="16"
+                            height="16"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2.5"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                        >
+                            <polyline points="9 18 15 12 9 6" />
+                        </svg>
+                    </Link>
+                </section>
+
                 {/* ── FAQ ───────────────────────────────────────────── */}
                 <section className="space-y-3">
                     <h2 className="text-[10.4px] font-normal uppercase tracking-wider text-muted-foreground">

@@ -23,6 +23,7 @@ const KNOWN_PATH_PATTERNS: RegExp[] = [
     /^\/recorrido(\/[^/]+)?$/,
     /^\/terminos$/,
     /^\/un-mes-en-numeros$/,
+    /^\/blog(\/[^/]+)?$/,
     /^\/contacto$/,
     /^\/opengraph-image$/,
 ];

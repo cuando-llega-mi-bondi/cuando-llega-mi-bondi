@@ -373,8 +373,8 @@ export default function PrimerMesClient() {
                         <span className="text-primary">MDP</span>
                     </Link>
                     <div className="flex items-center gap-6">
-                        <Link href="/notas" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-                            Notas
+                        <Link href="/blog" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                            Blog
                         </Link>
                         <Link
                             href="/"
@@ -398,8 +398,8 @@ export default function PrimerMesClient() {
                         <span aria-hidden="true" className="opacity-40">
                             ›
                         </span>
-                        <Link href="/notas" className="hover:text-primary transition-colors">
-                            Notas
+                        <Link href="/blog" className="hover:text-primary transition-colors">
+                            Blog
                         </Link>
                         <span aria-hidden="true" className="opacity-40">
                             ›

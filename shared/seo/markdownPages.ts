@@ -15,6 +15,9 @@ export const MARKDOWN_ROUTES: Record<string, string> = {
     "/privacidad": "privacidad",
     "/contacto": "contacto",
     "/un-mes-en-numeros": "un-mes-en-numeros",
+    "/blog": "blog",
+    "/blog/bondi-mdp-vs-cuando-llega": "blog-bondi-mdp-vs-cuando-llega",
+    "/blog/como-saber-cuando-llega-el-colectivo-en-mar-del-plata": "blog-como-saber-cuando-llega",
 };
 
 const PAGES: Record<string, string> = {
@@ -127,6 +130,53 @@ Diario La Capital de Mar del Plata y Mi8 cubrieron el lanzamiento, describiendo 
 - [Inicio](${BASE}/)
 - [Sobre Bondi MDP](${BASE}/acerca)
 - [Repositorio en GitHub](https://github.com/cuando-llega-mi-bondi/cuando-llega-mi-bondi)
+`,
+    blog: `# Blog — Bondi MDP
+
+Comparativas y guías sobre transporte público en Mar del Plata.
+
+## Artículos
+- [Bondi MDP vs. Cuándo Llega](${BASE}/blog/bondi-mdp-vs-cuando-llega) — comparativa entre la app oficial de la Municipalidad de General Pueyrredón y Bondi MDP.
+- [Cómo saber cuándo llega el colectivo en Mar del Plata](${BASE}/blog/como-saber-cuando-llega-el-colectivo-en-mar-del-plata) — guía con todas las formas de consultar horarios en tiempo real.
+
+## Más
+- [Inicio](${BASE}/)
+- [Sobre Bondi MDP](${BASE}/acerca)
+`,
+
+    "blog-bondi-mdp-vs-cuando-llega": `# Bondi MDP vs. Cuándo Llega: comparativa de apps de colectivos en Mar del Plata
+
+Comparativa neutral, hecha por el equipo de Bondi MDP, entre la app oficial "Cuándo Llega" de la Municipalidad de General Pueyrredón (MGP) y Bondi MDP.
+
+## En qué se parecen
+Ambas son gratuitas y usan los mismos datos oficiales en tiempo real de la MGP.
+
+## Diferencias
+- **Instalación**: "Cuándo Llega" requiere descarga desde Google Play o App Store. Bondi MDP es una PWA instalable directo desde el navegador, sin tienda de apps.
+- **Registro**: Bondi MDP no pide cuenta.
+- **Cobertura**: Bondi MDP suma la línea 221 (Costa Azul) vía trazado manual, no incluida en la API oficial.
+- **Código**: Bondi MDP es [código abierto](https://github.com/cuando-llega-mi-bondi/cuando-llega-mi-bondi).
+
+## Quién hizo Bondi MDP
+Nicolás Jiménez y Matias Celiz Ramos, dos desarrolladores marplatenses. Cobertura de prensa en Diario La Capital de Mar del Plata y Mi8.
+
+## Más
+- [Blog](${BASE}/blog)
+- [Inicio](${BASE}/)
+`,
+
+    "blog-como-saber-cuando-llega": `# Cómo saber cuándo llega el colectivo en Mar del Plata
+
+Guía de las formas disponibles para consultar el arribo de colectivos en tiempo real en Mar del Plata.
+
+## Opciones
+- App oficial "Cuándo Llega" de la Municipalidad de General Pueyrredón.
+- [Bondi MDP](${BASE}/) — alternativa PWA, sin registro, con la misma data oficial.
+- Consultá directo en [/consultar](${BASE}/consultar), mirá el [recorrido de tu línea](${BASE}/recorrido), planificá con [cómo llego](${BASE}/como-llego) o encontrá la [parada más cercana](${BASE}/paradas-cerca).
+
+## Más
+- [Comparativa Bondi MDP vs. Cuándo Llega](${BASE}/blog/bondi-mdp-vs-cuando-llega)
+- [Blog](${BASE}/blog)
 `,
 };
 

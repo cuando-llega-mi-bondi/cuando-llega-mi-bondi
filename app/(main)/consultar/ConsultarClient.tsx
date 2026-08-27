@@ -9,6 +9,7 @@ import { FavoritosQuickList } from "@features/favorites/components/FavoritosQuic
 import { SponsorSlot } from "@features/sponsors/components/SponsorSlot";
 import { PageShell } from "@shared/layout/PageShell";
 import { PageHeader } from "@shared/layout/PageHeader";
+import { Footer } from "@shared/layout/Footer";
 import { IconLocation } from "@shared/icons/IconLocation";
 import { ConsultarMapPane } from "./ConsultarMapPane";
 
@@ -65,6 +66,10 @@ export function ConsultarClient({ children }: { children?: ReactNode }) {
         <div className="hidden lg:relative lg:block lg:min-w-0 lg:flex-1 lg:overflow-hidden lg:rounded-2xl lg:border lg:border-border lg:bg-muted">
           <ConsultarMapPane />
         </div>
+      </div>
+      {/* Solo mobile: en desktop el layout fluid queda a altura fija (dvh) sin scroll de página. */}
+      <div className="lg:hidden">
+        <Footer />
       </div>
     </PageShell>
   );

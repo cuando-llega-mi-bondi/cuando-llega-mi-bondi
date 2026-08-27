@@ -23,6 +23,13 @@ export function Footer() {
                 >
                     Términos del lugar
                 </Link>
+                {" · "}
+                <Link
+                    href="/blog"
+                    className="underline decoration-border underline-offset-2 transition-colors hover:text-foreground"
+                >
+                    Blog
+                </Link>
             </p>
         </footer>
     );

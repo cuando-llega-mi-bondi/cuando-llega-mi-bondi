@@ -2,6 +2,7 @@ import { MetadataRoute } from "next";
 import { cacheLife } from "next/cache";
 import { getLineas } from "@/lib/server/loadStaticDump";
 import { lineaToSlug } from "@/lib/server/lineaSlug";
+import { ARTICLES } from "@features/blog/data/articles";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     "use cache";
@@ -48,6 +49,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
             priority: 0.5,
         },
         {
+            url: `${baseUrl}/blog`,
+            lastModified: now,
+            changeFrequency: "weekly",
+            priority: 0.6,
+        },
+        {
             url: `${baseUrl}/anunciate`,
             lastModified: now,
             changeFrequency: "weekly",
@@ -88,5 +95,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         priority: 0.7,
     }));
 
-    return [...staticRoutes, ...lineaRoutes];
+    const blogRoutes: MetadataRoute.Sitemap = ARTICLES.map((a) => ({
+        url: `${baseUrl}/blog/${a.slug}`,
+        lastModified: new Date(a.dateModified),
+        changeFrequency: "monthly" as const,
+        priority: 0.6,
+    }));
+
+    return [...staticRoutes, ...lineaRoutes, ...blogRoutes];
 }
