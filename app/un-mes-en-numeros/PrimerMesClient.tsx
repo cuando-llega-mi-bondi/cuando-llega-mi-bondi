@@ -571,12 +571,12 @@ export default function PrimerMesClient() {
                             <div className="md:col-span-3 text-sm sm:text-base text-muted-foreground space-y-4 leading-relaxed">
 
                                 <p>
-                                    Durante años, los usuarios del transporte público de Mar del Plata dependieron
-                                    de <strong className="text-foreground font-semibold">&ldquo;Cuándo Llega&rdquo;</strong>,
-                                    la aplicación de referencia para consultar tiempos de arribo de colectivos.
-                                    Cuando esa app fue discontinuada y removida del ecosistema de distribución de
-                                    Google, la ciudad quedó sin herramientas digitales confiables para planificar
-                                    viajes en transporte público.
+                                    Los usuarios del transporte público de Mar del Plata dependen de{" "}
+                                    <strong className="text-foreground font-semibold">&ldquo;Cuándo Llega&rdquo;</strong>,
+                                    la app oficial de la Municipalidad para consultar tiempos de arribo de colectivos.
+                                    Durante un tiempo dejó de estar disponible en las tiendas de aplicaciones, y la
+                                    ciudad se quedó temporalmente sin una alternativa digital confiable para
+                                    planificar viajes en transporte público.
                                 </p>
 
 
@@ -596,7 +596,7 @@ export default function PrimerMesClient() {
                                     <strong className="text-foreground font-semibold">open source</strong>. El código
                                     fuente está disponible públicamente en{" "}
                                     <a
-                                        href="https://github.com"
+                                        href="https://github.com/cuando-llega-mi-bondi/cuando-llega-mi-bondi"
                                         rel="noopener noreferrer"
                                         target="_blank"
                                         className="text-primary underline underline-offset-4 hover:opacity-80 transition-opacity"
@@ -631,8 +631,8 @@ export default function PrimerMesClient() {
                                     <div>
                                         <p className="text-xs font-semibold text-foreground mb-0.5">El vacío</p>
                                         <p className="text-xs text-muted-foreground leading-normal">
-                                            &ldquo;Cuándo Llega&rdquo; fue discontinuada. Mar del Plata quedó sin app
-                                            de colectivos en tiempo real.
+                                            &ldquo;Cuándo Llega&rdquo; dejó de estar disponible por un tiempo. Mar del
+                                            Plata se quedó sin alternativa digital de colectivos en tiempo real.
                                         </p>
                                     </div>
                                 </div>
@@ -1244,7 +1244,7 @@ export default function PrimerMesClient() {
                         {/* Core Web Vitals Scorecards */}
                         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
 
-                            <div className="bg-card border-t-4 border-[#1A9EDE] border-x border-b border-border rounded-xl p-6 text-center flex flex-col items-center">
+                            <div className="bg-card border border-border rounded-xl p-6 text-center flex flex-col items-center">
                                 <div className="w-11 h-11 rounded-lg bg-[#1A9EDE]/12 text-[#1A9EDE] flex items-center justify-center mb-4">
                                     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                                         <circle cx="12" cy="12" r="10" />
@@ -1265,7 +1265,7 @@ export default function PrimerMesClient() {
 
 
 
-                            <div className="bg-primary/5 border-t-4 border-[#F7C325] border-x border-b border-border rounded-xl p-6 text-center flex flex-col items-center">
+                            <div className="bg-primary/5 border border-border rounded-xl p-6 text-center flex flex-col items-center">
                                 <div className="w-11 h-11 rounded-lg bg-primary/12 text-primary flex items-center justify-center mb-4">
                                     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                                         <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
@@ -1288,7 +1288,7 @@ export default function PrimerMesClient() {
 
 
 
-                            <div className="bg-card border-t-4 border-[#19BC6F] border-x border-b border-border rounded-xl p-6 text-center flex flex-col items-center">
+                            <div className="bg-card border border-border rounded-xl p-6 text-center flex flex-col items-center">
                                 <div className="w-11 h-11 rounded-lg bg-success/12 text-[#19BC6F] flex items-center justify-center mb-4">
                                     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                                         <rect x="3" y="3" width="7" height="7" rx="1" />

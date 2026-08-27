@@ -12,7 +12,7 @@ export const instant = false;
 
 export const metadata: Metadata = {
     title: {
-        absolute: "Recorridos de colectivos en Mar del Plata — BondiMDP",
+        absolute: "Recorridos de colectivos en Mar del Plata — Bondi MDP",
     },
     description:
         "Consultá el recorrido completo de cada línea de bondi en Mar del Plata. Paradas, mapas y horarios actualizados en tiempo real.",
@@ -29,7 +29,7 @@ export const metadata: Metadata = {
         type: "website",
         locale: "es_AR",
         url: "https://bondimdp.com.ar/recorrido",
-        title: "Recorridos de colectivos en Mar del Plata — BondiMDP",
+        title: "Recorridos de colectivos en Mar del Plata — Bondi MDP",
         description:
             "Consultá el recorrido completo de cada línea de bondi. Paradas, mapas y horarios en tiempo real.",
         siteName: "Bondi MDP",

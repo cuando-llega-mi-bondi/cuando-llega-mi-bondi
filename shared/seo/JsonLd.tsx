@@ -28,14 +28,10 @@ export function JsonLd() {
         "@type": "WebApplication",
         ...appBase,
         operatingSystem: "All",
-    };
-
-    const mobileApp = {
-        "@context": "https://schema.org",
-        "@type": "MobileApplication",
-        ...appBase,
-        operatingSystem: "Android, iOS",
-        installUrl: "https://bondimdp.com.ar",
+        areaServed: {
+            "@type": "City",
+            name: "Mar del Plata",
+        },
     };
 
     const organization = {
@@ -57,6 +53,13 @@ export function JsonLd() {
             "addressRegion": "Buenos Aires",
             "addressCountry": "AR",
         },
+        "areaServed": {
+            "@type": "City",
+            "name": "Mar del Plata",
+        },
+        "sameAs": [
+            "https://github.com/cuando-llega-mi-bondi/cuando-llega-mi-bondi",
+        ],
     };
 
     const webSite = {
@@ -74,17 +77,6 @@ export function JsonLd() {
         }
     };
 
-    const speakable = {
-        "@context": "https://schema.org",
-        "@type": "WebPage",
-        "name": "Bondi MDP",
-        "speakable": {
-            "@type": "SpeakableSpecification",
-            "cssSelector": [".arrival-times", ".route-info"]
-        },
-        "url": "https://bondimdp.com.ar"
-    };
-
     return (
         <>
             <script
@@ -93,19 +85,11 @@ export function JsonLd() {
             />
             <script
                 type="application/ld+json"
-                dangerouslySetInnerHTML={{ __html: JSON.stringify(mobileApp) }}
-            />
-            <script
-                type="application/ld+json"
                 dangerouslySetInnerHTML={{ __html: JSON.stringify(organization) }}
             />
             <script
                 type="application/ld+json"
                 dangerouslySetInnerHTML={{ __html: JSON.stringify(webSite) }}
-            />
-            <script
-                type="application/ld+json"
-                dangerouslySetInnerHTML={{ __html: JSON.stringify(speakable) }}
             />
         </>
     );

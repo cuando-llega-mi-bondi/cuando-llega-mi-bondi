@@ -64,6 +64,18 @@ const nextConfig: NextConfig = {
           },
         ],
       },
+      {
+        // CSP no incluida: el sitio carga AdSense, GA, Clarity, tiles OSM y
+        // Supabase — armar un allowlist completo es un cambio aparte, no algo
+        // para colar en un pase de SEO.
+        source: "/(.*)",
+        headers: [
+          { key: "Strict-Transport-Security", value: "max-age=63072000; includeSubDomains; preload" },
+          { key: "X-Content-Type-Options", value: "nosniff" },
+          { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+          { key: "Permissions-Policy", value: "geolocation=(self)" },
+        ],
+      },
     ];
   },
 

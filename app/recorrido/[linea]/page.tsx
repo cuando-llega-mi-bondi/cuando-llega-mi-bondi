@@ -147,11 +147,16 @@ export default async function LineaRecorridoPage({
             url: BASE_URL,
         },
         about: {
-            "@type": "BusTrip",
-            name: `Línea ${nombre}`,
+            "@type": "Service",
+            serviceType: `Línea de colectivo ${nombre}`,
+            areaServed: {
+                "@type": "City",
+                name: "Mar del Plata",
+            },
             provider: {
                 "@type": "Organization",
-                name: "Transporte público de Mar del Plata",
+                name: "Bondi MDP",
+                url: BASE_URL,
             },
         },
     };

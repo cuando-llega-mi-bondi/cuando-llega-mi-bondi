@@ -57,6 +57,41 @@ import PrimerMesClient from "./PrimerMesClient";
 // See: https://nextjs.org/docs/app/guides/migrating-to-cache-components
 export const instant = false;
 
+const articleJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    headline: "Bondi MDP: estadísticas del primer mes — 19.267 usuarios en Mar del Plata",
+    description:
+        "19.267 usuarios activos, 300.000 vistas y ratio de fidelidad 2:1 en 30 días para la app de colectivos en tiempo real de Mar del Plata.",
+    datePublished: "2026-05-28T09:00:00-03:00",
+    dateModified: "2026-05-28T09:00:00-03:00",
+    author: [
+        { "@type": "Person", name: "Nicolás Jiménez", url: "https://dotfn.dev" },
+        { "@type": "Person", name: "Matias Celiz Ramos", url: "https://celizin.dev" },
+    ],
+    publisher: {
+        "@type": "Organization",
+        name: "Bondi MDP",
+        logo: {
+            "@type": "ImageObject",
+            url: "https://bondimdp.com.ar/icon-512x512.png",
+        },
+    },
+    mainEntityOfPage: {
+        "@type": "WebPage",
+        "@id": "https://bondimdp.com.ar/un-mes-en-numeros",
+    },
+    image: "https://bondimdp.com.ar/og/estadisticas-1-mes.jpg",
+};
+
 export default function Page() {
-    return <PrimerMesClient />;
+    return (
+        <>
+            <script
+                type="application/ld+json"
+                dangerouslySetInnerHTML={{ __html: JSON.stringify(articleJsonLd) }}
+            />
+            <PrimerMesClient />
+        </>
+    );
 }

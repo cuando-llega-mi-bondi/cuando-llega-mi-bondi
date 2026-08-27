@@ -7,10 +7,10 @@ export const instant = false;
 
 export const metadata: Metadata = {
     title: {
-        absolute: "¿Qué es BondiMDP? La app de colectivos de Mar del Plata",
+        absolute: "¿Qué es Bondi MDP? La app de colectivos de Mar del Plata",
     },
     description:
-        "BondiMDP es la app gratuita para seguir el bondi en tiempo real en Mar del Plata. Conocé cómo funciona, quién la hace y cómo reportar problemas.",
+        "Bondi MDP es la app gratuita para seguir el bondi en tiempo real en Mar del Plata. Conocé cómo funciona, quién la hace y cómo reportar problemas.",
     alternates: {
         canonical: "/acerca",
     },
@@ -18,14 +18,14 @@ export const metadata: Metadata = {
         type: "website",
         locale: "es_AR",
         url: "https://bondimdp.com.ar/acerca",
-        title: "¿Qué es BondiMDP? La app de colectivos de Mar del Plata",
+        title: "¿Qué es Bondi MDP? La app de colectivos de Mar del Plata",
         description:
             "App gratuita para seguir el bondi en tiempo real en Mar del Plata. Conocé al equipo y cómo funciona.",
         siteName: "Bondi MDP",
     },
     twitter: {
         card: "summary",
-        title: "¿Qué es BondiMDP?",
+        title: "¿Qué es Bondi MDP?",
         description:
             "La app gratuita para seguir el bondi en tiempo real en Mar del Plata.",
     },

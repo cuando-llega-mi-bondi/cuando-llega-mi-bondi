@@ -26,7 +26,7 @@ const inter = Inter({
 export const metadata: Metadata = {
     metadataBase: new URL("https://bondimdp.com.ar"),
     title: {
-        default: "Bondi MDP — App de colectivos en Mar del Plata",
+        default: "Bondi MDP — Cuándo llega tu colectivo en Mar del Plata",
         template: "%s | Bondi MDP",
     },
     description:
@@ -58,14 +58,14 @@ export const metadata: Metadata = {
         type: "website",
         locale: "es_AR",
         url: "https://bondimdp.com.ar",
-        title: "Bondi MDP — App de colectivos en Mar del Plata",
+        title: "Bondi MDP — Cuándo llega tu colectivo en Mar del Plata",
         description:
             "App gratuita para saber cuándo llega tu bondi en Mar del Plata. Datos oficiales de MGP en una interfaz rápida, instalable en el celular.",
         siteName: "Bondi MDP",
     },
     twitter: {
         card: "summary_large_image",
-        title: "Bondi MDP — App de colectivos MDP",
+        title: "Bondi MDP — Cuándo llega tu colectivo en Mar del Plata",
         description:
             "App gratuita de colectivos en tiempo real para Mar del Plata. No pierdas más tiempo esperando el bondi.",
     },

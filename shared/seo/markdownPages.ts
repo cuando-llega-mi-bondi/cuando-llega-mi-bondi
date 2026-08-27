@@ -14,6 +14,7 @@ export const MARKDOWN_ROUTES: Record<string, string> = {
     "/acerca": "acerca",
     "/privacidad": "privacidad",
     "/contacto": "contacto",
+    "/un-mes-en-numeros": "un-mes-en-numeros",
 };
 
 const PAGES: Record<string, string> = {
@@ -109,6 +110,23 @@ Escribinos a maticelizramos@gmail.com para ejercer tus derechos sobre datos pers
 
 ## Quiénes somos
 [Nicolás Jiménez](https://dotfn.dev) y [Matias Celiz Ramos](https://celizin.dev). Código en [GitHub](https://github.com/cuando-llega-mi-bondi/cuando-llega-mi-bondi). Más en [/acerca](${BASE}/acerca).
+`,
+    "un-mes-en-numeros": `# Bondi MDP: estadísticas del primer mes
+
+> Publicado el 28 de mayo de 2026. Datos estáticos de un período cerrado (29 de abril al 27 de mayo de 2026); no reflejan el uso actual del servicio.
+
+En su primer mes, Bondi MDP registró 19.267 usuarios activos únicos, 87.784 sesiones totales y aproximadamente 300.000 vistas de página. El 91% del tráfico proviene del Partido de General Pueyrredón. Cerca de 2 de cada 3 usuarios volvieron a usar la app, con un promedio de 4,5 visitas por usuario recurrente.
+
+## Por qué existe Bondi MDP
+Mar del Plata dependía de "Cuándo Llega", la app oficial de la Municipalidad. Durante un tiempo dejó de estar disponible en las tiendas de aplicaciones, y la comunidad tech local respondió con Bondi MDP: un proyecto sin fines de lucro, de código abierto, sin registro y sin necesidad de instalación (PWA).
+
+## Cobertura de prensa
+Diario La Capital de Mar del Plata y Mi8 cubrieron el lanzamiento, describiendo a Bondi MDP como "la alternativa a la aplicación Cuándo Llega".
+
+## Más
+- [Inicio](${BASE}/)
+- [Sobre Bondi MDP](${BASE}/acerca)
+- [Repositorio en GitHub](https://github.com/cuando-llega-mi-bondi/cuando-llega-mi-bondi)
 `,
 };
 

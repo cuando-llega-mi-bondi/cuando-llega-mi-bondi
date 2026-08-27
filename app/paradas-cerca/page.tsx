@@ -11,7 +11,7 @@ export const instant = false;
 
 export const metadata: Metadata = {
     title: {
-        absolute: "Paradas de colectivo cerca tuyo — BondiMDP",
+        absolute: "Paradas de colectivo cerca tuyo — Bondi MDP",
     },
     description:
         "Encontrá las paradas de colectivo más cercanas a tu ubicación en Mar del Plata, vistas en el mapa, y consultá qué líneas pasan por cada una.",
@@ -31,14 +31,14 @@ export const metadata: Metadata = {
         type: "website",
         locale: "es_AR",
         url: "https://bondimdp.com.ar/paradas-cerca",
-        title: "Paradas de colectivo cerca tuyo — BondiMDP",
+        title: "Paradas de colectivo cerca tuyo — Bondi MDP",
         description:
             "Mirá en el mapa las paradas de colectivo más cercanas a vos en Mar del Plata y qué líneas pasan por cada una.",
         siteName: "Bondi MDP",
     },
     twitter: {
         card: "summary",
-        title: "Paradas de colectivo cerca tuyo — BondiMDP",
+        title: "Paradas de colectivo cerca tuyo — Bondi MDP",
         description:
             "Las paradas de colectivo más cercanas a tu ubicación en Mar del Plata, en el mapa.",
     },

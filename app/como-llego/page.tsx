@@ -8,7 +8,7 @@ export const instant = false;
 
 export const metadata: Metadata = {
     title: {
-        absolute: "Cómo llego en bondi — BondiMDP",
+        absolute: "Cómo llego en bondi por Mar del Plata — Bondi MDP",
     },
     description:
         "Planificá tu viaje en colectivo por Mar del Plata. Ingresá tu destino y encontrá qué línea tomar, paradas y tiempos de llegada en tiempo real.",
@@ -28,14 +28,14 @@ export const metadata: Metadata = {
         type: "website",
         locale: "es_AR",
         url: "https://bondimdp.com.ar/como-llego",
-        title: "Cómo llego en bondi — BondiMDP",
+        title: "Cómo llego en bondi por Mar del Plata — Bondi MDP",
         description:
             "Planificá tu viaje en colectivo por Mar del Plata. Encontrá qué línea tomar, paradas y tiempos en tiempo real.",
         siteName: "Bondi MDP",
     },
     twitter: {
         card: "summary",
-        title: "Cómo llego en bondi — BondiMDP",
+        title: "Cómo llego en bondi por Mar del Plata — Bondi MDP",
         description:
             "Planificá tu viaje en colectivo por Mar del Plata. Paradas, líneas y tiempos en tiempo real.",
     },
