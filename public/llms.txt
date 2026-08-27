@@ -23,7 +23,7 @@ Bondi MDP es un proyecto independiente desarrollado por:
 No es una app oficial de la Municipalidad de General Pueyrredón; es una alternativa comunitaria que consume los mismos datos municipales.
 
 ## Tracción y cobertura de prensa
-Bondi MDP fue cubierta por medios de Mar del Plata como Diario La Capital y Mi8, que la describieron como "la alternativa a la aplicación Cuándo Llega". Más detalles y estadísticas de uso en https://bondimdp.com.ar/un-mes-en-numeros.
+Bondi MDP fue cubierta por medios de Mar del Plata como Diario La Capital y Mi8, que la describieron como "la alternativa a la aplicación Cuándo Llega". Estadísticas de uso actualizadas trimestralmente en https://bondimdp.com.ar/primer-trimestre-en-numeros (informe del primer mes: https://bondimdp.com.ar/un-mes-en-numeros).
 
 ## Blog
 Comparativas y guías sobre transporte público en Mar del Plata en https://bondimdp.com.ar/blog, incluyendo una comparativa directa entre Bondi MDP y la app oficial "Cuándo Llega".

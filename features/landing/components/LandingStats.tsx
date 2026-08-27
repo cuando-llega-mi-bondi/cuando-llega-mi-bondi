@@ -17,27 +17,30 @@ interface Stat {
   icon: LucideIcon;
 }
 
+// Datos del primer trimestre completo (26 may – 23 ago 2026), del mismo
+// informe publicado en /primer-trimestre-en-numeros. Actualizar ahí primero
+// y traer los mismos números acá cada vez que cierre un trimestre.
 const STATS: Stat[] = [
   {
-    count: { to: 19267, sep: true },
-    label: "marplatenses la usan",
+    count: { to: 22893, sep: true },
+    label: "usuarios activos",
     detail: "sin una sola campaña de publicidad",
     icon: Users,
   },
   {
-    count: { to: 300, prefix: "+", suffix: " mil" },
+    count: { to: 763, prefix: "+", suffix: " mil" },
     label: "consultas de arribos",
-    detail: "unas 10.000 por día",
+    detail: "unas 8.500 por día",
     icon: Eye,
   },
   {
-    count: { to: 87784, sep: true },
-    label: "visitas en 30 días",
-    detail: "cada persona volvió 4,5 veces",
+    count: { to: 133694, sep: true },
+    label: "sesiones en el trimestre",
+    detail: "cada persona volvió casi 6 veces",
     icon: Activity,
   },
   {
-    value: "2 de 3",
+    value: "85%",
     label: "usuarios vuelven",
     detail: "la mayoría ya la usa de rutina",
     icon: Repeat,
@@ -46,7 +49,7 @@ const STATS: Stat[] = [
 
 export function LandingStats() {
   return (
-    <LandingSection eyebrow="En números" title="El primer mes" highlight="en la calle">
+    <LandingSection eyebrow="En números" title="El primer trimestre" highlight="en la calle">
       {/* Halo ambiental detrás de toda la grilla — enmarca el bloque como un logro, no solo una lista de datos */}
       <div
         aria-hidden
@@ -69,12 +72,12 @@ export function LandingStats() {
         <span className="font-semibold text-foreground">
           sin un peso en publicidad
         </span>
-        : creció de boca en boca, de parada en parada. Esto pasó en los primeros
-        30 días.
+        : creció de boca en boca, de parada en parada. Esto pasó en los
+        primeros tres meses.
       </motion.p>
 
       {/* 2x2 en vez de 4 en fila: cada tarjeta necesita ancho de sobra para
-          números grandes como "+300 mil" sin desbordar la tarjeta. Mismo
+          números grandes como "+763 mil" sin desbordar la tarjeta. Mismo
           ancho de contenedor que Funciones/Prensa (sin max-w propio), para
           que la página no salte de ancho entre secciones. */}
       <div className="relative grid grid-cols-2 gap-5 lg:gap-6">
@@ -115,10 +118,10 @@ export function LandingStats() {
         ))}
       </div>
 
-      {/* Info de impacto: derivada de los mismos 19.267 usuarios reales,
-          pero sin compararlos contra población total (denominador engañoso:
-          ahí entra gente que nunca viajaría en colectivo). Ritmo de
-          crecimiento en cambio no asume nada del mercado. */}
+      {/* Info de impacto: derivada de los mismos 16.224 usuarios nuevos
+          reales del trimestre, sin compararlos contra población total
+          (denominador engañoso: ahí entra gente que nunca viajaría en
+          colectivo). Ritmo de crecimiento en cambio no asume nada del mercado. */}
       <motion.div
         initial={{ opacity: 0, y: 16 }}
         whileInView={{ opacity: 1, y: 0 }}
@@ -127,19 +130,26 @@ export function LandingStats() {
         className="relative mx-auto mt-8 max-w-2xl rounded-2xl border border-amarillo/25 bg-gradient-to-r from-amarillo/10 via-amarillo/5 to-transparent px-6 py-5 text-center"
       >
         <p className="text-[17px] font-bold text-foreground">
-          Eso es <span className="text-amarillo">más de 600 personas nuevas por día</span>, sin gastar un peso en publicidad.
+          Eso es <span className="text-amarillo">más de 180 personas nuevas por día</span>, sin gastar un peso en publicidad.
         </p>
         <p className="mt-1 text-[12px] text-muted-foreground">
-          19.267 usuarios ÷ los primeros 30 días.
+          16.224 usuarios nuevos ÷ los 90 días del trimestre.
         </p>
       </motion.div>
 
-      <div className="relative mt-8 flex justify-center">
+      <div className="relative mt-8 flex flex-wrap justify-center gap-3">
+        <Link
+          href="/primer-trimestre-en-numeros"
+          className="group inline-flex items-center justify-center gap-2 rounded-full border border-secondary/50 bg-secondary/10 px-6 py-3 text-[14px] font-bold text-foreground transition-colors hover:border-secondary"
+        >
+          Ver el informe completo
+          <ArrowRight className="h-4 w-4 text-amarillo transition-transform group-hover:translate-x-1" />
+        </Link>
         <Link
           href="/un-mes-en-numeros"
           className="group inline-flex items-center justify-center gap-2 rounded-full border border-border bg-card px-6 py-3 text-[14px] font-bold text-foreground transition-colors hover:border-secondary/50"
         >
-          Ver el informe completo
+          Ver el informe del primer mes
           <ArrowRight className="h-4 w-4 text-amarillo transition-transform group-hover:translate-x-1" />
         </Link>
       </div>

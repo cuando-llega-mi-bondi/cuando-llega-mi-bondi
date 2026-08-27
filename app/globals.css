@@ -126,6 +126,7 @@
      */
     height: 100%;
     height: -webkit-fill-available;
+    scroll-behavior: smooth;
     background: var(--background);
     color: var(--foreground);
     font-family: var(--font-inter), system-ui, sans-serif;
@@ -306,6 +307,9 @@ html.dark *::-webkit-scrollbar-thumb {
 }
 
 @media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
   .arrival-row,
   .motion-step,
   .blink,

@@ -15,6 +15,7 @@ export const MARKDOWN_ROUTES: Record<string, string> = {
     "/privacidad": "privacidad",
     "/contacto": "contacto",
     "/un-mes-en-numeros": "un-mes-en-numeros",
+    "/primer-trimestre-en-numeros": "primer-trimestre-en-numeros",
     "/blog": "blog",
     "/blog/bondi-mdp-vs-cuando-llega": "blog-bondi-mdp-vs-cuando-llega",
     "/blog/como-saber-cuando-llega-el-colectivo-en-mar-del-plata": "blog-como-saber-cuando-llega",
@@ -116,7 +117,7 @@ Escribinos a maticelizramos@gmail.com para ejercer tus derechos sobre datos pers
 `,
     "un-mes-en-numeros": `# Bondi MDP: estadísticas del primer mes
 
-> Publicado el 28 de mayo de 2026. Datos estáticos de un período cerrado (29 de abril al 27 de mayo de 2026); no reflejan el uso actual del servicio.
+> Publicado el 28 de mayo de 2026. Datos estáticos de un período cerrado (29 de abril al 27 de mayo de 2026); no reflejan el uso actual del servicio. Para datos más recientes, ver [/primer-trimestre-en-numeros](${BASE}/primer-trimestre-en-numeros).
 
 En su primer mes, Bondi MDP registró 19.267 usuarios activos únicos, 87.784 sesiones totales y aproximadamente 300.000 vistas de página. El 91% del tráfico proviene del Partido de General Pueyrredón. Cerca de 2 de cada 3 usuarios volvieron a usar la app, con un promedio de 4,5 visitas por usuario recurrente.
 
@@ -129,6 +130,32 @@ Diario La Capital de Mar del Plata y Mi8 cubrieron el lanzamiento, describiendo 
 ## Más
 - [Inicio](${BASE}/)
 - [Sobre Bondi MDP](${BASE}/acerca)
+- [Estadísticas del primer trimestre](${BASE}/primer-trimestre-en-numeros)
+- [Repositorio en GitHub](https://github.com/cuando-llega-mi-bondi/cuando-llega-mi-bondi)
+`,
+
+    "primer-trimestre-en-numeros": `# Bondi MDP: el primer trimestre en números
+
+> Publicado el 27 de agosto de 2026. Datos de un período cerrado (26 de mayo al 23 de agosto de 2026); no reflejan el uso actual del servicio.
+
+En su primer trimestre completo, Bondi MDP registró 22.893 usuarios activos, 133.694 sesiones y 762.918 vistas de página, según Google Analytics 4. El 58% de esos usuarios activos y más de la mitad de los usuarios nuevos llegaron en el último mes del período: la curva de crecimiento se acelera, no se aplana.
+
+## Adquisición: sin pauta paga
+59% de las sesiones son directas y 36% llegan por Google orgánico. El resto se reparte entre prensa, redes y buscadores con IA: 585 sesiones llegaron referidas desde ChatGPT en el trimestre, 265 de ellas solo en el último mes.
+
+## Retención
+En los últimos 30 días del trimestre, por cada día-usuario nuevo hubo 4,2 días-usuario de gente recurrente (31.880 recurrentes contra 7.631 nuevos), más del doble de la proporción 2:1 del mes de lanzamiento.
+
+## Uso del producto
+En los últimos 30 días se registraron 284.576 consultas de horario repartidas en 50 líneas de colectivo distintas y más de 500 paradas, sin concentrarse en una sola línea. La pantalla /consultar tuvo 488.284 vistas con 11% de rebote.
+
+## Alcance geográfico
+74% de los usuarios activos están en Mar del Plata. Buenos Aires es la segunda ciudad, con 13.290 usuarios activos, muy por delante de cualquier otra localidad del país.
+
+## Más
+- [Inicio](${BASE}/)
+- [Sobre Bondi MDP](${BASE}/acerca)
+- [Estadísticas del primer mes](${BASE}/un-mes-en-numeros)
 - [Repositorio en GitHub](https://github.com/cuando-llega-mi-bondi/cuando-llega-mi-bondi)
 `,
     blog: `# Blog — Bondi MDP
