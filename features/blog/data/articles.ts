@@ -7,7 +7,7 @@ export const ARTICLES: BlogArticle[] = [
         slug: "bondi-mdp-vs-cuando-llega",
         title: "Bondi MDP vs. Cuándo Llega: comparativa de apps de colectivos en Mar del Plata",
         description:
-            "Bondi MDP y la app oficial \"Cuándo Llega\" de la Municipalidad usan los mismos datos en tiempo real. Comparamos instalación, registro, cobertura de líneas y código abierto.",
+            "Bondi MDP vs. la app oficial \"Cuándo Llega\": mismos datos en tiempo real, distinta instalación, registro, cobertura de líneas y código abierto.",
         datePublished: "2026-08-27T09:00:00-03:00",
         dateModified: "2026-08-27T09:00:00-03:00",
         section: "Comparativas",

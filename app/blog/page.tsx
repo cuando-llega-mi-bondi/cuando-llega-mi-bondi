@@ -31,6 +31,7 @@ export const metadata: Metadata = {
     },
     twitter: {
         card: "summary_large_image",
+        site: "@bondimdp",
         title: "Blog — Bondi MDP",
         description: "Comparativas y guías sobre transporte público en Mar del Plata.",
     },

@@ -65,6 +65,7 @@ export const metadata: Metadata = {
     },
     twitter: {
         card: "summary_large_image",
+        site: "@bondimdp",
         title: "Bondi MDP — Cuándo llega tu colectivo en Mar del Plata",
         description:
             "App gratuita de colectivos en tiempo real para Mar del Plata. No pierdas más tiempo esperando el bondi.",

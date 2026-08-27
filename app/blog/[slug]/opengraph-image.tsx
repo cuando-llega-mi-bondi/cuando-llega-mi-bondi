@@ -1,6 +1,11 @@
 import { ImageResponse } from "next/og";
 import { ARTICLES, getArticle } from "@features/blog/data/articles";
 
+// `generateImageMetadata` (para alt dinámico por slug) rompe en runtime bajo
+// Cache Components de Next 16 — "Dynamic server usage: ... IO that was not
+// cached" incluso con la ruta prerenderizada, confirmado con el server
+// standalone real, no solo `next start`. Se vuelve a `alt` estático genérico
+// hasta que ese bug de Next se resuelva.
 export const alt = "Blog — Bondi MDP";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
