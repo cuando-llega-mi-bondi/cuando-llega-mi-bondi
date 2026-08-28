@@ -25,7 +25,7 @@ export function AdCreativeCard({
       rel="noopener noreferrer sponsored"
       aria-label={`Conocer: ${title}`}
       className={cn(
-        "relative flex min-h-12 items-center gap-3 overflow-hidden rounded-2xl border border-border bg-card px-3.5 py-4 transition-colors hover:border-secondary/40",
+        "relative flex min-h-12 items-center gap-3 overflow-hidden rounded-2xl bg-card px-3.5 py-4 transition-colors",
         className,
       )}
     >
