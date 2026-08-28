@@ -17,6 +17,7 @@ export const MARKDOWN_ROUTES: Record<string, string> = {
     "/un-mes-en-numeros": "un-mes-en-numeros",
     "/primer-trimestre-en-numeros": "primer-trimestre-en-numeros",
     "/blog": "blog",
+    "/blog/horarios-colectivo-mar-del-plata-verano": "blog-horarios-verano",
     "/blog/bondi-mdp-vs-cuando-llega": "blog-bondi-mdp-vs-cuando-llega",
     "/blog/como-saber-cuando-llega-el-colectivo-en-mar-del-plata": "blog-como-saber-cuando-llega",
 };
@@ -27,6 +28,9 @@ const PAGES: Record<string, string> = {
 > App gratuita para saber cuándo llega tu bondi en Mar del Plata. Horarios,
 > recorridos y paradas en tiempo real de todas las líneas (511, 522, 541 y
 > más) con datos oficiales de la Municipalidad de General Pueyrredón (MGP).
+
+## Cómo sé cuándo llega mi colectivo en Mar del Plata
+Entrás a [/consultar](${BASE}/consultar), elegís tu línea y tu parada, y ves los minutos que faltan para que llegue, calculados con la posición GPS real de la unidad. Es gratis, no pide cuenta y no hace falta instalar nada.
 
 ## Qué podés hacer
 - [Consultar colectivo](${BASE}/consultar) — arribos en tiempo real de cualquier línea.
@@ -158,11 +162,36 @@ En los últimos 30 días se registraron 284.576 consultas de horario repartidas 
 - [Estadísticas del primer mes](${BASE}/un-mes-en-numeros)
 - [Repositorio en GitHub](https://github.com/cuando-llega-mi-bondi/cuando-llega-mi-bondi)
 `,
+    "blog-horarios-verano": `# Horarios de colectivo en Mar del Plata en verano: guía para no perderte el bondi
+
+En temporada alta, los colectivos de Mar del Plata van más cargados y el horario de cartel deja de coincidir con el arribo real. Esta guía junta las formas de consultar el colectivo en tiempo real y llegar a la playa sin perder tiempo.
+
+## Por qué el horario fijo no alcanza en verano
+Un colectivo circula según el tránsito y la carga real, no según una tabla impresa. Con más gente y más autos en la ciudad, el arribo real se aleja del horario teórico, y esa diferencia se nota más cuanto más lejos esté tu parada del origen del recorrido.
+
+## Cómo consultar el próximo colectivo en tiempo real
+En [/consultar](${BASE}/consultar) elegís línea y parada y ves el arribo estimado en minutos, calculado con la posición GPS real de la unidad.
+
+## Cómo llegar a la playa sin saber qué línea tomar
+[/como-llego](${BASE}/como-llego) arma el viaje ingresando origen y destino, útil si sos turista y no conocés las líneas de la ciudad.
+
+## Cómo encontrar la parada más cercana a tu alojamiento
+[/paradas-cerca](${BASE}/paradas-cerca) muestra en el mapa las paradas más próximas a tu ubicación y qué líneas pasan por cada una.
+
+## Tips para temporada alta
+Salí con más margen del habitual cerca del mediodía y a la tarde, las franjas con más movimiento hacia y desde la costa. La app no publica un cronograma especial de verano: lo que cambia es la demanda, por eso el tiempo real es más confiable que cualquier horario de referencia en esta época.
+
+## Más
+- [Ver recorridos completos](${BASE}/recorrido)
+- [Blog](${BASE}/blog)
+- [Inicio](${BASE}/)
+`,
     blog: `# Blog — Bondi MDP
 
 Comparativas, guías e informes de uso sobre transporte público en Mar del Plata.
 
 ## Artículos
+- [Horarios de colectivo en Mar del Plata en verano](${BASE}/blog/horarios-colectivo-mar-del-plata-verano) — guía para consultar arribos en tiempo real y llegar a la playa en temporada alta.
 - [Bondi MDP vs. Cuándo Llega](${BASE}/blog/bondi-mdp-vs-cuando-llega) — comparativa entre la app oficial de la Municipalidad de General Pueyrredón y Bondi MDP.
 - [Cómo saber cuándo llega el colectivo en Mar del Plata](${BASE}/blog/como-saber-cuando-llega-el-colectivo-en-mar-del-plata) — guía con todas las formas de consultar horarios en tiempo real.
 

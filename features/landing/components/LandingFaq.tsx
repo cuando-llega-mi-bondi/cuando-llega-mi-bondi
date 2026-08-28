@@ -6,6 +6,10 @@ import { FaqAccordion } from "./FaqAccordion";
 // Single source of truth: drives both the rendered accordion and the JSON-LD.
 const FAQ_ITEMS = [
   {
+    q: "¿Cómo sé cuándo llega mi colectivo en Mar del Plata?",
+    a: "Entrás a Bondi MDP, elegís tu línea y tu parada en /consultar, y ves los minutos que faltan para que llegue, calculados con la posición GPS real de la unidad. Es gratis, no pide cuenta y no hace falta instalar nada.",
+  },
+  {
     q: "¿Es gratis?",
     a: "Sí, es 100% gratuita. Se sostiene con publicidad no intrusiva, sin costos ocultos.",
   },
