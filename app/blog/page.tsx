@@ -1,6 +1,6 @@
 import Link from "next/link";
 import type { Metadata } from "next";
-import { ARTICLES } from "@features/blog/data/articles";
+import { ARTICLES, REPORTS } from "@features/blog/data/articles";
 import { ArticleCard } from "@features/blog/components/ArticleCard";
 import { BlogNav } from "@features/blog/components/BlogNav";
 import { BlogFooter } from "@features/blog/components/BlogFooter";
@@ -37,6 +37,11 @@ export const metadata: Metadata = {
     },
 };
 
+const FEED_ITEMS = [
+    ...ARTICLES.map((a) => ({ ...a, href: `/blog/${a.slug}` })),
+    ...REPORTS,
+].sort((a, b) => new Date(b.datePublished).getTime() - new Date(a.datePublished).getTime());
+
 const breadcrumbJsonLd = {
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
@@ -56,11 +61,11 @@ const blogJsonLd = {
         name: "Bondi MDP",
         logo: { "@type": "ImageObject", url: `${BASE_URL}/icon-512x512.png` },
     },
-    blogPost: ARTICLES.map((a) => ({
+    blogPost: FEED_ITEMS.map((a) => ({
         "@type": "BlogPosting",
         headline: a.title,
         description: a.description,
-        url: `${BASE_URL}/blog/${a.slug}`,
+        url: `${BASE_URL}${a.href}`,
         datePublished: a.datePublished,
         dateModified: a.dateModified,
     })),
@@ -115,8 +120,8 @@ export default function BlogIndexPage() {
             <main id="main-content">
                 <section className="px-6 py-16">
                     <div className="mx-auto max-w-[880px] space-y-4">
-                        {ARTICLES.map((article) => (
-                            <ArticleCard key={article.slug} article={article} />
+                        {FEED_ITEMS.map((article) => (
+                            <ArticleCard key={article.slug} article={article} href={article.href} />
                         ))}
                     </div>
                 </section>

@@ -160,11 +160,15 @@ En los últimos 30 días se registraron 284.576 consultas de horario repartidas 
 `,
     blog: `# Blog — Bondi MDP
 
-Comparativas y guías sobre transporte público en Mar del Plata.
+Comparativas, guías e informes de uso sobre transporte público en Mar del Plata.
 
 ## Artículos
 - [Bondi MDP vs. Cuándo Llega](${BASE}/blog/bondi-mdp-vs-cuando-llega) — comparativa entre la app oficial de la Municipalidad de General Pueyrredón y Bondi MDP.
 - [Cómo saber cuándo llega el colectivo en Mar del Plata](${BASE}/blog/como-saber-cuando-llega-el-colectivo-en-mar-del-plata) — guía con todas las formas de consultar horarios en tiempo real.
+
+## Informes de uso
+- [El primer trimestre en números](${BASE}/primer-trimestre-en-numeros) — 22.893 usuarios activos, 763.000 vistas.
+- [El primer mes en números](${BASE}/un-mes-en-numeros) — 19.267 usuarios activos, 300.000 vistas.
 
 ## Más
 - [Inicio](${BASE}/)

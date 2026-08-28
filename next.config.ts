@@ -84,6 +84,9 @@ const nextConfig: NextConfig = {
    * Alias en inglés (/about, /contact, /privacy) -> páginas reales en
    * español: varias herramientas de auditoría para agentes buscan estas
    * rutas convencionales para verificar "trust anchor pages".
+   * /blog/un-mes-en-numeros y /blog/primer-trimestre-en-numeros -> las
+   * páginas reales, por si alguien infiere esa URL viéndolas listadas
+   * como entradas del blog (viven en su propia ruta, no en /blog/[slug]).
    */
   async redirects() {
     return [
@@ -96,6 +99,12 @@ const nextConfig: NextConfig = {
       { source: "/about", destination: "/acerca", permanent: true },
       { source: "/contact", destination: "/contacto", permanent: true },
       { source: "/privacy", destination: "/privacidad", permanent: true },
+      { source: "/blog/un-mes-en-numeros", destination: "/un-mes-en-numeros", permanent: true },
+      {
+        source: "/blog/primer-trimestre-en-numeros",
+        destination: "/primer-trimestre-en-numeros",
+        permanent: true,
+      },
     ];
   },
 };

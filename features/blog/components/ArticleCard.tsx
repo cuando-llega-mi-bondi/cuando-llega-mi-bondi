@@ -4,12 +4,14 @@ import type { BlogArticle } from "@features/blog/types";
 
 export function ArticleCard({
     article,
+    href,
 }: {
     article: Pick<BlogArticle, "slug" | "title" | "description" | "datePublished" | "section">;
+    href?: string;
 }) {
     return (
         <Link
-            href={`/blog/${article.slug}`}
+            href={href ?? `/blog/${article.slug}`}
             className="block rounded-xl border border-border bg-card p-6 transition-colors hover:border-primary/40"
         >
             <div className="mb-3 flex items-center gap-2.5 text-xs text-muted-foreground">
