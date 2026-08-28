@@ -5,6 +5,7 @@ import { AD_PODIUM_SIZE } from "@features/sponsors/lib/board";
 import { formatArs } from "@features/sponsors/lib/pricing";
 import { AdCreativeCard } from "./AdCreativeCard";
 import { cn } from "@shared/utils";
+import { Skeleton } from "@shared/ui/Skeleton";
 import Link from "next/link";
 import useSWR from "swr";
 
@@ -109,6 +110,62 @@ function PositionCard({
   );
 }
 
+// Mismo alto aproximado que un PositionCard real (icono + título + tagline +
+// "Conocer") para que el swap a data real no empuje el contenido de abajo.
+function SponsorSlotSkeleton({ className }: { className?: string }) {
+  return (
+    <aside aria-hidden className={cn("mt-10 space-y-4", className)}>
+      <div className="flex items-center justify-between gap-3">
+        <Skeleton className="h-3 w-20" />
+        <Skeleton className="h-3 w-16" />
+      </div>
+      {POSITIONS.map((rank) => (
+        <div key={rank} className="space-y-2">
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center gap-2">
+              {/* Sin <Skeleton>: su rounded-xl de base pisa el rounded-full de
+                  acá porque cn() no hace merge de Tailwind (ver nota abajo). */}
+              <div
+                aria-hidden
+                className="h-5 w-5 shrink-0 animate-skeleton-shimmer rounded-full bg-[linear-gradient(90deg,rgba(255,255,255,0.05)_0%,rgba(255,255,255,0.12)_50%,rgba(255,255,255,0.05)_100%)] bg-[length:220%_100%]"
+              />
+              <Skeleton className="h-3 w-14" />
+            </div>
+            <Skeleton className="h-3 w-24" />
+          </div>
+          {/* Mismo layout banner que AdCreativeCard con og:image real (el caso
+              más común): imagen ancha a la izquierda + texto corrido, en vez
+              de un ícono chico que ya sugiere "sin imagen". */}
+          <div className="relative flex min-h-12 items-center gap-3 overflow-hidden rounded-2xl border border-border bg-card px-3.5 py-4">
+            {/* Corte recto real: cn() no hace merge de Tailwind, así que un
+                rounded-none acá no ganaría contra el rounded-xl de <Skeleton>
+                (gana el que Tailwind generó después en el CSS, no el último
+                del className) — se arma el shimmer a mano, sin ese conflicto. */}
+            <div
+              aria-hidden
+              className="absolute inset-y-0 left-0 h-full w-[48%] animate-skeleton-shimmer bg-[linear-gradient(90deg,rgba(255,255,255,0.05)_0%,rgba(255,255,255,0.12)_50%,rgba(255,255,255,0.05)_100%)] bg-[length:220%_100%]"
+            />
+            {/* Título y tagline reales van hasta 2 líneas (line-clamp-2): se
+                reservan las 2 en el peor caso, si no el alto queda corto y
+                el swap a data real empuja todo lo de abajo igual. */}
+            <div className="relative min-w-0 flex-1 space-y-1.5 pl-[36%]">
+              <div className="space-y-1">
+                <Skeleton className="h-3.5 w-full" />
+                <Skeleton className="h-3.5 w-2/3" />
+              </div>
+              <div className="space-y-1">
+                <Skeleton className="h-3 w-5/6" />
+                <Skeleton className="h-3 w-1/2" />
+              </div>
+            </div>
+          </div>
+        </div>
+      ))}
+      <Skeleton className="mx-auto h-3 w-32" />
+    </aside>
+  );
+}
+
 export function SponsorSlot({ className }: { className?: string }) {
   const { data, error } = useSWR("/api/ads/board", fetchBoard, {
     refreshInterval: 30_000,
@@ -116,11 +173,11 @@ export function SponsorSlot({ className }: { className?: string }) {
   });
   const board = data ?? (error ? emptyBoard() : null);
   if (!board) {
-    return <aside aria-hidden className={cn("mt-6 h-[180px]", className)} />;
+    return <SponsorSlotSkeleton className={className} />;
   }
 
   return (
-    <aside aria-label="Publicidad" className={cn("mt-6 space-y-4", className)}>
+    <aside aria-label="Publicidad" className={cn("mt-10 space-y-4", className)}>
       <div className="flex items-center justify-between gap-3">
         <p className="font-mono text-[10px] tracking-[1.4px] text-muted-foreground">
           PUBLICIDAD

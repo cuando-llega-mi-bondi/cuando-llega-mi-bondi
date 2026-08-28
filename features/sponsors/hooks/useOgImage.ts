@@ -17,5 +17,9 @@ export function useOgImage(href: string | null | undefined) {
     revalidateIfStale: false,
     dedupingInterval: 60_000,
   });
-  return data?.image ?? null;
+  // `data === undefined` en vez del `isLoading` de SWR: ese flag recién se
+  // pone en true dentro de un efecto (no en el primer render), así que
+  // alcanzaba a pintar un frame con `isLoading: false` antes de arrancar el
+  // fetch — suficiente para que el favicon parpadeara antes del og:image.
+  return { ogImageUrl: data?.image ?? null, isLoading: key !== null && data === undefined };
 }

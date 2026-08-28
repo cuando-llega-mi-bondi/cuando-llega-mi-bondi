@@ -16,7 +16,8 @@ export function AdCreativeCard({
   href: string;
   className?: string;
 }) {
-  const { ogImageUrl, hasImage, showBanner, showLogo, handleLoad, handleError } = useAdMedia(href);
+  const { ogImageUrl, hasImage, showBanner, showLogo, isResolvingImage, handleLoad, handleError } =
+    useAdMedia(href);
 
   return (
     <a
@@ -58,8 +59,26 @@ export function AdCreativeCard({
           />
         </>
       ) : null}
-      <span className={cn("relative flex min-w-0 flex-1 items-center gap-3", showBanner && "pl-[36%]")}>
-        {!showBanner && !showLogo ? <AdIcon href={href} title={title} /> : null}
+      {isResolvingImage ? (
+        // Todavía no sabemos si va a terminar en banner, logo o favicon —
+        // se asume banner (el caso más común con og:image real) en vez de un
+        // ícono chico, que ya sugiere visualmente "sin imagen". No se usa
+        // <Skeleton>: su `rounded-xl` de base y el `rounded-none` de acá
+        // quedan los dos en el className (cn() no hace merge de Tailwind) y
+        // gana el que Tailwind generó después en el CSS, no el último en el
+        // string — corte recto real solo sale aplicando el shimmer a mano.
+        <div
+          aria-hidden
+          className="absolute inset-y-0 left-0 h-full w-[48%] animate-skeleton-shimmer bg-[linear-gradient(90deg,rgba(255,255,255,0.05)_0%,rgba(255,255,255,0.12)_50%,rgba(255,255,255,0.05)_100%)] bg-[length:220%_100%]"
+        />
+      ) : null}
+      <span
+        className={cn(
+          "relative flex min-w-0 flex-1 items-center gap-3",
+          (showBanner || isResolvingImage) && "pl-[36%]",
+        )}
+      >
+        {!showBanner && !showLogo && !isResolvingImage ? <AdIcon href={href} title={title} /> : null}
         <span className="min-w-0 flex-1">
           <span className="line-clamp-2 text-[14px] font-bold leading-snug text-foreground">{title}</span>
           {tagline ? (

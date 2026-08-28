@@ -13,13 +13,17 @@ const BANNER_MIN_ASPECT = 1.4;
 
 /** Detección de banner/logo compartida entre AdCreativeCard y su versión editable. */
 export function useAdMedia(href: string) {
-  const ogImageUrl = useOgImage(href);
+  const { ogImageUrl, isLoading: isLoadingOgImage } = useOgImage(href);
   const [imageFailed, setImageFailed] = useState(false);
   const [isBanner, setIsBanner] = useState<boolean | null>(null);
 
   const hasImage = Boolean(ogImageUrl) && !imageFailed;
   const showBanner = hasImage && isBanner === true;
   const showLogo = hasImage && isBanner === false;
+  // Todavía no sabemos si hay og:image (fetch en curso) o la tenemos pero
+  // falta medir el aspect ratio: en los dos casos conviene esperar en vez de
+  // mostrar el favicon y después reemplazarlo por la imagen real.
+  const isResolvingImage = isLoadingOgImage || (hasImage && isBanner === null);
 
   function handleLoad(e: React.SyntheticEvent<HTMLImageElement>) {
     const { naturalWidth, naturalHeight } = e.currentTarget;
@@ -30,5 +34,5 @@ export function useAdMedia(href: string) {
     setImageFailed(true);
   }
 
-  return { ogImageUrl, hasImage, showBanner, showLogo, handleLoad, handleError };
+  return { ogImageUrl, hasImage, showBanner, showLogo, isResolvingImage, handleLoad, handleError };
 }
