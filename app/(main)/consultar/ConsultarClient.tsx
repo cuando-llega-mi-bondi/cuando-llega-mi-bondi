@@ -67,8 +67,10 @@ export function ConsultarClient({ children }: { children?: ReactNode }) {
           <ConsultarMapPane />
         </div>
       </div>
-      {/* Solo mobile: en desktop el layout fluid queda a altura fija (dvh) sin scroll de página. */}
-      <div className="lg:hidden">
+      {/* Solo mobile: en desktop el layout fluid queda a altura fija (dvh) sin scroll de página.
+          mt-10 extra (Footer ya trae pt-4 propio) para que se lea como quiebre de sección
+          después de publicidad, no una continuación del mismo ritmo. */}
+      <div className="mt-10 lg:hidden">
         <Footer />
       </div>
     </PageShell>

@@ -93,43 +93,23 @@ export function StepField({
                         </div>
 
                         <div className="flex flex-1 flex-col overflow-hidden">
-                            <div className="flex items-center gap-2">
-                                <span
-                                    id={labelId}
-                                    className={cn(
-                                        "font-mono text-[11px] font-bold tracking-[1.5px] uppercase",
-                                        isActive ? "text-secondary" : "text-muted-foreground",
-                                    )}
-                                >
-                                    {stepText}
-                                </span>
-                                {required && isActive && !isCompleted && (
-                                    <span className="text-[10px] font-bold text-rosa uppercase tracking-wider">
-                                        (Requerido)
-                                    </span>
+                            <span
+                                id={labelId}
+                                className={cn(
+                                    "font-mono text-[11px] font-bold tracking-[1.5px] uppercase",
+                                    isActive ? "text-secondary" : "text-muted-foreground",
                                 )}
-                            </div>
+                            >
+                                {stepText}
+                            </span>
 
+                            {/* Solo cuando dice algo que el placeholder de abajo no dice ya
+                                (p.ej. "Opcional" en RAMAL) — required y "elegí esto" ya se leen
+                                del anillo amarillo + el círculo activo, no hace falta repetirlo. */}
                             {!isCompleted && isActive && description && (
-                                <div className="mt-0.5 flex items-center gap-1.5 text-muted-foreground">
-                                    <svg
-                                        width="14"
-                                        height="14"
-                                        viewBox="0 0 24 24"
-                                        fill="none"
-                                        stroke="currentColor"
-                                        strokeWidth="2.5"
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                    >
-                                        <circle cx="12" cy="12" r="10" />
-                                        <line x1="12" y1="8" x2="12" y2="12" />
-                                        <line x1="12" y1="16" x2="12.01" y2="16" />
-                                    </svg>
-                                    <span className="text-xs font-medium leading-none">
-                                        {description}
-                                    </span>
-                                </div>
+                                <span className="mt-0.5 text-xs font-medium leading-none text-muted-foreground">
+                                    {description}
+                                </span>
                             )}
 
                             <div

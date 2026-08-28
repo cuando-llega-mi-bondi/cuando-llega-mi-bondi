@@ -62,7 +62,6 @@ export const SearchFlow = memo(function SearchFlow({
                 loading={loadingLineas}
                 stepStatus={!codLinea ? "active" : "completed"}
                 required
-                description="Seleccioná una línea"
             />
 
             {codLinea ? (
@@ -81,7 +80,6 @@ export const SearchFlow = memo(function SearchFlow({
                         codLinea && !codCalle ? "active" : codCalle ? "completed" : "idle"
                     }
                     required
-                    description="Seleccioná una calle"
                 />
             ) : null}
 
@@ -105,7 +103,6 @@ export const SearchFlow = memo(function SearchFlow({
                               : "idle"
                     }
                     required
-                    description="Seleccioná una intersección"
                 />
             ) : null}
 
@@ -129,7 +126,6 @@ export const SearchFlow = memo(function SearchFlow({
                               : "idle"
                     }
                     required
-                    description="Seleccioná una opción"
                 />
             ) : null}
 
