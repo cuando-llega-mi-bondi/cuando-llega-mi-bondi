@@ -2,6 +2,7 @@
 
 import { motion, useReducedMotion } from "motion/react";
 import { IconX } from "@shared/icons/IconX";
+import { IconButton } from "@shared/ui/IconButton";
 import type { ArrivalsOverlaySession } from "@features/arrivals/types/arrivalsSession";
 import { resolveArrivalsPanelView } from "@features/arrivals/types/arrivalsSession";
 import { ArrivalsPanel } from "./ArrivalsPanel";
@@ -116,18 +117,13 @@ export function ArrivalsDockedPanel({
                             telegramUsername={telegramUsername}
                         />
                     </div>
-                    <button
-                        type="button"
-                        onClick={onClose}
-                        aria-label="Cerrar panel de arribos"
-                        className="flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center rounded-full border border-border bg-muted text-foreground transition-colors hover:border-secondary hover:text-secondary"
-                    >
-                        <IconX size={18} />
-                    </button>
+                    <IconButton onClick={onClose} aria-label="Cerrar panel de arribos">
+                        <IconX size={16} />
+                    </IconButton>
                 </div>
             </div>
 
-            <div className="flex-1 overflow-y-auto px-5 pt-4">
+            <div className="no-scrollbar flex-1 overflow-y-auto px-5 pt-4">
                 <OverlayBody consult={consult} arrivals={arrivals} />
             </div>
         </motion.aside>

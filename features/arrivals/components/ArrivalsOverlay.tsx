@@ -5,6 +5,7 @@ import { useRef } from "react";
 import { Sheet, type SheetRef } from "react-modal-sheet";
 import { useTransform } from "motion/react";
 import { IconX } from "@shared/icons/IconX";
+import { IconButton } from "@shared/ui/IconButton";
 import type { ArrivalsOverlaySession } from "@features/arrivals/types/arrivalsSession";
 import {
   ArrivalsDockedPanel,
@@ -106,19 +107,15 @@ export function ArrivalsOverlay({
                 consult={consult}
                 telegramUsername={telegramUsername}
                 action={
-                  <button
-                    type="button"
-                    onClick={onClose}
-                    aria-label="Cerrar panel de arribos"
-                    className="flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center rounded-full border border-border bg-muted text-foreground transition-colors hover:border-secondary hover:text-secondary"
-                  >
-                    <IconX size={18} />
-                  </button>
+                  <IconButton onClick={onClose} aria-label="Cerrar panel de arribos">
+                    <IconX size={16} />
+                  </IconButton>
                 }
               />
             </Sheet.Header>
 
             <Sheet.Content
+              scrollClassName="no-scrollbar"
               disableDrag={(state) => state.scrollPosition !== "top"}
               disableScroll={(state) => state.currentSnap !== 3}
               scrollStyle={{ paddingBottom: paddingBottom as unknown as number }}
