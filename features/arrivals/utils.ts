@@ -20,8 +20,12 @@ export function arriboBanderaLabel(a: Arribo): string {
 
 export function getArriboColor(arribo: string): string {
     const lower = arribo.toLowerCase();
-    if (lower.includes("1 min") || lower.includes("llegando")) return "#22c55e";
-    if (lower.includes("2 min") || lower.includes("3 min")) return "#0099ff";
+    if (lower.includes("llegando") || lower.includes("arribando")) return "#22c55e";
+    const mins = parseInt(lower.match(/(\d+)\s*min/)?.[1] ?? "", 10);
+    if (!isNaN(mins)) {
+        if (mins <= 1) return "#22c55e";
+        if (mins <= 3) return "#0099ff";
+    }
     return "#ffffff";
 }
 

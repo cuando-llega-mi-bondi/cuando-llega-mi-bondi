@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import useSWR, { type SWRConfiguration } from "swr";
 import type { Arribo } from "@features/arrivals/types";
+import { DEV_FIXTURE_ARRIBOS } from "@features/arrivals/lib/devFixture";
 import { swrFetcherWithMeta, type MgpResult, type SwrActionKey } from "@shared/api/client";
 import {
     MgpBusinessError,
@@ -107,8 +108,17 @@ export function useArribos({
         swrOptions,
     );
 
+    const realArribos = (data?.data?.arribos as Arribo[] | undefined) ?? [];
+    // En dev, si la consulta real ya resolvió sin traer nada (fuera de
+    // horario de servicio, API caída), mostramos arribos ficticios para
+    // poder probar visualmente ArriboCard sin depender del horario real.
+    const arribos =
+        DEV_FIXTURE_ARRIBOS.length > 0 && isConsulting && !isLoading && realArribos.length === 0
+            ? DEV_FIXTURE_ARRIBOS
+            : realArribos;
+
     return {
-        arribos: (data?.data?.arribos as Arribo[] | undefined) ?? [],
+        arribos,
         loadingArribos: isLoading,
         mutateArribos: mutate,
         lastUpdate,
