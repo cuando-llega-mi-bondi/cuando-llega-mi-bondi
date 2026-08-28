@@ -2,6 +2,7 @@
 
 import type { Arribo } from "@features/arrivals/types";
 import { getArriboColor } from "@features/arrivals/utils";
+import { IconAlertTriangle } from "@shared/icons/IconAlertTriangle";
 import { IconWheelchair } from "@shared/icons/IconWheelchair";
 import { cn } from "@shared/utils";
 
@@ -21,10 +22,10 @@ export function ArriboCard({
         : "text-foreground";
 
   return (
-    <div className="arrival-row arrival-card flex flex-col gap-3">
-      <div className="flex items-center gap-3.5">
-        <div className="min-w-0 flex-1">
-          <div className="mb-0.5 font-sans text-[12px] font-medium tracking-[0.02em] text-muted-foreground">
+    <div className="arrival-row arrival-card">
+      <div className="flex items-center justify-between gap-3">
+        <div className="min-w-0">
+          <div className="font-sans text-[12px] font-medium tracking-[0.02em] text-muted-foreground">
             {(
               arribo.DescripcionCartelBandera ??
               arribo.DescripcionBandera ??
@@ -33,25 +34,30 @@ export function ArriboCard({
           </div>
           <div
             className={cn(
-              "font-mono text-[22px] font-extrabold leading-[1.1] tracking-[-0.5px]",
+              "mt-1 font-mono text-[22px] font-extrabold leading-[1.1] tracking-[-0.5px]",
               arriboColorClass,
             )}
           >
             {arribo.Arribo}
           </div>
-          {isAdaptado && (
-            <div className="inline-flex items-center gap-1 rounded border border-border px-1 py-[1px] text-[8px] text-muted-foreground">
-              <IconWheelchair /> ADAPTADO
-            </div>
-          )}
-          {arribo.MensajeError ? (
-            <div className="mt-1 font-sans text-[10px] leading-snug text-amarillo">
-              {arribo.MensajeError}
-            </div>
-          ) : null}
         </div>
-
+        {isAdaptado && (
+          <span
+            role="img"
+            aria-label="Unidad adaptada"
+            title="Unidad adaptada"
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-border bg-card text-muted-foreground"
+          >
+            <IconWheelchair size={18} />
+          </span>
+        )}
       </div>
+      {arribo.MensajeError ? (
+        <span className="mt-2.5 inline-flex items-center gap-1 rounded-md border border-amarillo/30 bg-amarillo/10 px-1.5 py-0.5 text-[10px] leading-snug text-amarillo">
+          <IconAlertTriangle className="h-3 w-3 shrink-0" />
+          {arribo.MensajeError}
+        </span>
+      ) : null}
     </div>
   );
 }
