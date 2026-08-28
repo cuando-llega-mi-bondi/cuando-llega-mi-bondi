@@ -16,6 +16,16 @@ export const metadata: Metadata = {
     alternates: {
         canonical: "/terminos",
     },
+    openGraph: {
+        type: "website",
+        locale: "es_AR",
+        url: "https://bondimdp.com.ar/terminos",
+        title: "Términos del lugar | Bondi MDP",
+        description:
+            "El lugar se compra y se pierde. No hay garantía de visitas, clics ni ventas. Escrito en criollo, a propósito.",
+        siteName: "Bondi MDP",
+        images: ["/opengraph-image"],
+    },
 };
 
 const LAST_UPDATED = "24 de agosto de 2026";

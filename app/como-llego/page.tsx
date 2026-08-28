@@ -32,6 +32,7 @@ export const metadata: Metadata = {
         description:
             "Planificá tu viaje en colectivo por Mar del Plata. Encontrá qué línea tomar, paradas y tiempos en tiempo real.",
         siteName: "Bondi MDP",
+        images: ["/opengraph-image"],
     },
     twitter: {
         card: "summary",

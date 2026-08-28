@@ -7,6 +7,16 @@ export const metadata: Metadata = {
   description:
     "Comprá un lugar publicitario en Bondi MDP. Se publican los dos que más pagaron en Consultar. No hay garantía de visitas ni ventas.",
   alternates: { canonical: "/anunciate" },
+  openGraph: {
+    type: "website",
+    locale: "es_AR",
+    url: "https://bondimdp.com.ar/anunciate",
+    title: "Anunciate | Bondi MDP",
+    description:
+      "Comprá un lugar publicitario en Bondi MDP. Se publican los dos que más pagaron en Consultar. No hay garantía de visitas ni ventas.",
+    siteName: "Bondi MDP",
+    images: ["/opengraph-image"],
+  },
 };
 
 export default function AnunciatePage() {

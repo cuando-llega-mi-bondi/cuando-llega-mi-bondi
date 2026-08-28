@@ -25,6 +25,7 @@ export const metadata: Metadata = {
         description:
             "Cómo contactar al equipo de Bondi MDP: reportar un error, consultar por publicidad o ejercer tus derechos sobre datos personales.",
         siteName: "Bondi MDP",
+        images: ["/opengraph-image"],
     },
     robots: {
         index: true,

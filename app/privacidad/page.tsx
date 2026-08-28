@@ -25,6 +25,7 @@ export const metadata: Metadata = {
         description:
             "Cómo Bondi MDP trata tus datos, qué servicios de terceros usamos (Google AdSense, Google Analytics, Microsoft Clarity) y cuáles son tus derechos.",
         siteName: "Bondi MDP",
+        images: ["/opengraph-image"],
     },
     robots: {
         index: true,

@@ -26,14 +26,6 @@ export const metadata: Metadata = {
         title: "Bondi MDP: estadísticas del primer mes — 19.267 usuarios en Mar del Plata",
         description: "19.267 usuarios activos, 300.000 vistas y ratio de fidelidad 2:1 en 30 días. Sin campañas pagas. Solo la app y el boca a boca marplatense.",
         url: "https://bondimdp.com.ar/un-mes-en-numeros",
-        images: [
-            {
-                url: "https://bondimdp.com.ar/og/estadisticas-1-mes.jpg",
-                width: 1200,
-                height: 630,
-                alt: "Bondi MDP: estadísticas del primer mes. 19.267 usuarios activos. 300.000 vistas. Ratio 2:1.",
-            },
-        ],
         siteName: "Bondi MDP",
         locale: "es_AR",
         publishedTime: "2026-05-28T09:00:00-03:00",
@@ -46,7 +38,6 @@ export const metadata: Metadata = {
         site: "@bondimdp",
         title: "Bondi MDP: estadísticas del primer mes — 19.267 usuarios en Mar del Plata",
         description: "19.267 usuarios activos, 300.000 vistas, ratio 2:1. Un mes de datos de la app de colectivos en tiempo real de Mar del Plata.",
-        images: ["https://bondimdp.com.ar/og/estadisticas-1-mes.jpg"],
     },
 };
 

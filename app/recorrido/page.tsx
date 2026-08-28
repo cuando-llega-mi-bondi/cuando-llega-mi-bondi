@@ -33,6 +33,7 @@ export const metadata: Metadata = {
         description:
             "Consultá el recorrido completo de cada línea de bondi. Paradas, mapas y horarios en tiempo real.",
         siteName: "Bondi MDP",
+        images: ["/opengraph-image"],
     },
     twitter: {
         card: "summary_large_image",

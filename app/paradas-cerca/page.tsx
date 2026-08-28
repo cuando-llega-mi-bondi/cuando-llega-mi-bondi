@@ -35,6 +35,7 @@ export const metadata: Metadata = {
         description:
             "Mirá en el mapa las paradas de colectivo más cercanas a vos en Mar del Plata y qué líneas pasan por cada una.",
         siteName: "Bondi MDP",
+        images: ["/opengraph-image"],
     },
     twitter: {
         card: "summary",

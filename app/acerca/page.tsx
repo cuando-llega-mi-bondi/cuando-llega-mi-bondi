@@ -22,6 +22,7 @@ export const metadata: Metadata = {
         description:
             "App gratuita para seguir el bondi en tiempo real en Mar del Plata. Conocé al equipo y cómo funciona.",
         siteName: "Bondi MDP",
+        images: ["/opengraph-image"],
     },
     twitter: {
         card: "summary",
