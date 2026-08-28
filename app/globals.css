@@ -219,6 +219,16 @@
       min-height: var(--app-height, 100%);
     }
   }
+
+  /* Scroll sin barra visible, pero el contenido sigue siendo scrolleable. */
+  .no-scrollbar {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
 }
 
 ::-webkit-scrollbar {

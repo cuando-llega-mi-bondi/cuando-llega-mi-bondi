@@ -26,7 +26,7 @@ export const OtrasLineasSuggestion = memo(function OtrasLineasSuggestion({
       </div>
 
       {loading ? (
-        <div className="flex gap-2 overflow-x-auto pb-1">
+        <div className="no-scrollbar flex gap-2 overflow-x-auto pb-1">
           {[1, 2, 3].map((i) => (
             <div
               key={i}
