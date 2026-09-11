@@ -71,12 +71,33 @@ function resolveCuandoApiBases(): string[] {
 
 const BASE_URLS = resolveCuandoApiBases();
 
-function getBaseUrl(): string | null {
-    if (BASE_URLS.length === 0) return null;
-    return BASE_URLS[Math.floor(Math.random() * BASE_URLS.length)];
+/**
+ * Bases a intentar para esta request: arranca por una al azar (reparte la carga
+ * entre backends) y sigue por las demás como failover, en orden circular.
+ */
+function orderedBaseUrls(): string[] {
+    if (BASE_URLS.length === 0) return [];
+    const start = Math.floor(Math.random() * BASE_URLS.length);
+    return [...BASE_URLS.slice(start), ...BASE_URLS.slice(0, start)];
 }
 
-export const BASE_URL = BASE_URLS[0] || null; // for backwards compatibility if needed, though getBaseUrl() is preferred for dynamic use
+/**
+ * Un fallo en un backend no dice nada del otro: son máquinas, túneles y
+ * sesiones contra la muni distintas. Se reintenta en el siguiente host ante
+ * fallo de red (incluido el timeout propio) y ante 5xx. No ante 4xx ni errores
+ * de negocio (`CodigoEstado != 0`), que serían iguales en cualquier host, ni
+ * cuando el que canceló fue el caller.
+ */
+function isFailoverable(err: unknown, callerSignal?: AbortSignal): boolean {
+    if (callerSignal?.aborted) return false;
+    if (err instanceof MgpNetworkError) return true;
+    if (err instanceof MgpUnavailableError) {
+        return typeof err.status === "number" && err.status >= 500;
+    }
+    return false;
+}
+
+export const BASE_URL = BASE_URLS[0] || null; // compat: primer backend configurado; `postWithMeta` usa `orderedBaseUrls()`
 
 export type ActionParams = Record<string, string>;
 export type SwrActionKey = [string, ActionParams];
@@ -142,8 +163,8 @@ export async function postWithMeta(
         }
     }
 
-    const baseUrl = getBaseUrl();
-    if (!baseUrl) {
+    const bases = orderedBaseUrls();
+    if (bases.length === 0) {
         throw new Error(
             "NEXT_PUBLIC_CUANDO_API_URL (o NEXT_PUBLIC_PROXY_API_URL) no están configuradas. El front no puede pegarle directo a la muni desde Vercel; configurá la URL del backend self-hosted.",
         );
@@ -154,13 +175,28 @@ export async function postWithMeta(
     // la misma combinación en la ventana de cache. Mismo shape que el POST /
     // shim (PascalCase MGP raw).
     const qs = new URLSearchParams(params).toString();
-    const url = `${baseUrl}/mgp/${encodeURIComponent(accion)}${qs ? `?${qs}` : ""}`;
+    const path = `/mgp/${encodeURIComponent(accion)}${qs ? `?${qs}` : ""}`;
 
+    // Failover: si un backend falla por red o 5xx se prueba el siguiente, y
+    // recién cuando fallan todos se propaga el error del último.
+    let lastError: unknown;
+    for (const baseUrl of bases) {
+        try {
+            return await fetchFromBackend(`${baseUrl}${path}`, options?.signal);
+        } catch (err: unknown) {
+            if (!isFailoverable(err, options?.signal)) throw err;
+            lastError = err;
+        }
+    }
+    throw lastError;
+}
+
+async function fetchFromBackend(url: string, callerSignal?: AbortSignal): Promise<MgpResult> {
     let res: Response;
     try {
         res = await fetch(url, {
             method: "GET",
-            signal: options?.signal ?? defaultTimeoutSignal(),
+            signal: callerSignal ?? defaultTimeoutSignal(),
         });
     } catch (err: unknown) {
         const error = err as { name?: string };
