@@ -124,6 +124,175 @@ describe("postWithMeta (camino proxy)", () => {
     });
 });
 
+describe("postWithMeta (failover entre backends)", () => {
+    const A = "https://a.example.com";
+    const B = "https://b.example.com";
+    const OK = { CodigoEstado: 0, arribos: [] };
+
+    type FetchMock = { mock: { calls: unknown[][] } };
+    const hostsOf = (fetchMock: FetchMock) =>
+        fetchMock.mock.calls.map((call) => new URL(String(call[0])).origin);
+
+    /** fetch que responde distinto según el host al que se le pega. */
+    function fetchByHost(handlers: Record<string, () => Promise<Response>>) {
+        return vi.fn().mockImplementation((url: string) => {
+            const origin = new URL(url).origin;
+            const handler = handlers[origin];
+            if (!handler) throw new Error(`host inesperado: ${origin}`);
+            return handler();
+        });
+    }
+
+    beforeEach(() => {
+        vi.resetModules();
+        process.env.NEXT_PUBLIC_CUANDO_API_URL = A;
+        process.env.NEXT_PUBLIC_PROXY_API_URL = B;
+        // Orden determinista: primero A, después B.
+        vi.spyOn(Math, "random").mockReturnValue(0);
+    });
+
+    afterEach(() => {
+        vi.unstubAllGlobals();
+        vi.restoreAllMocks();
+        delete process.env.NEXT_PUBLIC_CUANDO_API_URL;
+        delete process.env.NEXT_PUBLIC_PROXY_API_URL;
+    });
+
+    it("fallo de red en el primer host reintenta en el segundo", async () => {
+        const fetchMock = fetchByHost({
+            [A]: () => Promise.reject(new TypeError("Failed to fetch")),
+            [B]: () => Promise.resolve(mockResponse(200, OK, { "X-Cache": "MISS" })),
+        });
+        vi.stubGlobal("fetch", fetchMock);
+
+        const { postWithMeta } = await importFresh();
+        const result = await postWithMeta("RecuperarProximosArribosW", { identificadorParada: "P1" });
+
+        expect(result.data).toEqual(OK);
+        expect(result.meta.cache).toBe("MISS");
+        expect(hostsOf(fetchMock)).toEqual([A, B]);
+    });
+
+    it("timeout propio en el primer host reintenta en el segundo", async () => {
+        const fetchMock = fetchByHost({
+            [A]: () => Promise.reject(new DOMException("The operation timed out.", "TimeoutError")),
+            [B]: () => Promise.resolve(mockResponse(200, OK)),
+        });
+        vi.stubGlobal("fetch", fetchMock);
+
+        const { postWithMeta } = await importFresh();
+        await expect(postWithMeta("RecuperarProximosArribosW", {})).resolves.toBeTruthy();
+        expect(hostsOf(fetchMock)).toEqual([A, B]);
+    });
+
+    it.each([
+        [502, { error: "mgp_unavailable", message: "circuit_open: breaker tripped" }],
+        [503, { error: "unavailable" }],
+    ])("HTTP %s en el primer host reintenta en el segundo", async (status, body) => {
+        const fetchMock = fetchByHost({
+            [A]: () => Promise.resolve(mockResponse(status, body)),
+            [B]: () => Promise.resolve(mockResponse(200, OK)),
+        });
+        vi.stubGlobal("fetch", fetchMock);
+
+        const { postWithMeta } = await importFresh();
+        const result = await postWithMeta("RecuperarProximosArribosW", {});
+
+        expect(result.data).toEqual(OK);
+        expect(hostsOf(fetchMock)).toEqual([A, B]);
+    });
+
+    it("si fallan todos los hosts propaga el error del último", async () => {
+        const fetchMock = fetchByHost({
+            [A]: () => Promise.reject(new TypeError("Failed to fetch")),
+            [B]: () =>
+                Promise.resolve(
+                    mockResponse(502, { error: "mgp_unavailable", message: "bridge_busy: queue full" }),
+                ),
+        });
+        vi.stubGlobal("fetch", fetchMock);
+
+        const { postWithMeta, MgpUnavailableError } = await importFresh();
+        await expect(postWithMeta("RecuperarProximosArribosW", {})).rejects.toSatisfy((err: unknown) => {
+            expect(err).toBeInstanceOf(MgpUnavailableError);
+            expect((err as InstanceType<typeof MgpUnavailableError>).retriable).toBe("fast");
+            return true;
+        });
+        expect(hostsOf(fetchMock)).toEqual([A, B]);
+    });
+
+    it("4xx no hace failover", async () => {
+        const fetchMock = fetchByHost({
+            [A]: () => Promise.resolve(mockResponse(404, { error: "not_found" })),
+            [B]: () => Promise.resolve(mockResponse(200, OK)),
+        });
+        vi.stubGlobal("fetch", fetchMock);
+
+        const { postWithMeta, MgpUnavailableError } = await importFresh();
+        await expect(postWithMeta("RecuperarProximosArribosW", {})).rejects.toSatisfy((err: unknown) => {
+            expect(err).toBeInstanceOf(MgpUnavailableError);
+            expect((err as InstanceType<typeof MgpUnavailableError>).status).toBe(404);
+            return true;
+        });
+        expect(hostsOf(fetchMock)).toEqual([A]);
+    });
+
+    it("error de negocio (CodigoEstado != 0) no hace failover", async () => {
+        const fetchMock = fetchByHost({
+            [A]: () => Promise.resolve(mockResponse(200, { CodigoEstado: -1, MensajeEstado: "Parada inexistente" })),
+            [B]: () => Promise.resolve(mockResponse(200, OK)),
+        });
+        vi.stubGlobal("fetch", fetchMock);
+
+        const { postWithMeta, MgpBusinessError } = await importFresh();
+        await expect(postWithMeta("RecuperarProximosArribosW", {})).rejects.toBeInstanceOf(MgpBusinessError);
+        expect(hostsOf(fetchMock)).toEqual([A]);
+    });
+
+    it("cancelación del caller no hace failover", async () => {
+        const controller = new AbortController();
+        const fetchMock = fetchByHost({
+            [A]: () => {
+                controller.abort();
+                return Promise.reject(new DOMException("The operation was aborted.", "AbortError"));
+            },
+            [B]: () => Promise.resolve(mockResponse(200, OK)),
+        });
+        vi.stubGlobal("fetch", fetchMock);
+
+        const { postWithMeta, MgpNetworkError } = await importFresh();
+        await expect(
+            postWithMeta("RecuperarProximosArribosW", {}, { signal: controller.signal }),
+        ).rejects.toBeInstanceOf(MgpNetworkError);
+        expect(hostsOf(fetchMock)).toEqual([A]);
+    });
+
+    it("el host inicial se elige al azar y el otro queda como failover", async () => {
+        vi.spyOn(Math, "random").mockReturnValue(0.9); // arranca por B
+        const fetchMock = fetchByHost({
+            [A]: () => Promise.resolve(mockResponse(200, OK)),
+            [B]: () => Promise.reject(new TypeError("Failed to fetch")),
+        });
+        vi.stubGlobal("fetch", fetchMock);
+
+        const { postWithMeta } = await importFresh();
+        await expect(postWithMeta("RecuperarProximosArribosW", {})).resolves.toBeTruthy();
+        expect(hostsOf(fetchMock)).toEqual([B, A]);
+    });
+
+    it("con un solo backend configurado hay un solo intento", async () => {
+        delete process.env.NEXT_PUBLIC_PROXY_API_URL;
+        const fetchMock = fetchByHost({
+            [A]: () => Promise.reject(new TypeError("Failed to fetch")),
+        });
+        vi.stubGlobal("fetch", fetchMock);
+
+        const { postWithMeta, MgpNetworkError } = await importFresh();
+        await expect(postWithMeta("RecuperarProximosArribosW", {})).rejects.toBeInstanceOf(MgpNetworkError);
+        expect(hostsOf(fetchMock)).toEqual([A]);
+    });
+});
+
 describe("postWithMeta (camino /api/reference)", () => {
     beforeEach(() => {
         vi.resetModules();
