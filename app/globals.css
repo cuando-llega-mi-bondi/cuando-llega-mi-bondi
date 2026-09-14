@@ -220,6 +220,15 @@
     }
   }
 
+  /*
+   * Ficha de línea (server) debajo de RecorridoClient en /recorrido/[linea]:
+   * con el mapa abierto la pantalla es h-dvh, así que la ficha se oculta para
+   * no quedar colgando debajo del mapa.
+   */
+  body:has([data-recorrido-step="map"]) [data-linea-info] {
+    display: none;
+  }
+
   /* Scroll sin barra visible, pero el contenido sigue siendo scrolleable. */
   .no-scrollbar {
     scrollbar-width: none;

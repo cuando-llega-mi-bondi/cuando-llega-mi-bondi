@@ -25,6 +25,7 @@ Valores de ejemplo en [`.env.example`](../.env.example). En desarrollo, copiá e
 | `NEXT_PUBLIC_TELEGRAM_BOT_USERNAME` | Enlaces `t.me/...` en UI (sin `@`) |
 | `NEXT_PUBLIC_GA_MEASUREMENT_ID` | Google Analytics (`shared/analytics/`) |
 | `NEXT_PUBLIC_CLARITY_PROJECT_ID` | Microsoft Clarity |
+| `NEXT_PUBLIC_ADSENSE_SLOT_CONSULTAR` | ID del bloque de AdSense debajo de los puestos pagos en `/consultar` (`shared/ads/AdSenseUnit.tsx`). Vacío = no se muestra |
 | `NEXT_PUBLIC_APP_URL` | URL pública de la app (pagos MercadoPago). HTTPS en producción |
 | `MERCADOPAGO_ACCESS_TOKEN` | Checkout Pro del lugar publicitario. Usar `TEST-` en desarrollo |
 | `MERCADOPAGO_WEBHOOK_SECRET` | Firma HMAC del webhook de MercadoPago |

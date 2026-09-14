@@ -1,8 +1,14 @@
 import Link from "next/link";
+import type { Metadata } from "next";
 import { Header } from "@shared/layout/Header";
 import { BottomNav } from "@shared/layout/BottomNav";
 import { PageShell } from "@shared/layout/PageShell";
 import { PageHeader } from "@shared/layout/PageHeader";
+
+export const metadata: Metadata = {
+  title: "Pago cancelado",
+  robots: { index: false, follow: false },
+};
 
 export default function AnunciateErrorPage() {
   return (

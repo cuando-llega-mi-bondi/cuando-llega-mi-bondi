@@ -8,6 +8,7 @@ export const instant = false;
 export const metadata = {
     title: "Tu cuenta",
     description: "Cerrá sesión o eliminá tu cuenta de Bondi MDP.",
+    robots: { index: false, follow: true },
 };
 
 export default function Page() {

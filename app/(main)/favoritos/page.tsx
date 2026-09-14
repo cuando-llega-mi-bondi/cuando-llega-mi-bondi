@@ -8,6 +8,8 @@ export const instant = false;
 export const metadata = {
   title: "Favoritos",
   description: "Tus paradas favoritas y recientes en Bondi MDP.",
+  // Pantalla personal (LocalStorage): sin contenido público que indexar
+  robots: { index: false, follow: true },
 };
 
 export default function Page() {

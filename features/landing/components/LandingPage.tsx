@@ -12,6 +12,7 @@ import { ParallaxDecor } from "./ParallaxDecor";
 import { Reveal } from "./Reveal";
 import { HomeIntro } from "./HomeIntro";
 import { LandingMotionConfig } from "./LandingMotionConfig";
+import { AdSenseScript } from "@shared/ads/AdSenseScript";
 
 export function LandingPage() {
   return (
@@ -25,6 +26,7 @@ export function LandingPage() {
           "linear-gradient(180deg, #143a5e 0%, #0f2d4a 22%, #0c2540 68%, #0f2d4a 100%)",
       }}
     >
+      <AdSenseScript />
       <LandingMotionConfig>
         {/* Parallax backdrop: Mar del Plata map + ambient glows */}
         <ParallaxDecor />
