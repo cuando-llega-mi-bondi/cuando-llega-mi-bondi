@@ -6,6 +6,7 @@ import { BlogNav } from "@features/blog/components/BlogNav";
 import { BlogFooter } from "@features/blog/components/BlogFooter";
 import { Prose } from "@shared/ui/Prose";
 import { formatFechaEs } from "@shared/utils";
+import { AdSenseScript } from "@shared/ads/AdSenseScript";
 
 // TODO: Cache Components adoption. Refactor this route so this opt-out can be removed.
 // See: https://nextjs.org/docs/app/guides/migrating-to-cache-components
@@ -97,6 +98,7 @@ export default async function BlogArticlePage({
 
     return (
         <div className="min-h-screen bg-background font-sans text-foreground antialiased">
+            <AdSenseScript />
             <script
                 type="application/ld+json"
                 dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
@@ -145,6 +147,15 @@ export default async function BlogArticlePage({
                             ·
                         </span>
                         <time dateTime={datePublished}>{formatFechaEs(datePublished)}</time>
+                        <span className="opacity-20" aria-hidden="true">
+                            ·
+                        </span>
+                        <span>
+                            Por{" "}
+                            <Link href="/acerca" className="transition-colors hover:text-primary">
+                                Nicolás Jiménez y Matias Celiz Ramos
+                            </Link>
+                        </span>
                     </div>
                     <h1 className="mb-5 max-w-2xl font-display text-3xl font-extrabold leading-[1.08] tracking-tight text-foreground sm:text-5xl">
                         {title}
