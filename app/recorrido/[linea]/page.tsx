@@ -4,6 +4,9 @@ import type { Metadata } from "next";
 import { getLineas, getLineaData } from "@/lib/server/loadStaticDump";
 import { lineaToSlug } from "@/lib/server/lineaSlug";
 import RecorridoClient from "@features/route/components/RecorridoClient";
+import { LineaInfoSection } from "@features/route/components/LineaInfoSection";
+import { buildLineaInfo } from "@features/route/lineaInfo";
+import { AdSenseScript } from "@shared/ads/AdSenseScript";
 import type { Linea } from "@shared/types";
 
 // TODO: Cache Components adoption. Refactor this route so this opt-out can be removed.
@@ -106,9 +109,19 @@ export default async function LineaRecorridoPage({
 
     const lineaData = await getLineaData(lineaInfo.CodigoLineaParada);
     const nombre = lineaInfo.Descripcion;
-    const calles = lineaData?.calles ? extractCalleNames(lineaData.calles) : [];
-    const paradasCount = lineaData?.recorrido?.paradas?.length ?? 0;
-    const ramalesCount = lineaData?.recorrido?.ramales?.length ?? 0;
+
+    // Catálogo completo: links a otras líneas y combinaciones por calles en común
+    const allLineas = (await getLineas()) ?? [];
+    const otherLines = allLineas.filter(
+        (l) => l.CodigoLineaParada !== lineaInfo.CodigoLineaParada
+    );
+    const catalogo = await Promise.all(
+        allLineas.map(async (l) => ({
+            linea: l,
+            dump: await getLineaData(l.CodigoLineaParada),
+        }))
+    );
+    const info = lineaData ? buildLineaInfo(lineaInfo, lineaData, catalogo) : null;
 
     const breadcrumbList = {
         "@context": "https://schema.org",
@@ -161,12 +174,6 @@ export default async function LineaRecorridoPage({
         },
     };
 
-    // Get all lines for internal linking
-    const allLineas = (await getLineas()) ?? [];
-    const otherLines = allLineas.filter(
-        (l) => l.CodigoLineaParada !== lineaInfo.CodigoLineaParada
-    );
-
     return (
         <>
             {/* JSON-LD structured data */}
@@ -181,46 +188,6 @@ export default async function LineaRecorridoPage({
                 dangerouslySetInnerHTML={{ __html: JSON.stringify(webPage) }}
             />
 
-            {/* SEO-visible content (hidden visually, crawlable by bots) */}
-            <section className="sr-only" aria-labelledby="linea-seo-title">
-                <h1 id="linea-seo-title">
-                    Recorrido de la línea {nombre} en Mar del Plata
-                </h1>
-                <p>
-                    Mapa interactivo con el recorrido completo de la línea{" "}
-                    {nombre} de colectivo en Mar del Plata.
-                    {paradasCount > 0 && ` ${paradasCount} paradas`}
-                    {ramalesCount > 1 && ` y ${ramalesCount} ramales`}.
-                    Consultá las paradas, calles por las que pasa y horarios
-                    actualizados con datos de MGP.
-                </p>
-                {calles.length > 0 && (
-                    <>
-                        <h2>
-                            Calles principales de la línea {nombre}
-                        </h2>
-                        <ul>
-                            {calles.map((c) => (
-                                <li key={c}>{c}</li>
-                            ))}
-                        </ul>
-                    </>
-                )}
-                {/* Internal links to other lines — helps Google crawl and link juice */}
-                <nav aria-label="Otras líneas de colectivo">
-                    <h2>Otras líneas de colectivo en Mar del Plata</h2>
-                    <ul>
-                        {otherLines.map((l) => (
-                            <li key={l.CodigoLineaParada}>
-                                <a href={`/recorrido/${lineaToSlug(l.Descripcion)}`}>
-                                    Línea {l.Descripcion}
-                                </a>
-                            </li>
-                        ))}
-                    </ul>
-                </nav>
-            </section>
-
             {/* Interactive map (client-side) — auto-selects this line */}
             <Suspense
                 fallback={
@@ -234,6 +201,12 @@ export default async function LineaRecorridoPage({
                     initialLineCode={lineaInfo.CodigoLineaParada}
                 />
             </Suspense>
+
+            {/* Ficha visible (reemplaza el bloque sr-only): calles, esquinas, combinaciones */}
+            <LineaInfoSection linea={lineaInfo} info={info} otrasLineas={otherLines} />
+
+            {/* AdSense solo en fichas con contenido real (no en líneas sin datos) */}
+            {info && <AdSenseScript />}
         </>
     );
 }

@@ -525,7 +525,10 @@ export default function RecorridoClient({ initialLineCode }: { initialLineCode?:
   // MAP SCREEN
   // ─────────────────────────────────────────────────────────────────────────────
   return (
-    <div className="flex h-dvh flex-col bg-background pb-[calc(var(--nav-height)+max(env(safe-area-inset-bottom,0px),var(--safe-bottom-live,0px)))] lg:pl-60 lg:pb-0">
+    <div
+      data-recorrido-step="map"
+      className="flex h-dvh flex-col bg-background pb-[calc(var(--nav-height)+max(env(safe-area-inset-bottom,0px),var(--safe-bottom-live,0px)))] lg:pl-60 lg:pb-0"
+    >
       <header className="z-50 flex shrink-0 items-center gap-3 border-b border-border bg-background/90 backdrop-blur-md px-[calc(16px+var(--safe-left))] pr-[calc(16px+var(--safe-right))] pt-[calc(10px+var(--safe-top))] pb-3 lg:px-8">
         <button
           type="button"
