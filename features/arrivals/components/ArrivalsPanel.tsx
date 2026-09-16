@@ -261,7 +261,7 @@ export function ArrivalsPanel({ consult, arrivals }: ArrivalsPanelProps) {
                     <p className="mb-2 font-mono text-[10px] tracking-[1.4px] text-muted-foreground">
                         PUBLICIDAD
                     </p>
-                    <AdSenseUnit slot={ADSENSE_SLOT_ARRIVALS} />
+                    <AdSenseUnit slot={ADSENSE_SLOT_ARRIVALS} format="horizontal" />
                 </div>
             ) : null}
         </div>

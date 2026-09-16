@@ -107,7 +107,7 @@ export function FavoritosClient() {
               <p className="mb-2 font-mono text-[10px] tracking-[1.4px] text-muted-foreground">
                 PUBLICIDAD
               </p>
-              <AdSenseUnit slot={ADSENSE_SLOT_FAVORITOS} />
+              <AdSenseUnit slot={ADSENSE_SLOT_FAVORITOS} format="horizontal" />
             </div>
           ) : null}
         </div>

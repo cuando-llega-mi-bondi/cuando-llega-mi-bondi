@@ -70,7 +70,7 @@ export function ConsultarClient({ children }: { children?: ReactNode }) {
               <p className="mb-2 font-mono text-[10px] tracking-[1.4px] text-muted-foreground">
                 PUBLICIDAD
               </p>
-              <AdSenseUnit slot={ADSENSE_SLOT_CONSULTAR} />
+              <AdSenseUnit slot={ADSENSE_SLOT_CONSULTAR} format="horizontal" />
             </div>
           ) : null}
           <div className="hidden lg:block">

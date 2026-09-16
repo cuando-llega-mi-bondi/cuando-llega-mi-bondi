@@ -204,7 +204,7 @@ export function SponsorSlot({ className }: { className?: string }) {
           />
         );
       })}
-      <AdSenseUnit slot={ADSENSE_SLOT} />
+      <AdSenseUnit slot={ADSENSE_SLOT} format="horizontal" />
       <Link
         href="/anunciantes"
         className="block text-center text-[11px] font-medium text-secondary hover:text-foreground"
