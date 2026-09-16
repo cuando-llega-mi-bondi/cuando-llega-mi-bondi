@@ -10,26 +10,24 @@ declare global {
     }
 }
 
-export type AdSenseFormat = "auto" | "horizontal" | "rectangle" | "fluid";
-
 /**
- * Bloque manual de AdSense (`<ins class="adsbygoogle">`). Sin `slot` no
- * renderiza nada ni carga el script: se prende recién cuando AdSense aprueba
- * el sitio y el bloque existe en el panel.
+ * Bloque manual de AdSense. Sin `slot` no renderiza ni carga el script.
  *
- * `horizontal` pide banners bajos (mejor en mobile / form). `auto` deja que
- * Google elija y a menudo cae en cuadrados ~300–400px de alto.
+ * - `banner`: alto fijo 100px (mobile banner). Evita los cuadrados ~400px que
+ *   `auto` + full-width-responsive suelen servir en pantallas angostas.
+ * - `auto`: deja que Google elija (puede ser grande; útil en fichas largas).
  */
 export function AdSenseUnit({
     slot,
     className,
-    format = "auto",
+    variant = "auto",
 }: {
     slot: string | undefined;
     className?: string;
-    format?: AdSenseFormat;
+    variant?: "auto" | "banner";
 }) {
     const insRef = useRef<HTMLModElement>(null);
+    const banner = variant === "banner";
 
     useEffect(() => {
         const ins = insRef.current;
@@ -49,12 +47,16 @@ export function AdSenseUnit({
             <AdSenseScript />
             <ins
                 ref={insRef}
-                className={cn("adsbygoogle block data-[ad-status=unfilled]:hidden!", className)}
-                style={{ display: "block" }}
+                className={cn("adsbygoogle data-[ad-status=unfilled]:hidden!", className)}
+                style={
+                    banner
+                        ? { display: "block", width: "100%", height: "100px", minHeight: "100px", maxHeight: "100px" }
+                        : { display: "block" }
+                }
                 data-ad-client={ADSENSE_CLIENT}
                 data-ad-slot={slot}
-                data-ad-format={format}
-                data-full-width-responsive="true"
+                data-ad-format={banner ? "horizontal" : "auto"}
+                data-full-width-responsive={banner ? "false" : "true"}
             />
         </>
     );

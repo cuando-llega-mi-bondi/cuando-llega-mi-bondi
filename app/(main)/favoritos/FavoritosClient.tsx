@@ -103,11 +103,11 @@ export function FavoritosClient() {
             onGoToSearch={() => router.push("/consultar")}
           />
           {ADSENSE_SLOT_FAVORITOS ? (
-            <div className="mt-6 has-[[data-ad-status=unfilled]]:hidden lg:mt-8">
+            <div className="mt-6 hidden has-[[data-ad-status=filled]]:block lg:mt-8">
               <p className="mb-2 font-mono text-[10px] tracking-[1.4px] text-muted-foreground">
                 PUBLICIDAD
               </p>
-              <AdSenseUnit slot={ADSENSE_SLOT_FAVORITOS} format="horizontal" />
+              <AdSenseUnit slot={ADSENSE_SLOT_FAVORITOS} variant="banner" />
             </div>
           ) : null}
         </div>
