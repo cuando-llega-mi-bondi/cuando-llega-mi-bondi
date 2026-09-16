@@ -6,14 +6,10 @@ import { formatArs } from "@features/sponsors/lib/pricing";
 import { AdCreativeCard } from "./AdCreativeCard";
 import { cn } from "@shared/utils";
 import { Skeleton } from "@shared/ui/Skeleton";
-import { AdSenseUnit } from "@shared/ads/AdSenseUnit";
 import Link from "next/link";
 import useSWR from "swr";
 
 const POSITIONS = Array.from({ length: AD_PODIUM_SIZE }, (_, i) => i + 1);
-
-// ID del bloque de AdSense debajo de los puestos pagos. Vacío = no se muestra.
-const ADSENSE_SLOT = process.env.NEXT_PUBLIC_ADSENSE_SLOT_CONSULTAR?.trim();
 
 function emptyBoard(): AdBoardView {
   return {
@@ -204,7 +200,6 @@ export function SponsorSlot({ className }: { className?: string }) {
           />
         );
       })}
-      <AdSenseUnit slot={ADSENSE_SLOT} variant="banner" />
       <Link
         href="/anunciantes"
         className="block text-center text-[11px] font-medium text-secondary hover:text-foreground"

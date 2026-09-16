@@ -7,14 +7,14 @@ import { cn } from "@shared/utils";
 import { SearchFlow } from "@features/search/components/SearchFlow";
 import { FavoritosQuickList } from "@features/favorites/components/FavoritosQuickList";
 import { SponsorSlot } from "@features/sponsors/components/SponsorSlot";
-import { AdSenseUnit } from "@shared/ads/AdSenseUnit";
+import { AdSenseRail } from "@shared/ads/AdSenseUnit";
 import { PageShell } from "@shared/layout/PageShell";
 import { PageHeader } from "@shared/layout/PageHeader";
 import { Footer } from "@shared/layout/Footer";
 import { IconLocation } from "@shared/icons/IconLocation";
 import { ConsultarMapPane } from "./ConsultarMapPane";
 
-/** AdSense mobile-only: en desktop el podio de SponsorSlot ya incluye el bloque. */
+/** Una sola unidad en el DOM (mobile + desktop). Vacío = no se muestra. */
 const ADSENSE_SLOT_CONSULTAR = process.env.NEXT_PUBLIC_ADSENSE_SLOT_CONSULTAR?.trim();
 
 /** Directions / route icon (signpost style) */
@@ -64,15 +64,8 @@ export function ConsultarClient({ children }: { children?: ReactNode }) {
           </div>
           <SearchFlow loadingArribos={false} />
           <FavoritosQuickList className="mt-6 hidden lg:block" />
-          {/* Mobile: 1 unidad AdSense. Desktop: podio + AdSense dentro de SponsorSlot. */}
-          {ADSENSE_SLOT_CONSULTAR ? (
-            <div className="mt-6 has-[[data-ad-status=unfilled]]:hidden lg:hidden">
-              <p className="mb-2 font-mono text-[10px] tracking-[1.4px] text-muted-foreground">
-                PUBLICIDAD
-              </p>
-              <AdSenseUnit slot={ADSENSE_SLOT_CONSULTAR} variant="banner" />
-            </div>
-          ) : null}
+          {/* Una sola unidad AdSense (no duplicar dentro de SponsorSlot). */}
+          <AdSenseRail slot={ADSENSE_SLOT_CONSULTAR} className="mt-6" />
           <div className="hidden lg:block">
             <SponsorSlot />
           </div>

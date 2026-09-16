@@ -13,9 +13,11 @@ declare global {
 /**
  * Bloque manual de AdSense. Sin `slot` no renderiza ni carga el script.
  *
- * - `banner`: alto fijo 100px (mobile banner). Evita los cuadrados ~400px que
- *   `auto` + full-width-responsive suelen servir en pantallas angostas.
- * - `auto`: deja que Google elija (puede ser grande; útil en fichas largas).
+ * - `banner`: 100px fijos (mobile). Sin full-width-responsive para no inflar.
+ * - `auto`: Google elige el tamaño (fichas largas / recorrido).
+ *
+ * Importante: este nodo tiene que quedarse montado. Remount = nuevo push =
+ * parpadeo / unfilled. No lo gates con loading de datos.
  */
 export function AdSenseUnit({
     slot,
@@ -27,17 +29,41 @@ export function AdSenseUnit({
     variant?: "auto" | "banner";
 }) {
     const insRef = useRef<HTMLModElement>(null);
+    const pushedRef = useRef(false);
     const banner = variant === "banner";
 
     useEffect(() => {
+        if (!slot) return;
         const ins = insRef.current;
-        // Pedir de nuevo un <ins> ya procesado tira error (StrictMode, remount).
-        if (!slot || !ins || ins.dataset.adsbygoogleStatus) return;
-        try {
-            (window.adsbygoogle = window.adsbygoogle || []).push({});
-        } catch {
-            // Bloqueador de anuncios o script caído: el bloque queda vacío.
-        }
+        if (!ins || pushedRef.current || ins.dataset.adsbygoogleStatus) return;
+
+        const push = () => {
+            if (pushedRef.current || !insRef.current) return;
+            if (insRef.current.dataset.adsbygoogleStatus) {
+                pushedRef.current = true;
+                return;
+            }
+            try {
+                (window.adsbygoogle = window.adsbygoogle || []).push({});
+                pushedRef.current = true;
+            } catch {
+                // Adblock / script aún no listo — reintentamos en el listener.
+            }
+        };
+
+        push();
+
+        const script = document.querySelector<HTMLScriptElement>(
+            'script[src*="pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"]',
+        );
+        script?.addEventListener("load", push);
+        // Por si el script ya estaba cacheado y `load` no vuelve a disparar.
+        const retry = window.setTimeout(push, 500);
+
+        return () => {
+            script?.removeEventListener("load", push);
+            window.clearTimeout(retry);
+        };
     }, [slot]);
 
     if (!slot) return null;
@@ -47,10 +73,20 @@ export function AdSenseUnit({
             <AdSenseScript />
             <ins
                 ref={insRef}
-                className={cn("adsbygoogle data-[ad-status=unfilled]:hidden!", className)}
+                className={cn(
+                    "adsbygoogle",
+                    // Solo ocultar el <ins> vacío; el rail padre decide el layout.
+                    "data-[ad-status=unfilled]:hidden!",
+                    className,
+                )}
                 style={
                     banner
-                        ? { display: "block", width: "100%", height: "100px", minHeight: "100px", maxHeight: "100px" }
+                        ? {
+                              display: "block",
+                              width: "100%",
+                              height: "100px",
+                              maxHeight: "100px",
+                          }
                         : { display: "block" }
                 }
                 data-ad-client={ADSENSE_CLIENT}
@@ -59,5 +95,36 @@ export function AdSenseUnit({
                 data-full-width-responsive={banner ? "false" : "true"}
             />
         </>
+    );
+}
+
+/**
+ * Rail estable con label. Reserva 100px para no saltar el layout mientras carga.
+ * Si Google no tiene anuncio (`unfilled`), se oculta entero.
+ */
+export function AdSenseRail({
+    slot,
+    className,
+}: {
+    slot: string | undefined;
+    className?: string;
+}) {
+    if (!slot) return null;
+
+    return (
+        <aside
+            aria-label="Publicidad"
+            className={cn(
+                "mt-5 space-y-2 has-[[data-ad-status=unfilled]]:hidden",
+                className,
+            )}
+        >
+            <p className="font-mono text-[10px] tracking-[1.4px] text-muted-foreground">
+                PUBLICIDAD
+            </p>
+            <div className="min-h-[100px] overflow-hidden">
+                <AdSenseUnit slot={slot} variant="banner" />
+            </div>
+        </aside>
     );
 }

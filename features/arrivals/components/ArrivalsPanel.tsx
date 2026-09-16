@@ -18,7 +18,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { ArrivalsEmpty } from "./ArrivalsEmpty";
 import { ArrivalsLoading } from "./ArrivalsLoading";
 import { LiveSharingBanner } from "./LiveSharingBanner";
-import { AdSenseUnit } from "@shared/ads/AdSenseUnit";
+import { AdSenseRail } from "@shared/ads/AdSenseUnit";
 
 const ADSENSE_SLOT_ARRIVALS = process.env.NEXT_PUBLIC_ADSENSE_SLOT_ARRIVALS?.trim();
 
@@ -255,15 +255,9 @@ export function ArrivalsPanel({ consult, arrivals }: ArrivalsPanelProps) {
                 </div>
             ) : null}
 
-            {/* AdSense después de los arribos: el usuario ya vio los minutos. */}
-            {isConsulting && !loadingArribos && ADSENSE_SLOT_ARRIVALS ? (
-                <div className="mt-5 has-[[data-ad-status=unfilled]]:hidden">
-                    <p className="mb-2 font-mono text-[10px] tracking-[1.4px] text-muted-foreground">
-                        PUBLICIDAD
-                    </p>
-                    <AdSenseUnit slot={ADSENSE_SLOT_ARRIVALS} variant="banner" />
-                </div>
-            ) : null}
+            {/* Montado mientras consultás: NO gates con loadingArribos (el refresh
+                cada 25s desmontaba el bloque y AdSense parpadeaba / quedaba unfilled). */}
+            {isConsulting ? <AdSenseRail slot={ADSENSE_SLOT_ARRIVALS} /> : null}
         </div>
     );
 }
