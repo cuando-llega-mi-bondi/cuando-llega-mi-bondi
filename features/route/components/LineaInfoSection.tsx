@@ -2,8 +2,12 @@ import Link from "next/link";
 import type { Linea } from "@shared/types";
 import { nombreLineaVisible, type LineaInfo } from "@features/route/lineaInfo";
 import { lineaToSlug } from "@/lib/server/lineaSlug";
+import { AdSenseUnit } from "@shared/ads/AdSenseUnit";
 
 const MAX_CALLES_EN_COMUN = 4;
+
+// ID del bloque de AdSense entre carteles y calles. Vacío = no se muestra.
+const ADSENSE_SLOT = process.env.NEXT_PUBLIC_ADSENSE_SLOT_RECORRIDO?.trim();
 
 function contar(n: number, singular: string, plural: string): string {
     return `${n.toLocaleString("es-AR")} ${n === 1 ? singular : plural}`;
@@ -95,6 +99,17 @@ export function LineaInfoSection({ linea, info, otrasLineas }: LineaInfoSectionP
                                     ))}
                                 </ul>
                             </>
+                        )}
+
+                        {ADSENSE_SLOT && (
+                            <div className="mt-10 has-[[data-ad-status=unfilled]]:hidden">
+                                {/* Después del resumen y lejos de links; la etiqueta se va
+                                    junto con el bloque si AdSense no tiene anuncio. */}
+                                <p className="mb-2 font-mono text-[10px] tracking-[1.4px] text-muted-foreground">
+                                    PUBLICIDAD
+                                </p>
+                                <AdSenseUnit slot={ADSENSE_SLOT} />
+                            </div>
                         )}
 
                         <h2 className={h2}>Calles por las que pasa la línea {nombre}</h2>

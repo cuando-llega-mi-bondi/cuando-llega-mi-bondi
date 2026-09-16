@@ -6,7 +6,6 @@ import { BlogNav } from "@features/blog/components/BlogNav";
 import { BlogFooter } from "@features/blog/components/BlogFooter";
 import { Prose } from "@shared/ui/Prose";
 import { formatFechaEs } from "@shared/utils";
-import { AdSenseScript } from "@shared/ads/AdSenseScript";
 
 // TODO: Cache Components adoption. Refactor this route so this opt-out can be removed.
 // See: https://nextjs.org/docs/app/guides/migrating-to-cache-components
@@ -98,7 +97,6 @@ export default async function BlogArticlePage({
 
     return (
         <div className="min-h-screen bg-background font-sans text-foreground antialiased">
-            <AdSenseScript />
             <script
                 type="application/ld+json"
                 dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}

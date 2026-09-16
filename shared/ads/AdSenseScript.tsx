@@ -3,10 +3,9 @@ import Script from "next/script";
 export const ADSENSE_CLIENT = "ca-pub-5101944874293370";
 
 /**
- * Carga AdSense solo en páginas con contenido propio (home, blog, fichas de
- * línea, informes). Las pantallas de herramienta (consultar, mapas, cómo llego,
- * favoritos, cuenta, pagos) no lo incluyen: la política de AdSense no permite
- * anuncios en pantallas sin contenido del editor.
+ * Script de AdSense. Solo lo carga AdSenseUnit junto a cada bloque manual: los
+ * anuncios automáticos están apagados en el panel, así que una página sin
+ * bloque no necesita el script.
  */
 export function AdSenseScript() {
     return (

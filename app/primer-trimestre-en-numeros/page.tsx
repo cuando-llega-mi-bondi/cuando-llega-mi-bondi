@@ -1,6 +1,5 @@
 import { Metadata } from "next";
 import PrimerTrimestreClient from "./PrimerTrimestreClient";
-import { AdSenseScript } from "@shared/ads/AdSenseScript";
 
 export const metadata: Metadata = {
     title: "Bondi MDP: el primer trimestre en números — 22.893 usuarios activos",
@@ -84,7 +83,6 @@ export default function Page() {
                 dangerouslySetInnerHTML={{ __html: JSON.stringify(articleJsonLd) }}
             />
             <PrimerTrimestreClient />
-            <AdSenseScript />
         </>
     );
 }
