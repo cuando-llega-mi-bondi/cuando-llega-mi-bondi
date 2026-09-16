@@ -18,6 +18,9 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { ArrivalsEmpty } from "./ArrivalsEmpty";
 import { ArrivalsLoading } from "./ArrivalsLoading";
 import { LiveSharingBanner } from "./LiveSharingBanner";
+import { AdSenseUnit } from "@shared/ads/AdSenseUnit";
+
+const ADSENSE_SLOT_ARRIVALS = process.env.NEXT_PUBLIC_ADSENSE_SLOT_ARRIVALS?.trim();
 
 interface ArrivalsPanelProps {
     consult: Pick<
@@ -249,6 +252,16 @@ export function ArrivalsPanel({ consult, arrivals }: ArrivalsPanelProps) {
                         loading={loadingOtras}
                         onSelect={onSelectOtraLinea}
                     />
+                </div>
+            ) : null}
+
+            {/* AdSense después de los arribos: el usuario ya vio los minutos. */}
+            {isConsulting && !loadingArribos && ADSENSE_SLOT_ARRIVALS ? (
+                <div className="mt-5 has-[[data-ad-status=unfilled]]:hidden">
+                    <p className="mb-2 font-mono text-[10px] tracking-[1.4px] text-muted-foreground">
+                        PUBLICIDAD
+                    </p>
+                    <AdSenseUnit slot={ADSENSE_SLOT_ARRIVALS} />
                 </div>
             ) : null}
         </div>
