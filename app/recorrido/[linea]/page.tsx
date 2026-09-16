@@ -6,7 +6,6 @@ import { lineaToSlug } from "@/lib/server/lineaSlug";
 import RecorridoClient from "@features/route/components/RecorridoClient";
 import { LineaInfoSection } from "@features/route/components/LineaInfoSection";
 import { buildLineaInfo } from "@features/route/lineaInfo";
-import { AdSenseScript } from "@shared/ads/AdSenseScript";
 import type { Linea } from "@shared/types";
 
 // TODO: Cache Components adoption. Refactor this route so this opt-out can be removed.
@@ -204,9 +203,6 @@ export default async function LineaRecorridoPage({
 
             {/* Ficha visible (reemplaza el bloque sr-only): calles, esquinas, combinaciones */}
             <LineaInfoSection linea={lineaInfo} info={info} otrasLineas={otherLines} />
-
-            {/* AdSense solo en fichas con contenido real (no en líneas sin datos) */}
-            {info && <AdSenseScript />}
         </>
     );
 }

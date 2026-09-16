@@ -91,7 +91,7 @@ export const metadata: Metadata = {
         shortcut: "/favicon.ico",
     },
     // Verificación del sitio en AdSense en todas las páginas; el script de
-    // anuncios solo va en páginas con contenido (ver AdSenseScript).
+    // anuncios solo carga junto a los bloques manuales (ver AdSenseUnit).
     other: {
         "google-adsense-account": ADSENSE_CLIENT,
     },

@@ -16,6 +16,7 @@ services:
         - NEXT_PUBLIC_BONDI_API_URL
         - NEXT_PUBLIC_VAPID_PUBLIC
         - NEXT_PUBLIC_ADSENSE_SLOT_CONSULTAR
+        - NEXT_PUBLIC_ADSENSE_SLOT_RECORRIDO
     restart: always
     # Usamos 'expose' en lugar de 'ports' para que el puerto 3000 quede oculto del mundo
     expose:
