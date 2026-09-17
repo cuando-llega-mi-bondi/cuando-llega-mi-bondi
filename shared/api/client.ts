@@ -52,21 +52,37 @@ function internalAppOrigin(): string {
  */
 function resolveCuandoApiBases(): string[] {
     const urls: string[] = [];
+
+    // Same-origin primero: /api/mgp en este host (Render). No depende de
+    // túneles externos caídos (bondi.aeterna.red / proxy.bondimdp.com.ar).
+    if (typeof window !== "undefined") {
+        urls.push(`${window.location.origin}/api`);
+    } else {
+        const origin = internalAppOrigin();
+        if (origin) urls.push(`${origin}/api`);
+    }
+
     if (typeof process !== "undefined") {
         const cuando = process.env.NEXT_PUBLIC_CUANDO_API_URL?.trim();
         if (cuando) urls.push(cuando);
-        
+
         const proxy = process.env.NEXT_PUBLIC_PROXY_API_URL?.trim();
         if (proxy) urls.push(proxy);
     }
-    
-    return urls.map(raw => {
+
+    const seen = new Set<string>();
+    const out: string[] = [];
+    for (const raw of urls) {
         let base = raw.replace(/\/$/, "");
+        if (!base) continue;
         if (!/^https?:\/\//i.test(base)) {
             base = `https://${base.replace(/^\/+/, "")}`;
         }
-        return base;
-    });
+        if (seen.has(base)) continue;
+        seen.add(base);
+        out.push(base);
+    }
+    return out;
 }
 
 const BASE_URLS = resolveCuandoApiBases();
@@ -166,7 +182,7 @@ export async function postWithMeta(
     const bases = orderedBaseUrls();
     if (bases.length === 0) {
         throw new Error(
-            "NEXT_PUBLIC_CUANDO_API_URL (o NEXT_PUBLIC_PROXY_API_URL) no están configuradas. El front no puede pegarle directo a la muni desde Vercel; configurá la URL del backend self-hosted.",
+            "No hay backend MGP configurado (mismo origen /api/mgp ni NEXT_PUBLIC_CUANDO_API_URL).",
         );
     }
 
