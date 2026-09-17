@@ -1,0 +1,41 @@
+name: Probe MGP V670 from cloud
+on:
+  workflow_dispatch:
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Auth + arribos from GitHub runner IP
+        run: |
+          node --input-type=module <<'NODE'
+          import { publicEncrypt, constants, randomUUID } from 'node:crypto';
+          const APP_BASE = 'https://appsl.mardelplata.gob.ar/apps/app_cuando_llegaV670';
+          const H = {
+            'User-Agent': 'Mozilla/5.0 (Linux; Android 14; Pixel 8 Build/UQ1A.231205.015; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/120.0.0.0 Mobile Safari/537.36',
+            'X-Requested-With': 'ar.gob.mardelplata.cuandollega',
+            'Accept-Language': 'es-AR,es;q=0.9',
+          };
+          const PUB = `-----BEGIN PUBLIC KEY-----
+          MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA80+5G8FVXDbfJG97ApvPlz2nc8n+
+          fHTcpL4hvksmjGeRqHFXDmJOw0/B4bHsVFe/2L1dA4ZjbgxG1NufQRtVuE2NMTe3P3XbKONW
+          Qsbx0+LgyM1XgOJ1nccOJB7CYy+S4kd4fsAryDBppCV61HXQxdY7Qrt/l9A4b7V73zAD3mOf
+          IWhkAuL62si7dQQ9pLljFuMdm0H3Gxg5ynyeaWNxXYl+4BxFr2hrxKK9/KlIODO3C/yCMjdf
+          SktsmuKfU0NAIL/Y4QCUMRnYw0A2/BL5Q/zwt8qTWZDxRx8qUuTw8NLRTVcjiubRKeZkwrUf
+          cyHpRwqDOoqFSaLKIMMA6Tq1EwIDAQAB
+          -----END PUBLIC KEY-----`.replace(/^ +/gm,'');
+          const SHARED = 'c43fkd$dkfa!djc34';
+          const boot = await fetch(`${APP_BASE}/appWS.php`, { method:'POST', headers:{...H,'Content-Type':'application/x-www-form-urlencoded'}, body:'accion=_' });
+          console.log('boot', boot.status);
+          const phpsessid = (boot.headers.getSetCookie?.() ?? []).map(c => c.match(/PHPSESSID=([^;]+)/)?.[1]).find(Boolean);
+          console.log('sess', !!phpsessid);
+          if (!phpsessid) { console.log(await boot.text()); process.exit(1); }
+          const epoch = Math.floor(Date.now()/1000);
+          const token = publicEncrypt({ key: PUB, padding: constants.RSA_PKCS1_PADDING }, Buffer.from(`9!1;${epoch};${phpsessid};#95`)).toString('base64');
+          const reg = await fetch(`${APP_BASE}/registro.php`, { method:'POST', headers:{...H, Cookie:`PHPSESSID=${phpsessid}`, 'Content-Type':'application/x-www-form-urlencoded', Referer:`${APP_BASE}/`}, body: new URLSearchParams({ dispositivo:'Android:Pixel 8:14', uuid: randomUUID(), token, clave: SHARED }) });
+          console.log('registro', reg.status, (await reg.text()).slice(0,80));
+          const ws = await fetch(`${APP_BASE}/appWS.php`, { method:'POST', headers:{...H, Cookie:`PHPSESSID=${phpsessid}`, 'Content-Type':'application/x-www-form-urlencoded', Referer:`${APP_BASE}/`}, body: 'accion=RecuperarProximosArribosW&identificadorParada=P11003&codigoLineaParada=99' });
+          const text = await ws.text();
+          console.log('arribos', ws.status, text.slice(0,400));
+          if (ws.status === 429) process.exit(2);
+          NODE

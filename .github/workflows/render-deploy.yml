@@ -1,0 +1,20 @@
+name: Render deploy
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger Render deploy hook
+        env:
+          HOOK: ${{ secrets.RENDER_DEPLOY_HOOK }}
+        run: |
+          if [ -z "$HOOK" ]; then
+            echo "Falta secret RENDER_DEPLOY_HOOK (Dashboard Render → Service → Settings → Deploy Hook)"
+            exit 1
+          fi
+          curl -fsS -X POST "$HOOK"
+          echo "Deploy hook OK"
