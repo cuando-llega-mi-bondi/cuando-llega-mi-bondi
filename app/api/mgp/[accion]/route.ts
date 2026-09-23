@@ -1,8 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { fetchMgpDirect, isMgpDirectEnabled } from "@/lib/server/mgpDirect";
 
-export const runtime = "nodejs";
-export const dynamic = "force-dynamic";
+// Nada de `export const runtime`/`dynamic` acá: con `cacheComponents: true`
+// (next.config.ts) Next 16 rechaza ambos segment configs directamente
+// ("Route segment config ... is not compatible with nextConfig.cacheComponents"),
+// y ese error rompe el build de producción. Este handler usa `node:crypto`
+// (vía mgpDirect) y hace fetch sin `'use cache'`, así que ya corre en
+// Node.js y ya es dinámico por default sin declarar nada.
 
 /**
  * Proxy same-origin para arribos en vivo.
