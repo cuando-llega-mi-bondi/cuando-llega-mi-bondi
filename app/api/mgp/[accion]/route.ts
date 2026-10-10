@@ -1,9 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { fetchMgpDirect, isMgpDirectEnabled } from "@/lib/server/mgpDirect";
 
-export const runtime = "nodejs";
-export const dynamic = "force-dynamic";
-
 /**
  * Proxy same-origin para arribos en vivo.
  * 1) V670 directo (appWS) si no está deshabilitado
@@ -11,6 +8,10 @@ export const dynamic = "force-dynamic";
  *
  * El cliente llama GET /api/mgp/:accion?... — sin CORS y sin depender de
  * bondi.aeterna.red / proxy.bondimdp.com.ar.
+ *
+ * Sin `runtime`/`dynamic`: incompatibles con cacheComponents. El handler
+ * ya es dinámico (lee searchParams + fetch no-store); el runtime default
+ * de Route Handlers es Node.js (hace falta por node:crypto en mgpDirect).
  */
 
 function upstreamBase(): string | null {
