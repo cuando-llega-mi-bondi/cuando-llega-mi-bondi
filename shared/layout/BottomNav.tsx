@@ -10,6 +10,7 @@ import { IconInfo } from "@shared/icons/IconInfo";
 import { IconBus } from "@shared/icons/IconBus";
 import { BrandLogo } from "@shared/ui/BrandLogo";
 import { ThemeToggle } from "./ThemeToggle";
+import { PlayStoreNavLink } from "./PlayStoreNavLink";
 import { cn } from "@shared/utils";
 
 type NavTab = "consultar" | "recorrido" | "favoritos" | "acerca";
@@ -145,8 +146,11 @@ function SideNav() {
                 })}
             </div>
 
-            <div className="flex items-center px-5 pb-4">
-                <ThemeToggle />
+            <div className="flex flex-col gap-1 px-3 pb-4">
+                <PlayStoreNavLink variant="row" />
+                <div className="flex items-center px-2 pt-1">
+                    <ThemeToggle />
+                </div>
             </div>
         </nav>
     );

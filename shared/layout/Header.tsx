@@ -2,6 +2,7 @@
 
 import { IconBus } from "@shared/icons/IconBus";
 import { ThemeToggle } from "./ThemeToggle";
+import { PlayStoreNavLink } from "./PlayStoreNavLink";
 import { BrandLogo } from "@shared/ui/BrandLogo";
 
 /** Header superior — solo mobile: en lg la marca y el toggle viven en la sidebar. */
@@ -18,7 +19,10 @@ export function Header() {
                             <BrandLogo className="text-2xl" />
                         </div>
                     </div>
-                    <ThemeToggle />
+                    <div className="flex shrink-0 items-center gap-2">
+                        <PlayStoreNavLink />
+                        <ThemeToggle />
+                    </div>
                 </div>
             </div>
         </header>
