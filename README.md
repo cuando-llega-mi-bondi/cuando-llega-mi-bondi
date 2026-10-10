@@ -19,7 +19,7 @@
 ---
 
 > [!NOTE]
-> Progressive Web App (PWA) rápida y responsiva. Consultá cuándo llega el colectivo a tu parada sin publicidades, sin apps nativas y con caché local para datos estáticos.
+> App de colectivos para Mar del Plata (web, PWA y [Google Play](https://play.google.com/store/apps/details?id=com.bondimdp.app)). Consultá cuándo llega tu bondi con datos oficiales y caché local para datos estáticos.
 
 <div align="center">
   <img src="public/screenshots/results.jpg" alt="Screenshot de la aplicación" width="400" style="border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.2);" />

@@ -79,6 +79,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
             priority: 0.3,
         },
         {
+            url: `${baseUrl}/android`,
+            lastModified: now,
+            changeFrequency: "weekly",
+            priority: 0.7,
+        },
+        {
             url: `${baseUrl}/terminos`,
             lastModified: now,
             changeFrequency: "yearly",

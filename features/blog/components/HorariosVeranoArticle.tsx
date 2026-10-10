@@ -67,9 +67,9 @@ export function HorariosVeranoArticle() {
 
             <h3>¿Hace falta descargar algo para consultarlo?</h3>
             <p>
-                No. Bondi MDP es una PWA gratuita que se usa directo desde el navegador, sin pasar por
-                Google Play ni App Store. Se puede instalar en la pantalla de inicio si querés acceso más
-                rápido, pero no es obligatorio.
+                No. Podés usarla directo en el navegador. Si preferís, en Android también está en{" "}
+                <Link href="/android">Google Play</Link>, o la instalás como PWA en la pantalla de
+                inicio. Ninguna opción pide cuenta.
             </p>
 
             <h3>¿Sirve para turistas que no conocen las líneas?</h3>

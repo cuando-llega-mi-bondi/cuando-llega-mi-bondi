@@ -14,6 +14,7 @@ export const MARKDOWN_ROUTES: Record<string, string> = {
     "/acerca": "acerca",
     "/privacidad": "privacidad",
     "/contacto": "contacto",
+    "/android": "android",
     "/un-mes-en-numeros": "un-mes-en-numeros",
     "/primer-trimestre-en-numeros": "primer-trimestre-en-numeros",
     "/blog": "blog",
@@ -39,7 +40,7 @@ Entrás a [/consultar](${BASE}/consultar), elegís tu línea y tu parada, y ves 
 - [Paradas cerca mío](${BASE}/paradas-cerca) — encontrá la parada de colectivo más cercana a tu ubicación.
 
 ## Por qué usarla
-- Sin cuenta, sin descarga de tienda: funciona 100% en el navegador y es instalable como PWA.
+- Sin cuenta: funciona en el navegador, como PWA, y en Android también desde [Google Play](${BASE}/android).
 - Datos oficiales de MGP, en una interfaz más rápida y liviana que la oficial.
 - Incluye líneas que no están en la app oficial (por ejemplo, la 221).
 
@@ -119,6 +120,18 @@ Escribinos a maticelizramos@gmail.com para ejercer tus derechos sobre datos pers
 ## Quiénes somos
 [Nicolás Jiménez](https://dotfn.dev) y [Matias Celiz Ramos](https://celizin.dev). Código en [GitHub](https://github.com/cuando-llega-mi-bondi/cuando-llega-mi-bondi). Más en [/acerca](${BASE}/acerca).
 `,
+
+    android: `# App Android en Google Play — Bondi MDP
+
+Descargá Bondi MDP gratis en Google Play: la app nativa de colectivos de Mar del Plata con arribos en tiempo real.
+
+## Descargar
+- [Google Play — Bondi MDP](https://play.google.com/store/apps/details?id=com.bondimdp.app&pcampaignid=web_share)
+- Landing: [/android](${BASE}/android)
+
+También podés usar la web o instalarla como PWA desde el navegador (Android e iPhone).
+`,
+
     "un-mes-en-numeros": `# Bondi MDP: estadísticas del primer mes
 
 > Publicado el 28 de mayo de 2026. Datos estáticos de un período cerrado (29 de abril al 27 de mayo de 2026); no reflejan el uso actual del servicio. Para datos más recientes, ver [/primer-trimestre-en-numeros](${BASE}/primer-trimestre-en-numeros).
@@ -212,7 +225,7 @@ Comparativa neutral, hecha por el equipo de Bondi MDP, entre la app oficial "Cu�
 Ambas son gratuitas y usan los mismos datos oficiales en tiempo real de la MGP.
 
 ## Diferencias
-- **Instalación**: "Cuándo Llega" requiere descarga desde Google Play o App Store. Bondi MDP es una PWA instalable directo desde el navegador, sin tienda de apps.
+- **Instalación**: "Cuándo Llega" está en Google Play y App Store. Bondi MDP también está en [Google Play](${BASE}/android), y además se puede usar en el navegador o instalar como PWA.
 - **Registro**: Bondi MDP no pide cuenta.
 - **Cobertura**: Bondi MDP suma la línea 221 (Costa Azul) vía trazado manual, no incluida en la API oficial.
 - **Código**: Bondi MDP es [código abierto](https://github.com/cuando-llega-mi-bondi/cuando-llega-mi-bondi).
@@ -231,7 +244,7 @@ Guía de las formas disponibles para consultar el arribo de colectivos en tiempo
 
 ## Opciones
 - App oficial "Cuándo Llega" de la Municipalidad de General Pueyrredón.
-- [Bondi MDP](${BASE}/) — alternativa PWA, sin registro, con la misma data oficial.
+- [Bondi MDP](${BASE}/) — alternativa web/PWA y [app Android](${BASE}/android), sin registro, con la misma data oficial.
 - Consultá directo en [/consultar](${BASE}/consultar), mirá el [recorrido de tu línea](${BASE}/recorrido), planificá con [cómo llego](${BASE}/como-llego) o encontrá la [parada más cercana](${BASE}/paradas-cerca).
 
 ## Más

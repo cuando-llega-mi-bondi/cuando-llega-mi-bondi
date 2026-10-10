@@ -30,6 +30,13 @@ export function Footer() {
                 >
                     Blog
                 </Link>
+                {" · "}
+                <Link
+                    href="/android"
+                    className="underline decoration-border underline-offset-2 transition-colors hover:text-foreground"
+                >
+                    Google Play
+                </Link>
             </p>
         </footer>
     );

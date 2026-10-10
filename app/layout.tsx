@@ -6,6 +6,7 @@ import { MicrosoftClarityDeferred } from "@shared/analytics/MicrosoftClarityDefe
 import { VercelAnalyticsDeferred } from "@shared/analytics/VercelAnalyticsDeferred";
 import { JsonLd } from "@shared/seo/JsonLd";
 import { InstallPwaPrompt } from "@shared/layout/InstallPwaPrompt";
+import { PlayStorePromo } from "@shared/layout/PlayStorePromo";
 import { ThemeColorMeta } from "@shared/layout/ThemeColorMeta";
 import { ThemeProvider } from "@shared/layout/ThemeProvider";
 import { PwaViewportSync } from "@shared/layout/PwaViewportSync";
@@ -136,6 +137,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                     <GoogleAnalyticsDeferred />
                     {children}
                     <ToasterDeferred />
+                    <PlayStorePromo />
                     <InstallPwaPrompt />
                 </ThemeProvider>
             </body>

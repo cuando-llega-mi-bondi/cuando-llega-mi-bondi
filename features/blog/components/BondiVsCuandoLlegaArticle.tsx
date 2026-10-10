@@ -20,10 +20,11 @@ export function BondiVsCuandoLlegaArticle() {
 
             <h2>Qué es Bondi MDP</h2>
             <p>
-                Es una Progressive Web App (PWA) gratuita e independiente, sin afiliación con la
-                Municipalidad, hecha por dos desarrolladores marplatenses. Nació como respuesta de la
-                comunidad tech local y hoy la usan miles de vecinos para consultar arribos, recorridos y
-                paradas cercanas.
+                Es una app gratuita e independiente de colectivos para Mar del Plata, sin afiliación con
+                la Municipalidad, hecha por dos desarrolladores marplatenses. Está en{" "}
+                <Link href="/android">Google Play</Link>, se puede usar en el navegador o instalar como
+                PWA. Nació como respuesta de la comunidad tech local y hoy la usan miles de vecinos para
+                consultar arribos, recorridos y paradas cercanas.
             </p>
 
             <h2>En qué se parecen</h2>
@@ -37,9 +38,9 @@ export function BondiVsCuandoLlegaArticle() {
 
             <h3>Instalación</h3>
             <p>
-                &ldquo;Cuándo Llega&rdquo; requiere descargarla desde Google Play o App Store. Bondi MDP
-                es una PWA: se instala directo desde el navegador (o se usa sin instalar nada), sin pasar
-                por ninguna tienda de aplicaciones.
+                &ldquo;Cuándo Llega&rdquo; se descarga desde Google Play o App Store. Bondi MDP también
+                está en <Link href="/android">Google Play</Link>, y además se puede abrir en el navegador
+                o instalar como PWA en Android e iPhone, sin cuenta.
             </p>
 
             <h3>Registro</h3>

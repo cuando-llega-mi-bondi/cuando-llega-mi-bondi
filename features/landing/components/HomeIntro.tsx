@@ -16,7 +16,8 @@ export function HomeIntro() {
             <p className="m-0 font-sans text-[15px] leading-[1.3] text-muted-foreground mt-3">
                 Bondi MDP es la app gratuita para Mar del Plata: arribos en tiempo real,
                 recorridos y paradas de todas las líneas municipales (511, 522, 541 y más).
-                Datos oficiales de MGP, instalable en Android e iPhone como PWA.
+                Datos oficiales de MGP. En Android también está en Google Play; en
+                iPhone y Android podés usarla como web o instalarla como PWA.
             </p>
             <nav aria-label="Funciones principales de Bondi MDP">
                 <h2>¿Qué podés hacer con Bondi MDP?</h2>

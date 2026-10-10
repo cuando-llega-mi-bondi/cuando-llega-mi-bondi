@@ -59,6 +59,7 @@ export function JsonLd() {
         },
         "sameAs": [
             "https://github.com/cuando-llega-mi-bondi/cuando-llega-mi-bondi",
+            "https://play.google.com/store/apps/details?id=com.bondimdp.app",
         ],
     };
 

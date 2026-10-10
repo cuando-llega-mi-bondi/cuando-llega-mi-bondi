@@ -31,7 +31,7 @@ const FAQ_ITEMS = [
   },
   {
     q: "¿Cómo la instalo?",
-    a: "Es una PWA: podés instalarla desde el navegador en Android e iPhone, sin pasar por ninguna tienda de apps.",
+    a: "En Android está en Google Play (bondimdp.com.ar/android). También podés usarla en el navegador o instalarla como PWA en Android e iPhone, sin cuenta.",
   },
 ] as const;
 

@@ -65,7 +65,14 @@ export function LandingCta() {
           transition={{ duration: 0.5, delay: 0.3 }}
           className="mt-6 text-[14px] font-medium text-muted-foreground"
         >
-          Nos vemos en la parada.
+          Nos vemos en la parada.{" "}
+          <Link
+            href="/android"
+            className="underline decoration-border underline-offset-2 transition-colors hover:text-foreground"
+          >
+            También en Google Play
+          </Link>
+          .
         </motion.p>
       </div>
     </section>
