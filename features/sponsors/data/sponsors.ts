@@ -17,6 +17,13 @@ export const SPONSORS: Sponsor[] = [
     cta: "Conocer",
     logoOnDark: true,
   },
+  {
+    name: "MardelPlata.dev.ar",
+    logo: "/sponsors/mardelplata-dev.webp",
+    href: "https://mardelplata.dev.ar/",
+    tagline: "Comunidad IT de Mar del Plata",
+    cta: "Conocer",
+  },
 ];
 
 export const FEATURED_SPONSOR = SPONSORS[0];

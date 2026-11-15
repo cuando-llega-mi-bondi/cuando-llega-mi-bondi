@@ -1,8 +1,7 @@
 "use client";
 
-import Link from "next/link";
 import type { ReactNode } from "react";
-import { ArrowUpRight, Plus } from "lucide-react";
+import { ArrowUpRight } from "lucide-react";
 import { SPONSORS, type Sponsor } from "@features/sponsors/data/sponsors";
 import { cn } from "@shared/utils";
 import { LandingSection } from "./LandingSection";
@@ -54,10 +53,13 @@ function SponsorRow({ sponsor }: { sponsor: Sponsor }) {
         tagline={sponsor.tagline}
         mark={
           <span
+            // Logos centrados en la misma caja para que formen una columna pareja.
+            // La placa sigue el tema del sitio (.dark), no el del sistema: con el
+            // sistema oscuro y el sitio claro, dark: la sacaba y el logo quedaba blanco sobre blanco
             className={cn(
-              "flex h-14 w-36 shrink-0 items-center",
+              "flex h-14 w-36 shrink-0 items-center justify-center",
               sponsor.logoOnDark &&
-                "justify-center rounded-sm bg-foreground px-3 dark:bg-transparent dark:px-0",
+                "rounded-sm bg-foreground px-3 in-[.dark]:bg-transparent in-[.dark]:px-0",
             )}
           >
             {/* eslint-disable-next-line @next/next/no-img-element -- el proyecto no usa next/image (sin config de images); logo estático liviano */}
@@ -81,31 +83,14 @@ export function LandingSponsors() {
       layout="split"
       title="Nos"
       highlight="acompañan."
-      description="Empresas locales que apoyan el proyecto para que siga siendo gratuito."
+      description="Empresas y comunidades locales que apoyan el proyecto para que siga siendo gratuito."
     >
-      {/* El lugar libre va como una fila más: con un solo sponsor la lista no queda coja */}
       <ul role="list" className="divide-y divide-border border-y border-border">
         {SPONSORS.map((sponsor) => (
           <li key={sponsor.name}>
             <SponsorRow sponsor={sponsor} />
           </li>
         ))}
-        <li>
-          <Link href="/anunciate" className={ROW}>
-            <RowBody
-              name="Tu marca acá"
-              tagline="Sumate y mantené Bondi MDP gratis para toda la ciudad."
-              mark={
-                <span
-                  aria-hidden
-                  className="flex h-14 w-36 shrink-0 items-center justify-center text-muted-foreground transition-colors duration-150 group-hover:text-foreground"
-                >
-                  <Plus className="h-6 w-6" />
-                </span>
-              }
-            />
-          </Link>
-        </li>
       </ul>
     </LandingSection>
   );
