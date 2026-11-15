@@ -13,16 +13,9 @@ export const SPONSORS: Sponsor[] = [
     name: "Nexovet",
     logo: "/sponsors/nexovet.png",
     href: "https://nexovet.aeterna.red/",
-    tagline: "Veterinaria en Mar del Plata",
+    tagline: "Software de gestión para veterinarias",
     cta: "Conocer",
     logoOnDark: true,
-  },
-  {
-    name: "MardelPlata.dev.ar",
-    logo: "/sponsors/mardelplata-dev.webp",
-    href: "https://mardelplata.dev.ar/",
-    tagline: "Comunidad IT de Mar del Plata",
-    cta: "Conocer",
   },
 ];
 

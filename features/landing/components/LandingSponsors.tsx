@@ -83,7 +83,7 @@ export function LandingSponsors() {
       layout="split"
       title="Nos"
       highlight="acompañan."
-      description="Empresas y comunidades locales que apoyan el proyecto para que siga siendo gratuito."
+      description="Empresas locales que apoyan el proyecto para que siga siendo gratuito."
     >
       <ul role="list" className="divide-y divide-border border-y border-border">
         {SPONSORS.map((sponsor) => (
