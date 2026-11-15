@@ -16,12 +16,6 @@ import {
 } from "@features/trip-planner/lib/recentPlaces";
 import { cn } from "@shared/utils";
 import { IconX } from "@shared/icons/IconX";
-import { useIsDesktop } from "@shared/hooks/useIsDesktop";
-import { BottomNav } from "@shared/layout/BottomNav";
-import {
-    TripResultsHeader,
-    TripResultsList,
-} from "@features/trip-planner/components/TripResultsList";
 
 const ComoLlegoMap = dynamic(() => import("@features/trip-planner/components/ComoLlegoMap"), {
     ssr: false,
@@ -98,16 +92,10 @@ export function ComoLlegoClient() {
     const [recents, setRecents] = useState<RecentPlace[]>([]);
     /** Una vez que hubo una búsqueda, el sheet queda montado (animaciones de entrada/salida). */
     const [sheetWanted, setSheetWanted] = useState(false);
-    const isDesktop = useIsDesktop();
     const searchCardRef = useRef<HTMLDivElement | null>(null);
     const lastAutoPlanKey = useRef<string | null>(null);
 
     const canPlan = origin.coords != null && dest.coords != null;
-
-    useEffect(() => {
-        document.body.classList.add("como-llego-overlay-open");
-        return () => document.body.classList.remove("como-llego-overlay-open");
-    }, []);
 
     /**
      * Warm-up: el grafo de routing se construye lazy en el server con el
@@ -466,12 +454,7 @@ export function ComoLlegoClient() {
     );
 
     return (
-        <>
-        {/* Solo desktop: sidebar de navegación (mobile mantiene la vista fullscreen sin barra) */}
-        <div className="hidden lg:block">
-            <BottomNav />
-        </div>
-        <div className="como-llego-overlay fixed inset-0 z-80 min-h-pwa-shell overflow-hidden bg-background lg:left-60">
+        <div className="como-llego-overlay relative flex h-full min-h-[540px] w-full flex-1 flex-col overflow-hidden bg-background">
             <div className="absolute inset-0 z-0">
                 <ComoLlegoMap
                     variant="fullscreen"
@@ -485,21 +468,20 @@ export function ComoLlegoClient() {
                 />
             </div>
 
-            {/* Mobile: banda superior full-width · Desktop: columna izquierda (estilo direcciones) */}
-            <div className="pointer-events-none absolute inset-x-0 top-0 z-10 flex flex-col gap-3 px-3 pt-[max(calc(env(safe-area-inset-top)+10px),14px)] lg:inset-x-auto lg:left-4 lg:bottom-4 lg:w-[420px] lg:px-0 lg:pt-4">
+            <div className="pointer-events-none absolute inset-x-0 top-0 z-10 flex flex-col gap-3 px-3 pt-3">
                 <div className="pointer-events-auto flex items-center justify-between gap-2">
                     <Link
-                        href="/consultar"
+                        href="/"
                         className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-border bg-card/90 text-foreground shadow-lg backdrop-blur-md hover:bg-muted dark:hover:bg-muted/10 active:scale-95 transition-all"
                         aria-label="Volver"
                     >
                         <IconChevronBack />
                     </Link>
-                    <h1 className="min-w-0 flex-1 truncate text-center text-base font-black tracking-tight text-foreground drop-shadow-sm">
+                    <h2 className="min-w-0 flex-1 truncate text-balance text-center text-base font-black tracking-tight text-foreground drop-shadow-sm">
                         ¿Cómo llego?
-                    </h1>
+                    </h2>
                     <Link
-                        href="/consultar"
+                        href="/"
                         className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-border bg-card/90 text-foreground shadow-lg backdrop-blur-md hover:bg-muted dark:hover:bg-muted/10 active:scale-95 transition-all"
                         aria-label="Cerrar"
                     >
@@ -709,40 +691,18 @@ export function ComoLlegoClient() {
 
                     {suggestionPanel}
                 </div>
-
-                {/* Desktop: resultados docked en la columna izquierda (sin bottom-sheet) */}
-                {isDesktop && sheetWanted ? (
-                    <div className="pointer-events-auto hidden min-h-0 flex-1 flex-col overflow-hidden rounded-2xl border border-border bg-background/95 shadow-xl backdrop-blur-md lg:flex">
-                        <div className="shrink-0 border-b border-border px-4 pb-1 pt-3">
-                            <TripResultsHeader
-                                count={itineraries.length}
-                                onNewTrip={resetTrip}
-                            />
-                        </div>
-                        <div className="min-h-0 flex-1 overflow-y-auto px-4 pt-3">
-                            <TripResultsList
-                                key={tripKey}
-                                itineraries={itineraries}
-                                selectedIdx={selectedIdx}
-                                onSelect={setSelectedIdx}
-                                originLabel={origin.text}
-                                destLabel={dest.text}
-                            />
-                        </div>
-                    </div>
-                ) : null}
             </div>
 
             {!planning && canPlan && itineraries.length === 0 ? (
-                <div className="pointer-events-auto fixed bottom-[max(1.25rem,env(safe-area-inset-bottom,0px))] left-4 right-4 z-20 mx-auto max-w-lg lg:left-[calc(15rem+1rem)] lg:right-auto lg:mx-0 lg:w-[420px]">
+                <div className="pointer-events-auto absolute bottom-5 left-4 right-4 z-20 mx-auto max-w-lg">
                     <Button type="button" variant="primary" className="w-full shadow-lg" onClick={plan}>
                         Buscar ruta
                     </Button>
                 </div>
             ) : null}
 
-            {/* Mobile: resultados en bottom-sheet */}
-            {sheetWanted && !isDesktop ? (
+            {/* Resultados en bottom-sheet dentro del teléfono */}
+            {sheetWanted ? (
                 <TripResultsSheet
                     key={tripKey}
                     itineraries={itineraries}
@@ -786,6 +746,5 @@ export function ComoLlegoClient() {
                 </Button>
             </Modal>
         </div>
-        </>
     );
 }

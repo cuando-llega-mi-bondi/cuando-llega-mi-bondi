@@ -13,11 +13,8 @@ import { IconZap } from "@shared/icons/IconZap";
 import { IconCode } from "@shared/icons/IconCode";
 import { IconMessage } from "@shared/icons/IconMessage";
 import { IconSearch } from "@shared/icons/IconSearch";
-import { BottomNav } from "@shared/layout/BottomNav";
-import { PageShell } from "@shared/layout/PageShell";
 import { PageHeader } from "@shared/layout/PageHeader";
 import { BrandLogo } from "@shared/ui/BrandLogo";
-import { Footer } from "@shared/layout/Footer";
 import { IconIg } from "@shared/icons/IconIg";
 import { IconXBrand } from "@shared/icons/IconXBrand";
 // ── Data ────────────────────────────────────────────────────────────────────
@@ -142,14 +139,14 @@ function DevCard({ dev }: { dev: Developer }) {
         <div className="space-y-4 rounded-xl border border-border bg-card p-4">
             <div className="min-w-0 space-y-1">
                 <div className="flex items-center justify-between gap-3">
-                    <h3 className="text-[15px] font-semibold">{dev.name}</h3>
-                    <span className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-success bg-success/10 px-2.5 py-1 text-[12px] font-semibold text-success">
+                    <h3 className="text-balance text-[15px] font-semibold">{dev.name}</h3>
+                    <span className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-secondary/35 bg-card px-2.5 py-1 text-xs font-semibold text-secondary dark:border-amarillo/30 dark:text-amarillo">
                         <span className="h-1.5 w-1.5 animate-pulse-soft rounded-full bg-current" />
                         Conectemos
                     </span>
                 </div>
                 <p className="text-[13px] text-muted-foreground">{dev.role}</p>
-                <p className="text-[12px] text-muted-foreground opacity-80">
+                <p className="text-xs text-muted-foreground">
                     Alumno de la{" "}
                     <a
                         href={dev.education.href}
@@ -178,7 +175,7 @@ function DevCard({ dev }: { dev: Developer }) {
                         href={href}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="flex items-center gap-2 rounded-lg border border-border bg-muted px-3 py-2 text-[13px] font-medium text-muted-foreground transition-colors hover:border-secondary hover:text-foreground"
+                        className="flex min-h-11 items-center gap-2 rounded-lg border border-border bg-muted px-3 py-2 text-[13px] font-medium text-muted-foreground transition-colors hover:border-secondary hover:text-foreground"
                     >
                         {icon}
                         {label}
@@ -218,146 +215,142 @@ export function AcercaClient() {
     }, [handleShareWhatsApp]);
 
     return (
-        <div className="flex min-h-pwa-shell flex-col lg:pl-60">
-            <PageShell wide className="space-y-10 lg:space-y-6">
-                <PageHeader
-                    title="Acerca de"
-                    highlight="Bondi MDP"
-                    subtitle="El proyecto y el equipo"
-                />
-                {/* Desktop: rail izquierdo sticky (marca + compartir) y contenido
-                    a la derecha. En mobile todo fluye en una columna. */}
-                <div className="space-y-10 lg:grid lg:grid-cols-[320px_minmax(0,1fr)] lg:items-start lg:gap-10 lg:space-y-0">
-                    <div className="space-y-10 lg:sticky lg:top-8 lg:space-y-5">
-                        {/* ── HERO ──────────────────────────────────── */}
-                        <section className="flex flex-col items-center gap-5 text-center lg:gap-4 lg:rounded-2xl lg:border lg:border-border lg:bg-card lg:px-6 lg:py-6">
-                            {/* El ícono grande duplica el logo de la sidebar en desktop */}
-                            <div className="flex items-center justify-center text-secondary lg:hidden">
-                                <IconBus size={64} />
+        <div className="flex flex-col space-y-8">
+            <PageHeader
+                title="Acerca de"
+                highlight="Bondi MDP"
+                subtitle="El proyecto y el equipo"
+            />
+
+            <div className="space-y-8">
+                {/* ── HERO ──────────────────────────────────── */}
+                <section className="flex flex-col items-center gap-4 rounded-2xl border border-border bg-card px-5 py-6 text-center">
+                    <div className="flex items-center justify-center text-secondary dark:text-amarillo">
+                        <IconBus size={56} />
+                    </div>
+                    <div>
+                        <BrandLogo className="text-3xl" />
+                        <p className="mt-1 text-xs uppercase tracking-wider text-muted-foreground">
+                            MAR DEL PLATA
+                        </p>
+                    </div>
+                    <p className="max-w-sm text-sm leading-relaxed text-muted-foreground">
+                        Información de colectivos en tiempo real para Mar del Plata.
+                        Rápida, clara y sin vueltas.
+                    </p>
+                </section>
+
+                {/* ── SOBRE LA APP ──────────────────────────── */}
+                <section className="space-y-3">
+                    <h2 className="text-balance text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                        Sobre la app
+                    </h2>
+                    <div className="space-y-3">
+                        {APP_FEATURES.map(({ icon, title, description }) => (
+                            <div
+                                key={title}
+                                className="flex items-start gap-3 rounded-xl border border-border bg-card p-4"
+                            >
+                                {icon}
+                                <div>
+                                    <p className="text-sm font-semibold">{title}</p>
+                                    <p className="mt-1 text-[13px] text-muted-foreground">
+                                        {description}
+                                    </p>
+                                </div>
                             </div>
-                            <div>
-                                <BrandLogo className="text-4xl lg:text-[40px]" />
-                                <p className="mt-1 text-[10.4px] uppercase tracking-wider text-muted-foreground">
-                                    MAR DEL PLATA
+                        ))}
+                    </div>
+                </section>
+
+                {/* ── COMPARTIR ─────────────────────────────── */}
+                <section className="space-y-3">
+                    <h2 className="text-balance text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                        Compartir
+                    </h2>
+                    <div className="grid grid-cols-2 gap-3">
+                        <button
+                            type="button"
+                            onClick={handleShareWhatsApp}
+                            className="btn-pill btn-secondary w-full gap-2 text-[13px]"
+                        >
+                            <IconWhatsApp className="h-5 w-5" />
+                            WhatsApp
+                        </button>
+                        <button
+                            type="button"
+                            onClick={handleShareNative}
+                            className="btn-pill btn-primary w-full gap-2 text-[13px]"
+                        >
+                            <IconShare className="h-5 w-5" />
+                            Compartir
+                        </button>
+                    </div>
+                </section>
+
+                {/* ── TU CUENTA ─────────────────────────────── */}
+                {user && (
+                    <section className="space-y-3">
+                        <h2 className="text-balance text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                            Tu cuenta
+                        </h2>
+                        <Link
+                            href="/perfil"
+                            className="flex min-h-11 items-center justify-between gap-3 rounded-xl border border-border bg-card p-4 no-underline transition-colors hover:border-secondary"
+                        >
+                            <div className="min-w-0">
+                                <p className="truncate text-sm font-semibold text-foreground">
+                                    {user.email}
+                                </p>
+                                <p className="text-xs text-muted-foreground">
+                                    Cerrar sesión o eliminar tu cuenta
                                 </p>
                             </div>
-                            <p className="max-w-sm text-[14px] leading-relaxed text-muted-foreground">
-                                Información de colectivos en tiempo real para Mar del Plata.
-                                Rápida, clara y sin vueltas.
-                            </p>
-                        </section>
+                            <svg
+                                className="shrink-0 text-muted-foreground"
+                                width="16"
+                                height="16"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="2.5"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                            >
+                                <polyline points="9 18 15 12 9 6" />
+                            </svg>
+                        </Link>
+                    </section>
+                )}
 
-                        {/* ── SOBRE LA APP ──────────────────────────── */}
-                        <section className="space-y-3">
-                            <h2 className="text-[10.4px] font-normal uppercase tracking-wider text-muted-foreground">
-                                Sobre la app
-                            </h2>
-                            <div className="space-y-3">
-                                {APP_FEATURES.map(({ icon, title, description }) => (
-                                    <div
-                                        key={title}
-                                        className="flex items-start gap-3 rounded-xl border border-border bg-card p-4"
-                                    >
-                                        {icon}
-                                        <div>
-                                            <p className="text-[14px] font-semibold">{title}</p>
-                                            <p className="mt-1 text-[13px] text-muted-foreground">
-                                                {description}
-                                            </p>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        </section>
-
-                        {/* ── COMPARTIR ─────────────────────────────── */}
-                        <section className="space-y-3">
-                            <h2 className="text-[10.4px] font-normal uppercase tracking-wider text-muted-foreground">
-                                Compartir
-                            </h2>
-                            <div className="grid grid-cols-2 gap-3">
-                                <button
-                                    onClick={handleShareWhatsApp}
-                                    className="btn-pill btn-secondary w-full gap-2 text-[13px]"
-                                >
-                                    <IconWhatsApp className="h-5 w-5" />
-                                    WhatsApp
-                                </button>
-                                <button
-                                    onClick={handleShareNative}
-                                    className="btn-pill btn-primary w-full gap-2 text-[13px]"
-                                >
-                                    <IconShare className="h-5 w-5" />
-                                    Compartir
-                                </button>
-                            </div>
-                        </section>
-                    </div>
-
-                    <div className="space-y-10 lg:space-y-8">
-                        {/* ── TU CUENTA ─────────────────────────────── */}
-                        {user && (
-                            <section className="space-y-3">
-                                <h2 className="text-[10.4px] font-normal uppercase tracking-wider text-muted-foreground">
-                                    Tu cuenta
-                                </h2>
-                                <Link
-                                    href="/perfil"
-                                    className="flex items-center justify-between gap-3 rounded-xl border border-border bg-card p-4 no-underline transition-colors hover:border-secondary"
-                                >
-                                    <div className="min-w-0">
-                                        <p className="truncate text-[14px] font-semibold text-foreground">
-                                            {user.email}
-                                        </p>
-                                        <p className="text-[12px] text-muted-foreground opacity-80">
-                                            Cerrar sesión o eliminar tu cuenta
-                                        </p>
-                                    </div>
-                                    <svg
-                                        className="shrink-0 text-muted-foreground"
-                                        width="16"
-                                        height="16"
-                                        viewBox="0 0 24 24"
-                                        fill="none"
-                                        stroke="currentColor"
-                                        strokeWidth="2.5"
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                    >
-                                        <polyline points="9 18 15 12 9 6" />
-                                    </svg>
-                                </Link>
-                            </section>
-                        )}
-
-                        {/* ── HECHO POR ─────────────────────────────── */}
-                        <section className="space-y-3">
-                            <h2 className="text-[10.4px] font-normal uppercase tracking-wider text-muted-foreground">
-                                Hecho por
-                            </h2>
-                            <div className="space-y-3 lg:grid lg:grid-cols-2 lg:items-start lg:gap-4 lg:space-y-0">
-                                {DEVELOPERS.map((dev) => (
-                                    <DevCard key={dev.name} dev={dev} />
-                                ))}
-                            </div>
-                        </section>
-
-                        {/* ── CÓDIGO ABIERTO ────────────────────────── */}
+                {/* ── HECHO POR ─────────────────────────────── */}
                 <section className="space-y-3">
-                    <h2 className="text-[10.4px] font-normal uppercase tracking-wider text-muted-foreground">
+                    <h2 className="text-balance text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                        Hecho por
+                    </h2>
+                    <div className="space-y-3">
+                        {DEVELOPERS.map((dev) => (
+                            <DevCard key={dev.name} dev={dev} />
+                        ))}
+                    </div>
+                </section>
+
+                {/* ── CÓDIGO ABIERTO ────────────────────────── */}
+                <section className="space-y-3">
+                    <h2 className="text-balance text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                         Código abierto
                     </h2>
-                    <div className="space-y-3 lg:grid lg:grid-cols-2 lg:items-stretch lg:gap-4 lg:space-y-0">
+                    <div className="space-y-3">
                         {[
                             {
                                 href: "https://github.com/cuando-llega-mi-bondi/cuando-llega-mi-bondi",
-                                icon: <IconGithub className="h-5 w-5 text-secondary" />,
+                                icon: <IconGithub className="h-5 w-5 text-secondary dark:text-amarillo" />,
                                 title: "Repositorio en GitHub",
                                 subtitle: "Código fuente y decisiones técnicas",
                             },
                             {
                                 href: "https://github.com/cuando-llega-mi-bondi/cuando-llega-mi-bondi/issues",
-                                icon: <IconMessage className="h-5 w-5 text-secondary" />,
+                                icon: <IconMessage className="h-5 w-5 text-secondary dark:text-amarillo" />,
                                 title: "Reportar bugs o proponer mejoras",
                                 subtitle: "El proyecto crece con la comunidad",
                             },
@@ -367,18 +360,18 @@ export function AcercaClient() {
                                 href={href}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="flex items-center justify-between rounded-xl border border-border bg-card p-4 transition-colors hover:border-secondary"
+                                className="flex min-h-11 items-center justify-between rounded-xl border border-border bg-card p-4 transition-colors hover:border-secondary"
                             >
                                 <div className="flex items-center gap-3">
                                     {icon}
                                     <div>
-                                        <p className="text-[14px] font-semibold">{title}</p>
-                                        <p className="text-[12px] text-muted-foreground opacity-80">
+                                        <p className="text-sm font-semibold">{title}</p>
+                                        <p className="text-xs text-muted-foreground">
                                             {subtitle}
                                         </p>
                                     </div>
                                 </div>
-                                <IconExternalLink className="h-4 w-4 shrink-0 text-muted-foreground opacity-80" />
+                                <IconExternalLink className="h-4 w-4 shrink-0 text-muted-foreground" />
                             </a>
                         ))}
                     </div>
@@ -386,18 +379,18 @@ export function AcercaClient() {
 
                 {/* ── BLOG ──────────────────────────────────────────── */}
                 <section className="space-y-3">
-                    <h2 className="text-[10.4px] font-normal uppercase tracking-wider text-muted-foreground">
+                    <h2 className="text-balance text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                         Blog
                     </h2>
                     <Link
                         href="/blog"
-                        className="flex items-center justify-between gap-3 rounded-xl border border-border bg-card p-4 no-underline transition-colors hover:border-secondary"
+                        className="flex min-h-11 items-center justify-between gap-3 rounded-xl border border-border bg-card p-4 no-underline transition-colors hover:border-secondary"
                     >
                         <div className="min-w-0">
-                            <p className="text-[14px] font-semibold text-foreground">
+                            <p className="text-sm font-semibold text-foreground">
                                 Comparativas y guías
                             </p>
-                            <p className="text-[12px] text-muted-foreground opacity-80">
+                            <p className="text-xs text-muted-foreground">
                                 Bondi MDP vs. la app oficial, y cómo saber cuándo llega el colectivo
                             </p>
                         </div>
@@ -419,29 +412,22 @@ export function AcercaClient() {
 
                 {/* ── FAQ ───────────────────────────────────────────── */}
                 <section className="space-y-3">
-                    <h2 className="text-[10.4px] font-normal uppercase tracking-wider text-muted-foreground">
+                    <h2 className="text-balance text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                         Preguntas frecuentes
                     </h2>
-                    <div className="space-y-3 lg:grid lg:grid-cols-3 lg:items-stretch lg:gap-4 lg:space-y-0">
+                    <div className="space-y-3">
                         {FAQ.map(({ q, a }) => (
                             <div
                                 key={q}
                                 className="rounded-xl border border-border bg-card p-4"
                             >
-                                <p className="text-[14px] font-semibold">{q}</p>
+                                <p className="text-sm font-semibold">{q}</p>
                                 <p className="mt-1 text-[13px] text-muted-foreground">{a}</p>
                             </div>
                         ))}
                     </div>
                 </section>
-                    </div>
-                </div>
-
-                {/* ── FOOTER ────────────────────────────────────────── */}
-                <Footer />
-            </PageShell>
-
-            <BottomNav />
+            </div>
         </div>
     );
 }

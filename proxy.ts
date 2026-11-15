@@ -1,4 +1,4 @@
-import { NextResponse, userAgent } from "next/server";
+import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { acceptsNeitherMarkdownNorHtml, prefersMarkdown } from "@shared/seo/acceptNegotiation";
 import { MARKDOWN_ROUTES, NOT_FOUND_MARKDOWN } from "@shared/seo/markdownPages";
@@ -52,13 +52,6 @@ export function proxy(request: NextRequest) {
             const response = NextResponse.rewrite(url);
             response.headers.set("Vary", "Accept");
             return response;
-        }
-
-        // Landing en mobile: directo a /consultar, sin renderizar la home de desktop.
-        // Bots (Googlebot smartphone incluido) quedan afuera: deben indexar "/", no un redirect.
-        const ua = userAgent(request);
-        if (pathname === "/" && !ua.isBot && ua.device.type === "mobile") {
-            return NextResponse.redirect(new URL("/consultar", request.url));
         }
 
         return NextResponse.next();

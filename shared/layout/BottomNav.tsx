@@ -19,26 +19,26 @@ const NAV_ITEMS: { id: NavTab; label: string; href: string; icon: (active: boole
     {
         id: "consultar",
         label: "Consultar",
-        href: "/consultar",
-        icon: () => <IconSearch className="h-[22px] w-[22px]" />,
+        href: "/",
+        icon: () => <IconSearch className="h-[20px] w-[20px]" />,
     },
     {
         id: "recorrido",
         label: "Reseñas",
         href: "/recorrido",
-        icon: () => <Bus className="h-[22px] w-[22px]" />,
+        icon: () => <Bus className="h-[20px] w-[20px]" />,
     },
     {
         id: "favoritos",
         label: "Favoritos",
         href: "/favoritos",
-        icon: (active) => <IconStar filled={active} className="h-[22px] w-[22px]" />,
+        icon: (active) => <IconStar filled={active} className="h-[20px] w-[20px]" />,
     },
     {
         id: "acerca",
         label: "Acerca de",
         href: "/acerca",
-        icon: () => <IconInfo className="h-[22px] w-[22px]" />,
+        icon: () => <IconInfo className="h-[20px] w-[20px]" />,
     },
 ];
 
@@ -53,50 +53,68 @@ function useActiveTab(): NavTab {
     }, [pathname]);
 }
 
-/** Barra inferior — solo mobile (<lg). */
-function MobileBar() {
+function NavTabRow() {
     const activeTab = useActiveTab();
 
     return (
+        <div className="mx-auto flex w-full max-w-[520px] items-stretch justify-around">
+            {NAV_ITEMS.map(({ id, label, href, icon }) => {
+                const isActive = activeTab === id;
+                return (
+                    <Link
+                        key={id}
+                        href={href}
+                        aria-label={label}
+                        aria-current={isActive ? "page" : undefined}
+                        className={cn(
+                            "relative flex min-h-[56px] flex-1 flex-col items-center justify-center gap-1 py-2 transition-colors",
+                            isActive
+                                ? "text-foreground"
+                                : "text-muted-foreground hover:text-foreground active:text-foreground"
+                        )}
+                    >
+                        <span
+                            className={cn(
+                                "absolute inset-x-3 top-0 h-[2px] rounded-b-full bg-foreground transition-opacity duration-200",
+                                isActive ? "opacity-100" : "opacity-0"
+                            )}
+                        />
+                        {icon(isActive)}
+                        <span className="font-sans text-xs font-medium tracking-tight">
+                            {label}
+                        </span>
+                    </Link>
+                );
+            })}
+        </div>
+    );
+}
+
+/** Barra inferior — solo mobile (<lg). */
+function MobileBar() {
+    return (
         <nav
+            aria-label="Navegación principal"
             className="fixed bottom-0 left-0 z-[100] w-full border-t border-border bg-background/90 backdrop-blur-xl pb-safe-area-bottom lg:hidden"
         >
-            <div className="mx-auto flex max-w-[520px] items-stretch justify-around">
-                {NAV_ITEMS.map(({ id, label, href, icon }) => {
-                    const isActive = activeTab === id;
-                    return (
-                        <Link
-                            key={id}
-                            href={href}
-                            aria-label={label}
-                            aria-current={isActive ? "page" : undefined}
-                            className={cn(
-                                "relative flex min-h-[56px] flex-1 flex-col items-center justify-center gap-1 py-2 transition-colors",
-                                isActive
-                                    ? "text-secondary"
-                                    : "text-muted-foreground hover:text-foreground active:text-foreground"
-                            )}
-                        >
-                            {/* Active bar at top */}
-                            <span
-                                className={cn(
-                                    "absolute inset-x-3 top-0 h-[2px] rounded-b-full bg-secondary transition-opacity duration-200",
-                                    isActive ? "opacity-100" : "opacity-0"
-                                )}
-                            />
-                            {icon(isActive)}
-                            <span className="font-sans text-[11px] font-medium tracking-tight">
-                                {label}
-                            </span>
-                        </Link>
-                    );
-                })}
-            </div>
+            <NavTabRow />
         </nav>
     );
 }
 
-/** Sidebar expandida — solo desktop (≥lg). Ancho w-60 (240px), compensar con lg:pl-60. */
+/** Barra inferior embebida dentro del frame tipo mobile en desktop (layout Paisanos). */
+export function EmbeddedBottomNav() {
+    return (
+        <nav
+            aria-label="Navegación del panel"
+            className="hidden w-full shrink-0 border-t border-border bg-background/90 backdrop-blur-md lg:block"
+        >
+            <NavTabRow />
+        </nav>
+    );
+}
+
+/** Sidebar expandida — solo desktop (≥lg) en rutas secundarias fuera del shell unificado. */
 function SideNav() {
     const activeTab = useActiveTab();
 
@@ -105,7 +123,6 @@ function SideNav() {
             className="fixed left-0 top-0 z-[100] hidden h-dvh w-60 flex-col border-r border-border bg-background/90 backdrop-blur-xl lg:flex"
             aria-label="Navegación principal"
         >
-            {/* En desktop la landing es accesible: el logo lleva a ella */}
             <Link
                 href="/"
                 aria-label="Bondi MDP — Ir a la página principal"
@@ -125,17 +142,16 @@ function SideNav() {
                             href={href}
                             aria-current={isActive ? "page" : undefined}
                             className={cn(
-                                "relative flex items-center gap-3.5 rounded-xl px-4 py-3 font-sans text-[14px] font-medium tracking-tight transition-colors",
+                                "relative flex min-h-11 items-center gap-3.5 rounded-xl px-4 py-3 font-sans text-[14px] font-medium tracking-tight transition-colors",
                                 isActive
-                                    ? "bg-foreground/[0.06] text-secondary"
+                                    ? "bg-foreground/[0.06] text-secondary dark:text-amarillo"
                                     : "text-muted-foreground hover:bg-foreground/[0.04] hover:text-foreground"
                             )}
                         >
-                            {/* Barra de acento en el borde de la sidebar */}
                             <span
                                 aria-hidden
                                 className={cn(
-                                    "absolute -left-3 top-1/2 h-7 w-[3px] -translate-y-1/2 rounded-r-full bg-secondary transition-opacity duration-200",
+                                    "absolute -left-3 top-1/2 h-7 w-[3px] -translate-y-1/2 rounded-r-full bg-secondary dark:bg-amarillo transition-opacity duration-200",
                                     isActive ? "opacity-100" : "opacity-0"
                                 )}
                             />
@@ -156,11 +172,11 @@ function SideNav() {
     );
 }
 
-export function BottomNav() {
+export function BottomNav({ hideSideNav = false }: { hideSideNav?: boolean }) {
     return (
         <>
             <MobileBar />
-            <SideNav />
+            {!hideSideNav ? <SideNav /> : null}
         </>
     );
 }

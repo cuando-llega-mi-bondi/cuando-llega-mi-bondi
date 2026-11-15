@@ -6,9 +6,7 @@ import { useRouter } from "next/navigation";
 import { useReviewsUser } from "@features/reviews/hooks/useReviewsUser";
 import { SignInModal } from "@features/reviews/components/SignInModal";
 import { signOut, deleteAccount } from "@features/account/api/account";
-import { PageShell } from "@shared/layout/PageShell";
 import { PageHeader } from "@shared/layout/PageHeader";
-import { BottomNav } from "@shared/layout/BottomNav";
 import { Button } from "@shared/ui/Button";
 import { Modal } from "@shared/ui/Modal";
 import { Spinner } from "@shared/ui/Spinner";
@@ -42,11 +40,12 @@ export function PerfilClient() {
     }
 
     return (
-        <div className="flex min-h-pwa-shell flex-col lg:pl-60">
-            <PageShell>
+        <div className="flex flex-col">
+            <div>
                 <Link
                     href="/acerca"
-                    className="mb-4 inline-flex h-9 w-9 items-center justify-center rounded-full border border-border bg-muted text-muted-foreground no-underline transition hover:border-secondary hover:text-foreground"
+                    aria-label="Volver"
+                    className="mb-4 inline-flex h-11 w-11 items-center justify-center rounded-full border border-border bg-muted text-foreground no-underline transition hover:border-secondary"
                     title="Volver"
                 >
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -74,7 +73,7 @@ export function PerfilClient() {
                     ) : (
                         <div className="space-y-3">
                             <div className="card p-4">
-                                <p className="font-sans text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+                                <p className="font-sans text-xs font-semibold uppercase tracking-wide text-muted-foreground">
                                     Email
                                 </p>
                                 <p className="mt-1 font-sans text-sm text-foreground">{user.email}</p>
@@ -95,7 +94,7 @@ export function PerfilClient() {
                         </div>
                     )}
                 </div>
-            </PageShell>
+            </div>
 
             <Modal open={confirmOpen} onClose={() => (deleting ? undefined : setConfirmOpen(false))}>
                 <div className="space-y-3">
@@ -117,8 +116,6 @@ export function PerfilClient() {
             </Modal>
 
             <SignInModal open={signInOpen} onClose={() => setSignInOpen(false)} />
-
-            <BottomNav />
         </div>
     );
 }

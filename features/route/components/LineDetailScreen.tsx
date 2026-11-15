@@ -3,7 +3,6 @@
 import { useEffect, useState, useCallback } from "react";
 import { ReviewsPanel } from "@features/reviews/components/ReviewsPanel";
 import { describeMgpError } from "@shared/api/errors";
-import { BottomNav } from "@shared/layout/BottomNav";
 import { Button } from "@shared/ui/Button";
 import { Spinner } from "@shared/ui/Spinner";
 import { IconShare } from "@shared/icons/IconShare";
@@ -74,8 +73,8 @@ export function LineDetailScreen({
     }, [line.Descripcion, numero]);
 
     return (
-        <div className="flex min-h-pwa-shell flex-col bg-background pb-nav lg:pl-60">
-            <div className="relative h-56 shrink-0 overflow-hidden bg-secondary">
+        <div className="flex min-h-0 flex-1 flex-col bg-background">
+            <div className="relative h-48 shrink-0 overflow-hidden bg-secondary">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                     src="/route/linea-hero-placeholder.png"
@@ -86,39 +85,40 @@ export function LineDetailScreen({
                 <button
                     type="button"
                     onClick={onBack}
-                    className="absolute left-[calc(16px+var(--safe-left))] top-[calc(16px+var(--safe-top))] flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center rounded-full border border-white/20 bg-white/10 text-white backdrop-blur transition hover:bg-white/20"
+                    aria-label="Volver"
+                    className="absolute left-4 top-4 flex h-11 w-11 shrink-0 cursor-pointer items-center justify-center rounded-full border border-white/30 bg-black/40 text-white backdrop-blur transition hover:bg-black/60"
                     title="Volver"
                 >
                     <IconBack />
                 </button>
             </div>
 
-            <div className="flex-1 px-4 pb-8 pt-4 lg:px-8 lg:pt-6">
+            <div className="flex-1 px-4 pb-8 pt-4">
                 <div className="flex items-center gap-2.5">
-                    <span className="shrink-0 rounded-full border border-secondary/45 bg-secondary/12 px-3 py-1 font-display text-lg font-semibold tracking-[-0.03em] text-secondary">
+                    <span className="shrink-0 rounded-full border border-secondary/45 bg-card px-3 py-1 font-display text-lg font-semibold tracking-[-0.03em] text-secondary dark:text-amarillo">
                         {numero}
                     </span>
                     {line.Descripcion.trim() !== numero && (
-                        <h1 className="min-w-0 truncate font-sans text-lg font-semibold tracking-[-0.02em] text-foreground">
+                        <h1 className="min-w-0 truncate text-balance font-sans text-lg font-semibold tracking-[-0.02em] text-foreground">
                             {line.Descripcion}
                         </h1>
                     )}
                 </div>
 
                 {loading ? (
-                    <div className="mt-3 flex items-center gap-2 font-sans text-[13px] text-muted-foreground">
+                    <div className="mt-3 flex items-center gap-2 font-sans text-xs text-muted-foreground">
                         <Spinner className="h-4 w-4 border-2" />
                         Cargando recorrido…
                     </div>
                 ) : error ? (
                     <div className="mt-3 flex items-center justify-between gap-3 rounded-xl border border-border bg-muted px-3.5 py-2.5">
-                        <p className="font-sans text-[13px] text-muted-foreground">
+                        <p className="font-sans text-xs text-muted-foreground">
                             {describeMgpError(error).message}
                         </p>
                         <button
                             type="button"
                             onClick={onRetry}
-                            className="shrink-0 font-sans text-[13px] font-medium text-secondary underline-offset-2 hover:underline"
+                            className="min-h-11 shrink-0 font-sans text-xs font-medium text-secondary dark:text-amarillo underline-offset-2 hover:underline"
                         >
                             Reintentar
                         </button>
@@ -132,7 +132,7 @@ export function LineDetailScreen({
 
                 <div className="mt-6">
                     <div className="mb-2.5 flex items-center justify-between gap-2">
-                        <p className="font-sans text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+                        <p className="font-sans text-xs font-semibold uppercase tracking-wide text-muted-foreground">
                             Calificaciones
                         </p>
                         <button
@@ -140,7 +140,7 @@ export function LineDetailScreen({
                             onClick={handleShare}
                             aria-label="Compartir línea e invitar a dejar una reseña"
                             className={cn(
-                                "flex shrink-0 cursor-pointer items-center gap-1.5 rounded-full border px-3 py-1 font-sans text-[11px] font-medium tracking-[-0.01em] transition",
+                                "flex min-h-11 shrink-0 cursor-pointer items-center gap-1.5 rounded-full border px-3 py-1.5 font-sans text-xs font-medium tracking-[-0.01em] transition",
                                 shareStatus === "idle"
                                     ? "border-border text-muted-foreground hover:border-secondary hover:text-foreground"
                                     : "border-success/50 bg-success/10 text-success",
@@ -157,8 +157,6 @@ export function LineDetailScreen({
                     <ReviewsPanel lineaCodigo={line.CodigoLineaParada} lineaNombre={line.Descripcion} />
                 </div>
             </div>
-
-            <BottomNav />
         </div>
     );
 }

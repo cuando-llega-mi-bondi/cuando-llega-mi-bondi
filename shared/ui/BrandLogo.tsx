@@ -21,7 +21,7 @@ export function BrandLogo({ className, size = "md" }: BrandLogoProps) {
                 className
             )}
         >
-            BONDI<span className="text-amarillo">MDP</span>
+            BONDI<span className="text-secondary dark:text-amarillo">MDP</span>
         </span>
     );
 }

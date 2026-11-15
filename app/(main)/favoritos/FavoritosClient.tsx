@@ -9,7 +9,6 @@ import type { HistorialEntry } from "@features/history/types";
 import { FavoritesList } from "@features/favorites/components/FavoritesList";
 import { resolveFavoritoLinea } from "@features/favorites/resolveFavoritoLinea";
 import { HistorialList } from "@features/history/components/HistorialList";
-import { PageShell } from "@shared/layout/PageShell";
 import { PageHeader } from "@shared/layout/PageHeader";
 import { useSearchFlowData } from "@features/search/context/SearchFlowContext";
 import { useSearchFlowStore } from "@features/search/store/useSearchFlowStore";
@@ -55,7 +54,7 @@ export function FavoritosClient() {
   const fetchFavArribos = useCallback(
     (fav: Favorito) => {
       const line = resolveFavoritoLinea(fav, descripcionToCode);
-      if (!line) return; // Can't resolve – do nothing
+      if (!line) return;
 
       resetToParada(fav.identificadorParada, line, {
         consulting: true,
@@ -79,41 +78,36 @@ export function FavoritosClient() {
   );
 
   return (
-    <PageShell wide>
-      <PageHeader
-        className="mb-6"
-        title="Favoritos"
-        subtitle="Paradas guardadas y consultas recientes"
-      />
-      {/* Desktop: favoritos (1/3) e historial (2/3, en dos columnas) */}
-      <div className="lg:grid lg:grid-cols-3 lg:items-start lg:gap-8">
-        <div>
-          {/* Header simétrico al de "Consultas recientes" (solo desktop) */}
-          <div className="mb-3 hidden min-h-[26px] items-center lg:flex">
-            <div className="font-mono text-[10px] tracking-[1.4px] text-muted-foreground">
-              PARADAS GUARDADAS
-            </div>
-          </div>
-          <FavoritesList
-            favoritos={favoritos}
-            onView={fetchFavArribos}
-            onRemove={removeFavoritoEntry}
-            onUndoRemove={addFavorito}
-            onRename={handleEditFavName}
-            onGoToSearch={() => router.push("/consultar")}
-          />
-          <AdSenseRail slot={ADSENSE_SLOT_FAVORITOS} className="mt-6 lg:mt-8" />
-        </div>
-        <div className="lg:col-span-2">
-          <HistorialList
-            historial={historial}
-            onView={fetchHistEntry}
-            onRemove={removeHistorialEntry}
-            onUndoRemove={pushHistorialEntry}
-            onClear={clearHistorialEntries}
-          />
-        </div>
+    <div className="flex flex-col">
+      <div className="mb-4 lg:hidden">
+        <PageHeader
+          title="Favoritos"
+          subtitle="Paradas guardadas y consultas recientes"
+        />
       </div>
-    </PageShell>
+      <div>
+        <div className="mb-3 flex min-h-[26px] items-center">
+          <div className="font-mono text-xs font-semibold tracking-[1.4px] text-muted-foreground">
+            PARADAS GUARDADAS
+          </div>
+        </div>
+        <FavoritesList
+          favoritos={favoritos}
+          onView={fetchFavArribos}
+          onRemove={removeFavoritoEntry}
+          onUndoRemove={addFavorito}
+          onRename={handleEditFavName}
+          onGoToSearch={() => router.push("/")}
+        />
+        <AdSenseRail slot={ADSENSE_SLOT_FAVORITOS} className="mt-6" />
+      </div>
+      <HistorialList
+        historial={historial}
+        onView={fetchHistEntry}
+        onRemove={removeHistorialEntry}
+        onUndoRemove={pushHistorialEntry}
+        onClear={clearHistorialEntries}
+      />
+    </div>
   );
 }

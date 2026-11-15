@@ -68,7 +68,7 @@ const breadcrumbJsonLd = {
  */
 function ComoLlegoSkeleton() {
     return (
-        <div className="fixed inset-0 z-80 min-h-pwa-shell overflow-hidden bg-[#0a1628]">
+        <div className="relative flex h-full min-h-[540px] w-full flex-1 flex-col overflow-hidden bg-[#0a1628]">
             <div className="absolute inset-x-0 top-0 flex flex-col gap-3 px-3 pt-[max(calc(env(safe-area-inset-top)+10px),14px)]">
                 <div className="flex items-center justify-between gap-2">
                     <div className="h-11 w-11 shrink-0 rounded-full border border-border bg-card/90 shadow-lg" aria-hidden />

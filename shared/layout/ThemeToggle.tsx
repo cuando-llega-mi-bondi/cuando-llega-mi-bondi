@@ -34,10 +34,17 @@ export function ThemeToggle({ className }: ThemeToggleProps) {
             }
             disabled={!mounted}
             className={cn(
-                "flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-border bg-muted text-muted-foreground transition-colors hover:border-secondary hover:text-foreground disabled:pointer-events-none disabled:opacity-50",
+                "flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-foreground/55 bg-muted text-foreground transition-colors hover:border-secondary hover:text-foreground disabled:pointer-events-none disabled:opacity-50",
                 className
             )}
         >
+            <span className="sr-only">
+                {mounted
+                    ? isDark
+                        ? "Activar modo claro"
+                        : "Activar modo oscuro"
+                    : "Cambiar tema"}
+            </span>
             {!mounted ? (
                 <span className="block h-[18px] w-[18px]" aria-hidden />
             ) : isDark ? (

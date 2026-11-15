@@ -329,6 +329,14 @@ html.dark *::-webkit-scrollbar-thumb {
   html {
     scroll-behavior: auto;
   }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
   .arrival-row,
   .motion-step,
   .blink,
@@ -446,8 +454,8 @@ html.dark *::-webkit-scrollbar-thumb {
 .btn-primary:hover:not(:disabled) { opacity: 0.88; }
 
 .btn-secondary {
-  background: var(--secondary);
-  color: var(--secondary-foreground);
+  background: var(--mdp-turquesa);
+  color: #ffffff;
 }
 .btn-secondary:hover:not(:disabled) { opacity: 0.88; }
 
@@ -573,6 +581,24 @@ html.dark *::-webkit-scrollbar-thumb {
   right: 8px !important;
 }
 
+.leaflet-container .leaflet-control-attribution {
+  background: #ffffff !important;
+  color: #0f2d4a !important;
+  font-size: 12px !important;
+  line-height: 1.2 !important;
+  padding: 2px 8px !important;
+}
+
+.leaflet-container .leaflet-control-attribution a {
+  color: #0f2d4a !important;
+  font-weight: 600 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  min-height: 24px !important;
+  min-width: 24px !important;
+  outline-color: #0f2d4a !important;
+}
+
 /* Typography Overrides */
 .home-seo-intro {
   margin-bottom: 16px;
@@ -602,7 +628,8 @@ html.dark *::-webkit-scrollbar-thumb {
   background-color: rgba(0, 0, 0, 0.4) !important;
 }
 
-.arrivals-overlay .react-modal-sheet-backdrop {
+.arrivals-overlay .react-modal-sheet-backdrop,
+#phone-viewport .react-modal-sheet-backdrop {
   background-color: transparent !important;
   pointer-events: none !important;
 }

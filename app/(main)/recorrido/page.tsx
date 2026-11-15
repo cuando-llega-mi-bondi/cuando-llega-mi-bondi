@@ -47,7 +47,7 @@ export default function RecorridoPage() {
     return (
         <>
             <section className="sr-only" aria-labelledby="recorrido-seo-title">
-                <h1 id="recorrido-seo-title">
+                <h1 id="recorrido-seo-title" className="text-balance">
                     Recorridos de colectivos en Mar del Plata
                 </h1>
                 <p>

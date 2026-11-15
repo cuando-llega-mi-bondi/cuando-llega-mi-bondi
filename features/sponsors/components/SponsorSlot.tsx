@@ -33,13 +33,13 @@ function RankBadge({ top }: { top: boolean }) {
     <span
       aria-hidden
       className={cn(
-        "flex h-5 w-5 shrink-0 items-center justify-center rounded-full leading-none",
+        "flex h-5 w-5 shrink-0 items-center justify-center rounded-full font-mono text-xs font-bold leading-none",
         top
-          ? "bg-amarillo text-[13px]"
-          : "bg-muted font-mono text-[11px] font-black text-muted-foreground",
+          ? "border border-border bg-muted text-foreground"
+          : "bg-muted text-muted-foreground",
       )}
     >
-      {top ? "👑" : 2}
+      {top ? 1 : 2}
     </span>
   );
 }
@@ -58,7 +58,7 @@ function PositionCard({
   const eyebrow = (
     <span className="flex items-center gap-2">
       <RankBadge top={top} />
-      <p className={cn("text-[11px] font-bold", top ? "text-foreground" : "text-muted-foreground")}>
+      <p className={cn("text-xs font-bold", top ? "text-foreground" : "text-muted-foreground")}>
         Puesto {rank}
       </p>
     </span>
@@ -66,8 +66,7 @@ function PositionCard({
 
   const frame = cn(
     "space-y-2",
-    top &&
-      "rounded-2xl bg-gradient-to-br from-amarillo/15 to-transparent p-2.5 shadow-[0_0_20px_-6px_rgba(249,205,74,0.45)] ring-1 ring-amarillo/30",
+    top && "rounded-2xl border border-border bg-muted/30 p-2.5",
   );
 
   if (entry) {
@@ -77,7 +76,7 @@ function PositionCard({
           {eyebrow}
           <Link
             href={top ? "/anunciate?puesto=1" : "/anunciate"}
-            className="text-[11px] font-medium text-secondary hover:text-foreground"
+            className="inline-flex min-h-11 items-center text-xs font-semibold text-muted-foreground transition-colors hover:text-foreground"
           >
             {top ? "Pasalo" : "Reemplazalo"} desde {formatArs(priceArs)}
           </Link>
@@ -95,7 +94,7 @@ function PositionCard({
         className={cn(
           "flex flex-col justify-center rounded-2xl border border-dashed px-3 transition-colors",
           top
-            ? "min-h-12 border-amarillo/50 bg-amarillo/10 py-3.5 hover:border-amarillo"
+            ? "min-h-12 border-border bg-muted/40 py-3.5 hover:border-secondary/60"
             : "min-h-11 border-border bg-card/60 py-3 hover:border-secondary/40",
         )}
       >
@@ -177,12 +176,12 @@ export function SponsorSlot({ className }: { className?: string }) {
   }
 
   return (
-    <aside aria-label="Publicidad" className={cn("mt-10 space-y-4", className)}>
+    <aside aria-label="Publicidad" className={cn("mt-8 space-y-4", className)}>
       <div className="flex items-center justify-between gap-3">
-        <p className="font-mono text-[10px] tracking-[1.4px] text-muted-foreground">
+        <p className="font-mono text-xs font-semibold tracking-[1.4px] text-muted-foreground">
           PUBLICIDAD
         </p>
-        <Link href="/anunciate" className="text-[11px] font-medium text-secondary hover:text-foreground">
+        <Link href="/anunciate" className="inline-flex min-h-11 items-center px-1 text-xs font-semibold text-muted-foreground transition-colors hover:text-foreground">
           Anunciate
         </Link>
       </div>
@@ -202,7 +201,7 @@ export function SponsorSlot({ className }: { className?: string }) {
       })}
       <Link
         href="/anunciantes"
-        className="block text-center text-[11px] font-medium text-secondary hover:text-foreground"
+        className="inline-flex min-h-11 w-full items-center justify-center text-xs font-semibold text-muted-foreground transition-colors hover:text-foreground"
       >
         Ver más anunciantes
       </Link>

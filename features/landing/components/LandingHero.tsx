@@ -1,270 +1,142 @@
 "use client";
 
+import { motion, useReducedMotion, useScroll, useTransform } from "motion/react";
 import Link from "next/link";
-import { ArrowRight, Bus, MapPin, Search, Zap } from "lucide-react";
-import { motion, useScroll, useTransform, useReducedMotion } from "motion/react";
-import { BrandLogo } from "@shared/ui/BrandLogo";
+import { useEffect, useRef } from "react";
 
-// Tokens del sistema (DESIGN.md), no hex sueltos — el hero fuerza `.dark` en
-// LandingPage así que --secondary/--foreground resuelven siempre a los
-// valores de modo oscuro. NAVY usa --primary-foreground, no --foreground:
-// es el par de contraste fijo del amarillo (regla dura de DESIGN.md), no debe
-// invertirse si el tema cambia.
-const AMARILLO = "var(--mdp-amarillo)";
-const NAVY = "var(--primary-foreground)";
-// bg-[#0c243c] abajo (chasis del teléfono) es intencional: un tono "hardware"
-// más oscuro que --card a propósito, no una superficie de la app — no hay
-// token de sistema para esto.
+import { SummerHoverText } from "./SummerHoverText";
 
-const FEATURES = [
-  {
-    icon: MapPin,
-    label: "GPS en vivo",
-    detail: " — sabé exactamente dónde está tu bondi",
-  },
-  { icon: Zap, label: "Sin cuentas, sin esperas", detail: " — entrá y consultá directo" },
-  { icon: Bus, label: "Incluye línea 221", detail: " — que no está en la app oficial" },
-] as const;
-
-/** Animated dashed transit route that snakes across the hero background. */
-function HeroRoute() {
-  // Right-angled "transit map" path, normalized via pathLength for the draw-on.
-  // Kept in the centre-right gap so it never overlaps the hero copy.
-  const ROUTE = "M 700 720 L 700 500 L 900 500 L 900 360 L 1120 360 L 1120 470 L 1320 470";
-
-  // Subtle parallax: the route drifts up as the hero scrolls away.
-  const reduceMotion = useReducedMotion();
-  const { scrollY } = useScroll();
-  const rawY = useTransform(scrollY, [0, 700], [0, -80]);
-  const routeY = reduceMotion ? 0 : rawY;
-
-  return (
-    <motion.svg
-      aria-hidden
-      className="pointer-events-none absolute inset-0 h-full w-full"
-      viewBox="0 0 1440 760"
-      preserveAspectRatio="xMidYMid slice"
-      style={{
-        y: routeY,
-        maskImage: "linear-gradient(to bottom, black 50%, transparent 90%)",
-        WebkitMaskImage: "linear-gradient(to bottom, black 50%, transparent 90%)",
-        willChange: "transform",
-      }}
-    >
-      {/* Faint diagonal "avenue" crossing the grid */}
-      <line
-        x1="120"
-        y1="760"
-        x2="1320"
-        y2="20"
-        stroke={AMARILLO}
-        strokeWidth="1.5"
-        opacity="0.14"
-      />
-
-      {/* Soft glow that traces itself once, then lingers under the dashes */}
-      <path
-        d={ROUTE}
-        fill="none"
-        stroke={AMARILLO}
-        strokeWidth="10"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        opacity="0.12"
-        pathLength={1000}
-        strokeDasharray={1000}
-        className="animate-route-draw"
-        style={{ filter: "blur(6px)" }}
-      />
-
-      {/* The recorrido — dashed line with marching-ants flow */}
-      <path
-        id="hero-route-path"
-        d={ROUTE}
-        fill="none"
-        stroke={AMARILLO}
-        strokeWidth="3"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeDasharray="12 8"
-        opacity="0.9"
-        className="animate-route-flow"
-      />
-
-      {/* GPS marker sitting on a junction, with a pulsing ring */}
-      <g transform="translate(900 500)">
-        <circle
-          r="9"
-          fill={AMARILLO}
-          className="animate-route-pulse"
-          style={{ transformBox: "fill-box", transformOrigin: "center" }}
-        />
-        <circle r="6.5" fill={AMARILLO} />
-        <circle r="2.6" fill={NAVY} />
-      </g>
-
-      {/* Live bondi travelling along the route */}
-      <g className="motion-reduce:hidden">
-        <circle r="16" fill={AMARILLO} opacity="0.22" />
-        <circle r="6.5" fill={AMARILLO} />
-        <circle r="2.6" fill={NAVY} />
-        <animateMotion dur="7s" repeatCount="indefinite" rotate="auto">
-          <mpath href="#hero-route-path" />
-        </animateMotion>
-      </g>
-    </motion.svg>
-  );
-}
-
-/** Tilted phone mockup showing the live map + arrivals list. */
-function PhoneMock() {
-  return (
-    <div className="relative mx-auto w-full max-w-[340px] rotate-[3deg]">
-      <div className="absolute -inset-6 rounded-[3rem] bg-gradient-to-tr from-secondary/25 to-amarillo/25 blur-3xl" />
-
-      <div className="relative overflow-hidden rounded-[2.25rem] border border-white/10 bg-[#0c243c] p-3 shadow-2xl">
-        {/* Header */}
-        <div className="flex items-center justify-between px-2 pt-1 pb-3">
-          <BrandLogo size="md" className="text-foreground" />
-          <span className="inline-flex items-center gap-1.5 rounded-full border border-secondary/40 bg-secondary/10 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-secondary">
-            <span className="h-1.5 w-1.5 rounded-full bg-secondary" />
-            Vivo
-          </span>
-        </div>
-
-        {/* Search */}
-        <div className="mb-3 flex items-center gap-2 rounded-2xl border border-white/10 bg-background px-3.5 py-3 text-[13px] text-muted-foreground">
-          <Search className="h-4 w-4" />
-          Buscar línea…
-        </div>
-
-        {/* Mini live map */}
-        <div className="relative mb-3 h-[190px] overflow-hidden rounded-2xl border border-white/10 bg-background">
-          <div
-            className="absolute inset-0 opacity-60"
-            style={{
-              backgroundImage:
-                "linear-gradient(to right, rgba(43,179,168,0.10) 1px, transparent 1px), linear-gradient(to bottom, rgba(43,179,168,0.10) 1px, transparent 1px)",
-              backgroundSize: "28px 28px",
-            }}
-          />
-          <svg
-            aria-hidden
-            className="absolute inset-0 h-full w-full"
-            viewBox="0 0 300 190"
-            preserveAspectRatio="xMidYMid slice"
-          >
-            <path
-              d="M 20 150 L 90 150 L 90 80 L 180 80 L 180 120 L 260 120"
-              fill="none"
-              stroke={AMARILLO}
-              strokeWidth="2.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeDasharray="9 7"
-              className="animate-route-flow"
-            />
-          </svg>
-          {/* 221 marker */}
-          <div className="absolute right-8 top-[58%] flex -translate-y-1/2 items-center gap-1.5">
-            <span className="rounded-md bg-[#0c243c] px-1.5 py-0.5 text-[11px] font-bold text-foreground shadow">
-              221
-            </span>
-            <span className="relative flex h-4 w-4 items-center justify-center">
-              <span className="absolute h-4 w-4 animate-route-pulse rounded-full bg-amarillo" />
-              <span className="h-3 w-3 rounded-full border-2 border-[#0c243c] bg-amarillo" />
-            </span>
-          </div>
-        </div>
-
-        {/* Arrivals list */}
-        <div className="space-y-2">
-          <div className="flex items-center justify-between rounded-2xl border border-amarillo/30 bg-amarillo/10 px-3.5 py-3">
-            <div>
-              <div className="text-lg font-black text-amarillo">221</div>
-              <div className="text-[11px] text-muted-foreground">Centro — Terminal</div>
-            </div>
-            <span className="rounded-lg bg-amarillo px-2.5 py-1 text-[12px] font-bold text-primary-foreground">
-              3 min
-            </span>
-          </div>
-          <div className="flex items-center justify-between rounded-2xl border border-white/10 bg-background px-3.5 py-3">
-            <div>
-              <div className="text-lg font-black text-foreground">561</div>
-              <div className="text-[11px] text-muted-foreground">Güemes — Puerto</div>
-            </div>
-            <span className="rounded-lg bg-secondary/15 px-2.5 py-1 text-[12px] font-bold text-secondary">
-              9 min
-            </span>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
+const HERO_VIDEO_HD =
+  "https://videos.pexels.com/video-files/38118754/16184132_1920_1080_24fps.mp4";
+const HERO_VIDEO_SD =
+  "https://videos.pexels.com/video-files/38118754/16184131_1280_720_24fps.mp4";
 
 export function LandingHero() {
+  const sectionRef = useRef<HTMLElement | null>(null);
+  const videoRef = useRef<HTMLVideoElement | null>(null);
+  const reduceMotion = useReducedMotion();
+
+  const { scrollYProgress } = useScroll({
+    target: sectionRef,
+    offset: ["start start", "end start"],
+  });
+
+  // Parallax expositivo controlado por scroll (arranca en 0%/1 para coincidir 100% entre SSR e hidratación)
+  const videoY = useTransform(
+    scrollYProgress,
+    [0, 1],
+    reduceMotion ? ["0%", "0%"] : ["0%", "16%"],
+  );
+  const videoScale = useTransform(
+    scrollYProgress,
+    [0, 1],
+    reduceMotion ? [1, 1] : [1, 1.1],
+  );
+  const contentY = useTransform(
+    scrollYProgress,
+    [0, 1],
+    reduceMotion ? [0, 0] : [0, -24],
+  );
+
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+    if (reduceMotion) {
+      video.pause();
+    } else {
+      video.play().catch(() => {
+        // Autoplay silenciado puede ser bloqueado por políticas de ahorro de batería
+      });
+    }
+  }, [reduceMotion]);
+
   return (
-    <section className="relative overflow-hidden text-foreground">
-      {/* Animated route */}
-      <HeroRoute />
+    <section
+      ref={sectionRef}
+      aria-label="Presentación de Bondi MDP"
+      className="relative"
+    >
+      {/* Hero y video a pantalla completa (100% del alto visible junto al teléfono fijo) */}
+      <div className="relative h-[calc(100dvh-2.5rem)] min-h-[640px] w-full overflow-hidden rounded-[28px] border border-border bg-[#0f2d4a]">
+        {/* Capa de video a pantalla completa con parallax suave en el scroll */}
+        <motion.div
+          style={{ y: videoY, scale: videoScale }}
+          className="absolute inset-0 h-full w-full"
+        >
+          <video
+            ref={videoRef}
+            autoPlay
+            loop
+            muted
+            playsInline
+            preload="metadata"
+            aria-label="Postal costera soleada junto al mar"
+            className="h-full w-full object-cover object-center"
+          >
+            <source src={HERO_VIDEO_HD} type="video/mp4" />
+            <source src={HERO_VIDEO_SD} type="video/mp4" />
+          </video>
+        </motion.div>
 
-      <div className="relative z-10 mx-auto max-w-7xl px-8 py-24 lg:py-32">
-        <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-16">
-          {/* Copy */}
-          <div className="text-center lg:text-left">
-            <div className="mb-7 inline-flex items-center gap-2 rounded-full border border-secondary/40 bg-secondary/10 px-4 py-1.5">
-              <span className="h-2 w-2 animate-pulse rounded-full bg-secondary" />
-              <span className="text-[12px] font-bold uppercase tracking-[0.18em] text-secondary">
-                GPS en tiempo real
+        {/* Capa de contenido superpuesto sobre el video en toda la pantalla */}
+        <div className="relative z-10 flex h-full flex-col justify-between bg-gradient-to-t from-[#0f2d4a]/95 via-[#0f2d4a]/45 to-[#0f2d4a]/55 p-6 sm:p-8 xl:p-10">
+          {/* Barra superior integrada sobre el video */}
+          <div className="flex flex-wrap items-center justify-between gap-4">
+            <div className="inline-flex items-center gap-3 rounded-full border border-white/15 bg-[#0f2d4a]/80 px-3.5 py-1.5 backdrop-blur-md">
+              <span className="inline-flex items-center gap-1.5 font-mono text-xs font-bold tracking-wider text-[#f0f4f8] uppercase">
+                <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-[#289b95]" />
+                GPS EN VIVO
+              </span>
+              <span aria-hidden className="text-white/25">
+                ·
+              </span>
+              <span className="font-mono text-xs font-medium text-[#d7e3ee]">
+                MAR DEL PLATA · 38°00′S 57°33′O
               </span>
             </div>
 
-            {/* h2, no h1: el h1 real y SEO-optimizado vive en HomeIntro (sr-only,
-                justo antes en el DOM). Dos h1 en la misma página leen como
-                estructura de encabezados "plana" para crawlers/agentes. */}
-            <h2 className="mb-6 text-5xl font-black leading-[0.95] tracking-tight lg:text-7xl">
-              <span className="block">Movéte mejor</span>
-              <span className="block text-amarillo">por Mar del Plata.</span>
-            </h2>
-
-            <p className="mx-auto mb-9 max-w-lg text-lg leading-relaxed text-muted-foreground lg:mx-0 lg:text-xl">
-              Tiempos de arribo en vivo. La interfaz de transporte que la ciudad
-              se merecía.
-            </p>
-
-            <ul className="mb-10 space-y-3 text-left">
-              {FEATURES.map(({ icon: Icon, label, detail }) => (
-                <li key={label} className="flex items-center gap-3">
-                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-amarillo/25 bg-amarillo/10">
-                    <Icon className="h-4 w-4 text-amarillo" />
-                  </span>
-                  <span className="text-[15px] text-foreground/85">
-                    <span className="font-semibold text-foreground">{label}</span>
-                    {detail}
-                  </span>
-                </li>
-              ))}
-            </ul>
-
-            <div className="flex items-center justify-center gap-5 lg:justify-start">
+            <div className="flex items-center gap-2.5">
               <Link
-                href="/consultar"
-                className="inline-flex items-center justify-center gap-2 rounded-full bg-amarillo px-7 py-3.5 text-[15px] font-bold text-primary-foreground transition hover:opacity-90 active:scale-[0.98]"
+                href="/blog"
+                className="inline-flex min-h-11 items-center justify-center rounded-full border border-white/20 bg-[#0f2d4a]/80 px-4 py-2 text-xs font-semibold text-[#f0f4f8] backdrop-blur-md transition-colors hover:border-white/40 hover:bg-[#0f2d4a]"
               >
-                Consultá gratis
-                <ArrowRight className="h-4 w-4" />
+                Blog
               </Link>
-              <span className="text-[14px] font-medium text-muted-foreground">
-                Sin instalar nada, andá directo
-              </span>
+              <Link
+                href="/anunciate"
+                className="inline-flex min-h-11 items-center justify-center rounded-full border border-white/25 bg-[#0f2d4a]/85 px-5 py-2 text-xs font-bold text-[#f0f4f8] backdrop-blur-md transition-colors hover:border-white/50 hover:bg-[#0f2d4a]"
+              >
+                Anunciate
+              </Link>
             </div>
           </div>
 
-          {/* Phone */}
-          <div className="hidden lg:block">
-            <PhoneMock />
-          </div>
+          {/* Bloque inferior sobre el video: título y bajada */}
+          <motion.div
+            style={{ y: contentY }}
+            className="grid grid-cols-1 items-end gap-6 lg:grid-cols-12"
+          >
+            <div className="lg:col-span-7">
+              <h1 className="text-balance text-4xl font-black leading-[0.94] tracking-[-0.04em] text-[#f0f4f8] sm:text-5xl xl:text-[4rem]">
+                Movéte mejor{" "}
+                <span className="block text-[#289b95]">
+                  por{" "}
+                  <span className="text-amarillo">
+                    <SummerHoverText text="Mar del Plata" />.
+                  </span>
+                </span>
+              </h1>
+            </div>
+
+            <div className="lg:col-span-5 lg:pb-1">
+              <p className="text-base leading-relaxed text-[#e2ecf5]">
+                Seguimiento en tiempo real del transporte público marplatense.
+                Pensado para saber exactamente cuándo salir a la esquina, con
+                datos oficiales de MGP y acceso inmediato en el panel
+                izquierdo.
+              </p>
+            </div>
+          </motion.div>
         </div>
       </div>
     </section>

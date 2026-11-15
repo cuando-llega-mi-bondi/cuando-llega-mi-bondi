@@ -9,7 +9,7 @@
 // cross-origin al backend self-hosted, que el SW no toca por la guarda de
 // `url.origin !== self.location.origin`.
 
-const CACHE_VERSION = 'v4';
+const CACHE_VERSION = 'v5';
 const STATIC_CACHE = `bondimdp-static-${CACHE_VERSION}`;
 const PAGES_CACHE = `bondimdp-pages-${CACHE_VERSION}`;
 

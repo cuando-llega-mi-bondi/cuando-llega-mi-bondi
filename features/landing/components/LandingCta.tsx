@@ -1,79 +1,72 @@
 "use client";
 
+import { motion, useReducedMotion, useScroll, useTransform } from "motion/react";
 import Link from "next/link";
-import { ArrowRight, Star } from "lucide-react";
-import { motion } from "motion/react";
+import { useRef } from "react";
+import { ScrollRevealText } from "./ScrollRevealText";
 
 export function LandingCta() {
+  const ref = useRef<HTMLElement | null>(null);
+  const reduceMotion = useReducedMotion();
+
+  const { scrollYProgress } = useScroll({
+    target: ref,
+    offset: ["start end", "end start"],
+  });
+
+  const mapY = useTransform(
+    scrollYProgress,
+    [0, 1],
+    reduceMotion ? ["0%", "0%"] : ["0%", "14%"],
+  );
+
   return (
-    <section className="relative py-24">
-      <div className="pointer-events-none absolute left-1/2 top-1/2 h-[420px] w-[420px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-amarillo/10 blur-3xl" />
-
-      <div className="relative z-10 mx-auto max-w-3xl px-8 text-center">
-        <motion.h2
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "0px 0px -80px 0px" }}
-          transition={{ duration: 0.5 }}
-          className="text-balance text-4xl font-black uppercase tracking-tighter lg:text-6xl"
-        >
-          Dejá de esperar
-          <span className="block text-amarillo">el bondi.</span>
-        </motion.h2>
-        <motion.p
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "0px 0px -80px 0px" }}
-          transition={{ duration: 0.5, delay: 0.1 }}
-          className="mx-auto mt-5 max-w-xl text-lg text-muted-foreground"
-        >
-          Consultá en tiempo real cuándo llega tu colectivo en Mar del Plata.
-          Gratis, sin registro y en dos toques.
-        </motion.p>
-
+    <section ref={ref} className="pb-16 pt-20 xl:pt-24">
+      <div className="relative overflow-hidden rounded-2xl border border-border bg-card p-8 sm:p-10 xl:p-12">
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "0px 0px -80px 0px" }}
-          transition={{ duration: 0.5, delay: 0.2 }}
-          className="mt-9 flex flex-col items-center justify-center gap-5 sm:flex-row"
+          aria-hidden
+          style={{ y: mapY }}
+          className="pointer-events-none absolute -inset-y-8 right-0 w-3/5 bg-cover bg-right opacity-20 dark:opacity-25"
         >
-          <motion.div whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.97 }}>
-            <Link
-              href="/consultar"
-              className="inline-flex items-center justify-center gap-2 rounded-full bg-amarillo px-8 py-4 text-[15px] font-bold text-primary-foreground shadow-[0_0_32px_rgba(249,205,74,0.35)] transition hover:opacity-90"
-            >
-              Consultá gratis
-              <ArrowRight className="h-4 w-4" />
-            </Link>
-          </motion.div>
-          <motion.div whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.97 }}>
-            <Link
-              href="/consultar?tab=favoritos"
-              className="inline-flex items-center justify-center gap-2 rounded-full border border-border bg-card px-8 py-4 text-[15px] font-bold text-foreground transition-colors hover:border-secondary/50"
-            >
-              <Star className="h-4 w-4 text-amarillo" />
-              Ver favoritos
-            </Link>
-          </motion.div>
+          <div
+            className="h-full w-full bg-cover bg-right"
+            style={{
+              backgroundImage: "url(/mar-del-plata-mapa-bg.svg)",
+              maskImage: "linear-gradient(to left, black 35%, transparent 100%)",
+              WebkitMaskImage:
+                "linear-gradient(to left, black 35%, transparent 100%)",
+            }}
+          />
         </motion.div>
 
-        <motion.p
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
-          viewport={{ once: true, margin: "0px 0px -80px 0px" }}
-          transition={{ duration: 0.5, delay: 0.3 }}
-          className="mt-6 text-[14px] font-medium text-muted-foreground"
-        >
-          Nos vemos en la parada.{" "}
-          <Link
-            href="/android"
-            className="underline decoration-border underline-offset-2 transition-colors hover:text-foreground"
-          >
-            También en Google Play
-          </Link>
-          .
-        </motion.p>
+        <div className="relative z-10 flex flex-col justify-between gap-6 xl:flex-row xl:items-end">
+          <div className="max-w-xl space-y-2.5">
+            <h2
+              aria-label="Dejá de adivinar cuándo llega el bondi."
+              className="text-balance font-display text-4xl font-black leading-[1.02] tracking-tight text-foreground sm:text-5xl xl:text-[54px]"
+            >
+              <ScrollRevealText
+                text="Dejá de adivinar cuándo llega😉"
+                highlight="el bondi."
+              />
+            </h2>
+            <p className="text-sm leading-relaxed text-muted-foreground sm:text-base">
+              Elegí línea y esquina en el teléfono interactivo de la izquierda o
+              llevate la aplicación instalada en Android.
+            </p>
+          </div>
+
+          <div className="flex shrink-0 flex-wrap items-center gap-3">
+            {/* Único CTA primario de la landing: amarillo MDP con texto oscuro */}
+            <Link
+              href="/android"
+              className="inline-flex min-h-12 items-center justify-center gap-2 whitespace-nowrap rounded-full bg-primary px-6 py-3 text-sm font-bold text-primary-foreground transition-opacity duration-150 hover:opacity-88 active:scale-[0.98]"
+            >
+              Bajala en Google Play
+              <span aria-hidden>→</span>
+            </Link>
+          </div>
+        </div>
       </div>
     </section>
   );

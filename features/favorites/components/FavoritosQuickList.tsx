@@ -34,12 +34,12 @@ export function FavoritosQuickList({ className }: { className?: string }) {
   return (
     <div className={className}>
       <div className="mb-2 flex items-center justify-between">
-        <span className="font-mono text-[10px] tracking-[1.4px] text-muted-foreground">
+        <span className="font-mono text-xs font-semibold tracking-[1.4px] text-muted-foreground">
           TUS FAVORITOS
         </span>
         <Link
           href="/favoritos"
-          className="text-[12px] font-medium text-secondary transition-colors hover:text-foreground"
+          className="inline-flex min-h-11 items-center px-2 text-xs font-semibold text-secondary dark:text-amarillo transition-colors hover:text-foreground"
         >
           Ver todos
         </Link>
