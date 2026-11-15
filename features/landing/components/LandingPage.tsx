@@ -1,5 +1,5 @@
 import { LandingHero } from "./LandingHero";
-import { LandingFeatures } from "./LandingFeatures";
+import { LandingDownload } from "./LandingDownload";
 import { Footer } from "@shared/layout/Footer";
 import { LandingTestimonials } from "./LandingTestimonials";
 import { LandingStats } from "./LandingStats";
@@ -33,7 +33,7 @@ export function LandingPage() {
           <HomeIntro />
           <LandingHero />
           <Reveal>
-            <LandingFeatures />
+            <LandingDownload />
           </Reveal>
           <Reveal>
             <LandingTestimonials />

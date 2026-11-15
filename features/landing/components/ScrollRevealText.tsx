@@ -67,9 +67,9 @@ export function ScrollRevealText({
   // del scroll disponible: un título cerca del final de la página (el CTA) no llega
   // al 45% y, sin este tope, quedaba apagado para siempre.
   // La posición se lee en cada cuadro y no una sola vez: dentro de un contenedor sticky
-  // (el título de LandingFeatures) el título queda quieto en pantalla mientras su
-  // posición en el documento avanza, y una medición tomada con el contenedor fijo
-  // (al redimensionar la ventana) corría el barrido hasta la tercera tarjeta.
+  // el título queda quieto en pantalla mientras su posición en el documento avanza, y
+  // una medición tomada con el contenedor fijo (al redimensionar la ventana) corría el
+  // barrido fuera de lugar.
   useEffect(() => {
     const element = ref.current;
     if (!element) return;

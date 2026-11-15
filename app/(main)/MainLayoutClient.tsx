@@ -29,7 +29,7 @@ import { useUIStore, NAMING_CLOSED } from "@shared/ui/store/useUIStore";
 import { toast } from "@shared/ui/store/useToastStore";
 import { LandingHero } from "@features/landing/components/LandingHero";
 import { LandingAward } from "@features/landing/components/LandingAward";
-import { LandingFeatures } from "@features/landing/components/LandingFeatures";
+import { LandingDownload } from "@features/landing/components/LandingDownload";
 import { LandingStats } from "@features/landing/components/LandingStats";
 import { LandingTestimonials } from "@features/landing/components/LandingTestimonials";
 import { SocialTestimonials } from "@features/landing/components/SocialTestimonials";
@@ -349,15 +349,15 @@ function MainLayoutContent({ children }: { children: ReactNode }) {
         >
           <LandingMotionConfig>
             <div>
-              {/* Media separación: la sección siguiente centra su título en pantalla y ya trae aire propio */}
+              {/* Media separación: la sección siguiente ya trae su propio aire arriba */}
               <div className="pb-10 xl:pb-12">
                 <LandingHero />
               </div>
-              {/* Primero las pruebas (premio y cifras), después el producto, las voces
+              {/* Primero las pruebas (premio y cifras), después la descarga, las voces
                   de afuera, quién lo sostiene y quién lo hace; cierran dudas y el CTA */}
               <LandingAward />
               <LandingStats />
-              <LandingFeatures />
+              <LandingDownload />
               <LandingTestimonials />
               <SocialTestimonials />
               <LandingSponsors />
