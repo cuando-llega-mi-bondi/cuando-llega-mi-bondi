@@ -65,8 +65,8 @@ Información de colectivos en tiempo real para Mar del Plata. Rápida, clara y s
 - **Independiente**: alternativa simple y directa para consultar el transporte.
 
 ## Hecho por
-- **Nicolás Jiménez** — Frontend Developer · Multimedia Designer · [dotfn.dev](https://dotfn.dev) · [GitHub](https://github.com/dotfn)
-- **Matias Celiz Ramos** — Técnico en Informática · [celizin.dev](https://celizin.dev) · [GitHub](https://github.com/Celiz)
+- **Nicolás Jiménez** — Fullstack Engineer · Multimedia Designer · [dotfn.dev](https://dotfn.dev) · [GitHub](https://github.com/dotfn)
+- **Matias Celiz Ramos** — AI Engineer · Técnico en Informática · [celizin.dev](https://celizin.dev) · [GitHub](https://github.com/Celiz)
 
 ## Código abierto
 - [Repositorio en GitHub](https://github.com/cuando-llega-mi-bondi/cuando-llega-mi-bondi)

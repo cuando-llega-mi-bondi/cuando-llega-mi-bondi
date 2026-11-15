@@ -9,14 +9,14 @@ Bondi MDP es una app de colectivos para Mar del Plata (web, PWA y Android en Goo
 Proyecto independiente, sin afiliación oficial con la Municipalidad de General Pueyrredón (MGP). Desarrollado por:
 
 ### Nicolás Jiménez
-- Rol: Frontend Developer · Multimedia Designer
+- Rol: Fullstack Engineer · Multimedia Designer
 - Formación: TUP (UTN FRMDP)
 - Sitio: https://dotfn.dev
 - GitHub: https://github.com/dotfn
 - LinkedIn: https://linkedin.com/in/dotfn
 
 ### Matias Celiz Ramos
-- Rol: Técnico en Informática
+- Rol: AI Engineer · Técnico en Informática
 - Formación: Tecnicatura en Ciencia de Datos (UNMDP)
 - Sitio: https://celizin.dev
 - GitHub: https://github.com/Celiz

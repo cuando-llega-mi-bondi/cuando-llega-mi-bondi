@@ -17,8 +17,8 @@ Residentes y turistas en Mar del Plata que necesitan información instantánea y
 ## Quiénes la hicieron
 Bondi MDP es un proyecto independiente desarrollado por:
 
-- **Nicolás Jiménez** — Frontend Developer · Multimedia Designer · [dotfn.dev](https://dotfn.dev)
-- **Matias Celiz Ramos** — Técnico en Informática · [celizin.dev](https://celizin.dev)
+- **Nicolás Jiménez** — Fullstack Engineer · Multimedia Designer · [dotfn.dev](https://dotfn.dev)
+- **Matias Celiz Ramos** — AI Engineer · Técnico en Informática · [celizin.dev](https://celizin.dev)
 
 No es una app oficial de la Municipalidad de General Pueyrredón; es una alternativa comunitaria que consume los mismos datos municipales.
 

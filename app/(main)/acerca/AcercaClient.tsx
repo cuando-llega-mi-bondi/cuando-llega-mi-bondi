@@ -1,11 +1,12 @@
 "use client";
 
-import { useCallback } from "react";
+import { useCallback, type ReactNode } from "react";
 import Link from "next/link";
 import { useReviewsUser } from "@features/reviews/hooks/useReviewsUser";
+import { AUTHORS } from "@features/authors/data/authors";
+import { AuthorProfile } from "@features/authors/components/AuthorProfile";
 import { IconBus } from "@shared/icons/IconBus";
 import { IconGithub } from "@shared/icons/IconGithub";
-import { IconLinkedin } from "@shared/icons/IconLinkedin";
 import { IconExternalLink } from "@shared/icons/IconExternalLink";
 import { IconShare } from "@shared/icons/IconShare";
 import { IconWhatsApp } from "@shared/icons/IconWhatsApp";
@@ -15,8 +16,6 @@ import { IconMessage } from "@shared/icons/IconMessage";
 import { IconSearch } from "@shared/icons/IconSearch";
 import { PageHeader } from "@shared/layout/PageHeader";
 import { BrandLogo } from "@shared/ui/BrandLogo";
-import { IconIg } from "@shared/icons/IconIg";
-import { IconXBrand } from "@shared/icons/IconXBrand";
 // ── Data ────────────────────────────────────────────────────────────────────
 
 const FAQ = [
@@ -33,86 +32,6 @@ const FAQ = [
         a: "Todas las líneas de colectivos de Mar del Plata.",
     },
 ] as const;
-
-interface Developer {
-    name: string;
-    role: string;
-    education: { label: string; href: string };
-    institution: { label: string; href: string };
-    links: { icon: React.ReactNode; label: string; href: string }[];
-}
-
-const DEVELOPERS: Developer[] = [
-    {
-        name: "Nicolás Jiménez",
-        role: "Frontend Developer · Multimedia Designer",
-        education: {
-            label: "TUP",
-            href: "https://mdp.utn.edu.ar/tecnicatura/tecnico_universitario_en_programacion/",
-        },
-        institution: { label: "UTN FRMDP", href: "https://mdp.utn.edu.ar/" },
-        links: [
-            {
-                icon: <IconGithub className="h-4 w-4" />,
-                label: "GitHub",
-                href: "https://github.com/dotfn",
-            },
-            {
-                icon: <IconLinkedin className="h-4 w-4" />,
-                label: "LinkedIn",
-                href: "https://linkedin.com/in/dotfn",
-            },
-            {
-                icon: <IconExternalLink className="h-4 w-4" />,
-                label: "Portfolio",
-                href: "https://dotfn.dev",
-            },
-            {
-                icon: <IconXBrand className="h-4 w-4" />,
-                label: "X (Twitter)",
-                href: "https://twitter.com/dotfn_",
-            },
-            {
-                icon: <IconIg className="h-4 w-4" />,
-                label: "Instagram",
-                href: "https://instagram.com/dotfndev",
-            },
-        ],
-    },
-    {
-        name: "Matias Celiz Ramos",
-        role: "Técnico en Informática",
-        education: { label: "Tecnicatura en Ciencia de Datos", href: "https://exactas.mdp.edu.ar/estudiantes/tecnicatura-universitaria-en-ciencia-de-datos/" },
-        institution: { label: "UNMDP", href: "https://www.mdp.edu.ar/" },
-        links: [
-            {
-                icon: <IconGithub className="h-4 w-4" />,
-                label: "GitHub",
-                href: "https://github.com/Celiz",
-            },
-            {
-                icon: <IconLinkedin className="h-4 w-4" />,
-                label: "LinkedIn",
-                href: "https://www.linkedin.com/in/celizm/",
-            },
-            {
-                icon: <IconExternalLink className="h-4 w-4" />,
-                label: "Portfolio",
-                href: "https://celizin.dev",
-            },
-            {
-                icon: <IconXBrand className="h-4 w-4" />,
-                label: "X (Twitter)",
-                href: "https://twitter.com/celizin",
-            },
-            {
-                icon: <IconIg className="h-4 w-4" />,
-                label: "Instagram",
-                href: "https://instagram.com/celizin_",
-            },
-        ],
-    },
-];
 
 const APP_FEATURES = [
     {
@@ -132,57 +51,82 @@ const APP_FEATURES = [
     },
 ] as const;
 
+const OPEN_SOURCE_LINKS = [
+    {
+        href: "https://github.com/cuando-llega-mi-bondi/cuando-llega-mi-bondi",
+        icon: <IconGithub className="h-5 w-5 shrink-0 text-secondary dark:text-amarillo" />,
+        title: "Repositorio en GitHub",
+        subtitle: "Código fuente y decisiones técnicas",
+    },
+    {
+        href: "https://github.com/cuando-llega-mi-bondi/cuando-llega-mi-bondi/issues",
+        icon: <IconMessage className="h-5 w-5 shrink-0 text-secondary dark:text-amarillo" />,
+        title: "Reportar bugs o proponer mejoras",
+        subtitle: "El proyecto crece con la comunidad",
+    },
+] as const;
+
 // ── Sub-components ───────────────────────────────────────────────────────────
 
-function DevCard({ dev }: { dev: Developer }) {
+// Sin tarjetas dentro del teléfono: cada sección es un rótulo y su contenido sobre el
+// fondo, y las listas se separan con una línea, como las secciones abiertas de la landing
+function Section({ title, children }: { title: string; children: ReactNode }) {
     return (
-        <div className="space-y-4 rounded-xl border border-border bg-card p-4">
-            <div className="min-w-0 space-y-1">
-                <div className="flex items-center justify-between gap-3">
-                    <h3 className="text-balance text-[15px] font-semibold">{dev.name}</h3>
-                    <span className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-secondary/35 bg-card px-2.5 py-1 text-xs font-semibold text-secondary dark:border-amarillo/30 dark:text-amarillo">
-                        <span className="h-1.5 w-1.5 animate-pulse-soft rounded-full bg-current" />
-                        Conectemos
-                    </span>
-                </div>
-                <p className="text-[13px] text-muted-foreground">{dev.role}</p>
-                <p className="text-xs text-muted-foreground">
-                    Alumno de la{" "}
-                    <a
-                        href={dev.education.href}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="underline decoration-border underline-offset-2 transition-colors hover:text-foreground"
-                    >
-                        {dev.education.label}
-                    </a>
-                    {" · "}
-                    <a
-                        href={dev.institution.href}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="underline decoration-border underline-offset-2 transition-colors hover:text-foreground"
-                    >
-                        {dev.institution.label}
-                    </a>
-                </p>
-            </div>
+        <section className="space-y-3">
+            <h2 className="text-balance text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                {title}
+            </h2>
+            {children}
+        </section>
+    );
+}
 
-            <div className="flex flex-wrap gap-2">
-                {dev.links.map(({ icon, label, href }) => (
-                    <a
-                        key={label}
-                        href={href}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex min-h-11 items-center gap-2 rounded-lg border border-border bg-muted px-3 py-2 text-[13px] font-medium text-muted-foreground transition-colors hover:border-secondary hover:text-foreground"
-                    >
-                        {icon}
-                        {label}
-                    </a>
-                ))}
-            </div>
-        </div>
+const LIST = "divide-y divide-border border-y border-border";
+const ROW = "group flex min-h-11 items-center gap-3 py-3.5 no-underline";
+
+function IconChevronRight() {
+    return (
+        <svg
+            aria-hidden
+            className="shrink-0 text-muted-foreground transition-transform duration-150 group-hover:translate-x-0.5 group-hover:text-foreground"
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+        >
+            <polyline points="9 18 15 12 9 6" />
+        </svg>
+    );
+}
+
+function RowBody({
+    icon,
+    title,
+    subtitle,
+    trailing,
+}: {
+    icon?: ReactNode;
+    title: string;
+    subtitle: string;
+    trailing: ReactNode;
+}) {
+    return (
+        <>
+            {icon}
+            <span className="min-w-0 flex-1">
+                <span className="block truncate text-sm font-semibold text-foreground underline-offset-4 group-hover:underline">
+                    {title}
+                </span>
+                <span className="mt-0.5 block text-xs text-muted-foreground">
+                    {subtitle}
+                </span>
+            </span>
+            {trailing}
+        </>
     );
 }
 
@@ -222,9 +166,9 @@ export function AcercaClient() {
                 subtitle="El proyecto y el equipo"
             />
 
-            <div className="space-y-8">
+            <div className="space-y-10">
                 {/* ── HERO ──────────────────────────────────── */}
-                <section className="flex flex-col items-center gap-4 rounded-2xl border border-border bg-card px-5 py-6 text-center">
+                <section className="flex flex-col items-center gap-4 px-5 text-center">
                     <div className="flex items-center justify-center text-secondary dark:text-amarillo">
                         <IconBus size={56} />
                     </div>
@@ -241,33 +185,24 @@ export function AcercaClient() {
                 </section>
 
                 {/* ── SOBRE LA APP ──────────────────────────── */}
-                <section className="space-y-3">
-                    <h2 className="text-balance text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                        Sobre la app
-                    </h2>
-                    <div className="space-y-3">
+                <Section title="Sobre la app">
+                    <ul className="space-y-4">
                         {APP_FEATURES.map(({ icon, title, description }) => (
-                            <div
-                                key={title}
-                                className="flex items-start gap-3 rounded-xl border border-border bg-card p-4"
-                            >
+                            <li key={title} className="flex items-start gap-3">
                                 {icon}
                                 <div>
                                     <p className="text-sm font-semibold">{title}</p>
-                                    <p className="mt-1 text-[13px] text-muted-foreground">
+                                    <p className="mt-0.5 text-[13px] text-muted-foreground">
                                         {description}
                                     </p>
                                 </div>
-                            </div>
+                            </li>
                         ))}
-                    </div>
-                </section>
+                    </ul>
+                </Section>
 
                 {/* ── COMPARTIR ─────────────────────────────── */}
-                <section className="space-y-3">
-                    <h2 className="text-balance text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                        Compartir
-                    </h2>
+                <Section title="Compartir">
                     <div className="grid grid-cols-2 gap-3">
                         <button
                             type="button"
@@ -286,147 +221,83 @@ export function AcercaClient() {
                             Compartir
                         </button>
                     </div>
-                </section>
+                </Section>
 
                 {/* ── TU CUENTA ─────────────────────────────── */}
                 {user && (
-                    <section className="space-y-3">
-                        <h2 className="text-balance text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                            Tu cuenta
-                        </h2>
-                        <Link
-                            href="/perfil"
-                            className="flex min-h-11 items-center justify-between gap-3 rounded-xl border border-border bg-card p-4 no-underline transition-colors hover:border-secondary"
-                        >
-                            <div className="min-w-0">
-                                <p className="truncate text-sm font-semibold text-foreground">
-                                    {user.email}
-                                </p>
-                                <p className="text-xs text-muted-foreground">
-                                    Cerrar sesión o eliminar tu cuenta
-                                </p>
-                            </div>
-                            <svg
-                                className="shrink-0 text-muted-foreground"
-                                width="16"
-                                height="16"
-                                viewBox="0 0 24 24"
-                                fill="none"
-                                stroke="currentColor"
-                                strokeWidth="2.5"
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                            >
-                                <polyline points="9 18 15 12 9 6" />
-                            </svg>
-                        </Link>
-                    </section>
+                    <Section title="Tu cuenta">
+                        <div className={LIST}>
+                            <Link href="/perfil" className={ROW}>
+                                <RowBody
+                                    title={user.email ?? ""}
+                                    subtitle="Cerrar sesión o eliminar tu cuenta"
+                                    trailing={<IconChevronRight />}
+                                />
+                            </Link>
+                        </div>
+                    </Section>
                 )}
 
                 {/* ── HECHO POR ─────────────────────────────── */}
-                <section className="space-y-3">
-                    <h2 className="text-balance text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                        Hecho por
-                    </h2>
-                    <div className="space-y-3">
-                        {DEVELOPERS.map((dev) => (
-                            <DevCard key={dev.name} dev={dev} />
+                <Section title="Hecho por">
+                    <ul role="list" className="space-y-6">
+                        {AUTHORS.map((author) => (
+                            <li key={author.name}>
+                                <AuthorProfile author={author} compact />
+                            </li>
                         ))}
-                    </div>
-                </section>
+                    </ul>
+                </Section>
 
                 {/* ── CÓDIGO ABIERTO ────────────────────────── */}
-                <section className="space-y-3">
-                    <h2 className="text-balance text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                        Código abierto
-                    </h2>
-                    <div className="space-y-3">
-                        {[
-                            {
-                                href: "https://github.com/cuando-llega-mi-bondi/cuando-llega-mi-bondi",
-                                icon: <IconGithub className="h-5 w-5 text-secondary dark:text-amarillo" />,
-                                title: "Repositorio en GitHub",
-                                subtitle: "Código fuente y decisiones técnicas",
-                            },
-                            {
-                                href: "https://github.com/cuando-llega-mi-bondi/cuando-llega-mi-bondi/issues",
-                                icon: <IconMessage className="h-5 w-5 text-secondary dark:text-amarillo" />,
-                                title: "Reportar bugs o proponer mejoras",
-                                subtitle: "El proyecto crece con la comunidad",
-                            },
-                        ].map(({ href, icon, title, subtitle }) => (
-                            <a
-                                key={href}
-                                href={href}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="flex min-h-11 items-center justify-between rounded-xl border border-border bg-card p-4 transition-colors hover:border-secondary"
-                            >
-                                <div className="flex items-center gap-3">
-                                    {icon}
-                                    <div>
-                                        <p className="text-sm font-semibold">{title}</p>
-                                        <p className="text-xs text-muted-foreground">
-                                            {subtitle}
-                                        </p>
-                                    </div>
-                                </div>
-                                <IconExternalLink className="h-4 w-4 shrink-0 text-muted-foreground" />
-                            </a>
+                <Section title="Código abierto">
+                    <ul role="list" className={LIST}>
+                        {OPEN_SOURCE_LINKS.map(({ href, icon, title, subtitle }) => (
+                            <li key={href}>
+                                <a
+                                    href={href}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className={ROW}
+                                >
+                                    <RowBody
+                                        icon={icon}
+                                        title={title}
+                                        subtitle={subtitle}
+                                        trailing={
+                                            <IconExternalLink className="h-4 w-4 shrink-0 text-muted-foreground transition-colors group-hover:text-foreground" />
+                                        }
+                                    />
+                                </a>
+                            </li>
                         ))}
-                    </div>
-                </section>
+                    </ul>
+                </Section>
 
                 {/* ── BLOG ──────────────────────────────────────────── */}
-                <section className="space-y-3">
-                    <h2 className="text-balance text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                        Blog
-                    </h2>
-                    <Link
-                        href="/blog"
-                        className="flex min-h-11 items-center justify-between gap-3 rounded-xl border border-border bg-card p-4 no-underline transition-colors hover:border-secondary"
-                    >
-                        <div className="min-w-0">
-                            <p className="text-sm font-semibold text-foreground">
-                                Comparativas y guías
-                            </p>
-                            <p className="text-xs text-muted-foreground">
-                                Bondi MDP vs. la app oficial, y cómo saber cuándo llega el colectivo
-                            </p>
-                        </div>
-                        <svg
-                            className="shrink-0 text-muted-foreground"
-                            width="16"
-                            height="16"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="2.5"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                        >
-                            <polyline points="9 18 15 12 9 6" />
-                        </svg>
-                    </Link>
-                </section>
+                <Section title="Blog">
+                    <div className={LIST}>
+                        <Link href="/blog" className={ROW}>
+                            <RowBody
+                                title="Comparativas y guías"
+                                subtitle="Bondi MDP vs. la app oficial, y cómo saber cuándo llega el colectivo"
+                                trailing={<IconChevronRight />}
+                            />
+                        </Link>
+                    </div>
+                </Section>
 
                 {/* ── FAQ ───────────────────────────────────────────── */}
-                <section className="space-y-3">
-                    <h2 className="text-balance text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                        Preguntas frecuentes
-                    </h2>
-                    <div className="space-y-3">
+                <Section title="Preguntas frecuentes">
+                    <dl className={LIST}>
                         {FAQ.map(({ q, a }) => (
-                            <div
-                                key={q}
-                                className="rounded-xl border border-border bg-card p-4"
-                            >
-                                <p className="text-sm font-semibold">{q}</p>
-                                <p className="mt-1 text-[13px] text-muted-foreground">{a}</p>
+                            <div key={q} className="py-3.5">
+                                <dt className="text-sm font-semibold">{q}</dt>
+                                <dd className="mt-1 text-[13px] text-muted-foreground">{a}</dd>
                             </div>
                         ))}
-                    </div>
-                </section>
+                    </dl>
+                </Section>
             </div>
         </div>
     );
