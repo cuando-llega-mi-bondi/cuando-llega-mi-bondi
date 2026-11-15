@@ -13,6 +13,7 @@ import { PwaViewportSync } from "@shared/layout/PwaViewportSync";
 import { ToasterDeferred } from "@shared/ui/ToasterDeferred";
 import Script from "next/script";
 import { ADSENSE_CLIENT } from "@shared/ads/AdSenseScript";
+import { CleverCoreScript } from "@shared/ads/CleverCoreScript";
 
 // TODO: Cache Components adoption. Refactor this route so this opt-out can be removed.
 // See: https://nextjs.org/docs/app/guides/migrating-to-cache-components
@@ -135,6 +136,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                     <MicrosoftClarityDeferred />
                     <VercelAnalyticsDeferred />
                     <GoogleAnalyticsDeferred />
+                    <CleverCoreScript />
                     {children}
                     <ToasterDeferred />
                     <PlayStorePromo />
