@@ -502,16 +502,22 @@ const BusMap = React.memo(function BusMap({
             >
                 {!fillParent ? (
                     <button
+                        type="button"
+                        aria-label={isFullscreen ? "Salir de pantalla completa" : "Pantalla completa"}
                         onClick={() => setIsFullscreen(!isFullscreen)}
-                        style={{ background: "var(--color-card)", color: "var(--color-foreground)", border: "1px solid var(--color-border)", borderRadius: "10px", width: 48, height: 48, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", boxShadow: "0 6px 16px rgba(0,0,0,0.6)" }}
+                        style={{ background: "var(--color-card)", color: "var(--color-foreground)", border: "1.5px solid var(--color-foreground)", borderRadius: "10px", width: 48, height: 48, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", boxShadow: "0 6px 16px rgba(0,0,0,0.6)" }}
                     >
+                        <span className="sr-only">{isFullscreen ? "Salir de pantalla completa" : "Pantalla completa"}</span>
                         {isFullscreen ? <IconMinimize/> : <IconMaximize/>}
                     </button>
                 ) : null}
                 <button
+                    type="button"
+                    aria-label="Centrar mapa"
                     onClick={() => setFitTrigger((f) => f + 1)}
-                    style={{ background: "var(--color-card)", color: "var(--color-secondary)", border: "1px solid var(--color-border)", borderRadius: "10px", width: 48, height: 48, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", boxShadow: "0 6px 16px rgba(0,0,0,0.6)" }}
+                    style={{ background: "var(--color-card)", color: "var(--color-foreground)", border: "1.5px solid var(--color-foreground)", borderRadius: "10px", width: 48, height: 48, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", boxShadow: "0 6px 16px rgba(0,0,0,0.6)" }}
                 >
+                    <span className="sr-only">Centrar mapa</span>
                     <IconTarget/>
                 </button>
             </div>

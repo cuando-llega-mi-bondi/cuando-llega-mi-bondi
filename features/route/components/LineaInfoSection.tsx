@@ -34,15 +34,15 @@ export function LineaInfoSection({ linea, info, otrasLineas }: LineaInfoSectionP
         <section
             data-linea-info
             aria-labelledby="linea-info-title"
-            className="border-t border-border bg-background pb-nav lg:pl-60 lg:pb-16"
+            className="border-t border-border bg-background pb-8"
         >
-            <div className="mx-auto max-w-3xl px-4 pt-10 lg:px-8">
-                <p className="font-sans text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+            <div className="mx-auto max-w-3xl px-4 pt-8">
+                <p className="font-sans text-xs font-semibold uppercase tracking-wide text-muted-foreground">
                     Ficha de la línea
                 </p>
                 <h1
                     id="linea-info-title"
-                    className="mt-2 font-display text-2xl font-semibold tracking-[-0.03em] text-foreground sm:text-3xl"
+                    className="mt-2 text-balance font-display text-xl font-semibold tracking-[-0.03em] text-foreground"
                 >
                     Línea {nombre} de colectivo en Mar del Plata: recorrido, calles y paradas
                 </h1>

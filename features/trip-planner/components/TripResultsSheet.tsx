@@ -26,6 +26,11 @@ export function TripResultsSheet({
     originLabel,
     destLabel,
 }: TripResultsSheetProps) {
+    const mountPoint =
+        typeof document !== "undefined"
+            ? (document.getElementById("phone-viewport") ?? document.body)
+            : undefined;
+
     return (
         <Sheet
             isOpen={itineraries.length > 0}
@@ -34,6 +39,7 @@ export function TripResultsSheet({
             initialSnap={1}
             disableDismiss
             disableScrollLocking
+            mountPoint={mountPoint}
         >
             <Sheet.Container className="px-4 pb-safe-area-bottom">
                 <Sheet.Header className="text-foreground">

@@ -9,7 +9,7 @@ export function HomeIntro() {
         >
             <h1
                 id="home-seo-title"
-                className="mb-2 font-display text-[40px] md:text-[62px] font-medium leading-[0.95] tracking-[-2px] md:tracking-[-3.1px] text-foreground"
+                className="mb-2 text-balance font-display text-[40px] md:text-[62px] font-medium leading-[0.95] tracking-[-2px] md:tracking-[-3.1px] text-foreground"
             >
                 App de colectivos en Mar del Plata: cuándo llega tu bondi con Bondi MDP
             </h1>
@@ -20,7 +20,7 @@ export function HomeIntro() {
                 iPhone y Android podés usarla como web o instalarla como PWA.
             </p>
             <nav aria-label="Funciones principales de Bondi MDP">
-                <h2>¿Qué podés hacer con Bondi MDP?</h2>
+                <h2 className="text-balance">¿Qué podés hacer con Bondi MDP?</h2>
                 <ul>
                     <li>
                         <Link href="/recorrido">Ver recorridos</Link> — Mapa interactivo con

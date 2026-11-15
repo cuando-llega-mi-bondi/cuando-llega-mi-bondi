@@ -25,17 +25,17 @@ export function PageHeader({
     return (
         <div className={cn("flex items-start justify-between gap-3", className)}>
             <div className="min-w-0">
-                <Heading className="font-display text-[24px] font-semibold tracking-[-0.04em] text-text">
+                <Heading className="text-balance font-display text-[24px] font-semibold tracking-[-0.04em] text-text">
                     {title}
                     {highlight ? (
                         <>
                             {" "}
-                            <span className="text-accent">{highlight}</span>
+                            <span className="text-muted-foreground">{highlight}</span>
                         </>
                     ) : null}
                 </Heading>
                 {subtitle ? (
-                    <p className="mt-1 font-mono text-[10px] uppercase tracking-[1.4px] text-muted-foreground">
+                    <p className="mt-1 font-mono text-xs uppercase tracking-[1.4px] text-muted-foreground">
                         {subtitle}
                     </p>
                 ) : null}

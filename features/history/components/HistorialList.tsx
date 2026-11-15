@@ -86,15 +86,15 @@ const HistorialRow = memo(function HistorialRow({
                             {(entry.calleLabel || entry.interseccionLabel) && (
                                 <div className="mt-1 flex flex-col gap-0.5">
                                     {entry.calleLabel && (
-                                        <div className="flex items-center gap-1.5 text-muted-foreground/70">
-                                            <IconRoad size={11} />
-                                            <span className="truncate text-[11px] leading-tight">{entry.calleLabel}</span>
+                                        <div className="flex items-center gap-1.5 text-muted-foreground">
+                                            <IconRoad size={12} />
+                                            <span className="truncate text-xs leading-tight">{entry.calleLabel}</span>
                                         </div>
                                     )}
                                     {entry.interseccionLabel && (
-                                        <div className="flex items-center gap-1.5 text-muted-foreground/70">
-                                            <IconCrossroads size={11} />
-                                            <span className="truncate text-[11px] leading-tight">{entry.interseccionLabel}</span>
+                                        <div className="flex items-center gap-1.5 text-muted-foreground">
+                                            <IconCrossroads size={12} />
+                                            <span className="truncate text-xs leading-tight">{entry.interseccionLabel}</span>
                                         </div>
                                     )}
                                 </div>
@@ -127,17 +127,17 @@ export const HistorialList = memo(function HistorialList({
     if (historial.length === 0) return null;
 
     return (
-        <div className="mt-8 lg:mt-0">
+        <div className="mt-6">
             {/* Header */}
 
             <div className="mb-3 flex min-h-[26px] items-center justify-between">
-                <div className="font-mono text-[10px] tracking-[1.4px] text-muted-foreground">
+                <div className="font-mono text-xs font-semibold tracking-[1.4px] text-muted-foreground">
                     CONSULTAS RECIENTES
                 </div>
 
                 <motion.button
                     onClick={onClear}
-                    className="flex cursor-pointer items-center gap-1.5 rounded-full bg-destructive/10 px-3 py-1 font-sans text-[11px] font-semibold tracking-wide text-destructive transition-colors hover:bg-destructive/15 active:bg-destructive/25"
+                    className="flex min-h-11 cursor-pointer items-center gap-1.5 rounded-full bg-destructive/10 px-3 py-1 font-sans text-xs font-semibold tracking-wide text-destructive transition-colors hover:bg-destructive/15 active:bg-destructive/25"
                     whileTap={{ scale: 0.95 }}
                 >
                     <IconTrash size={12} />
@@ -145,8 +145,7 @@ export const HistorialList = memo(function HistorialList({
                 </motion.button>
             </div>
 
-            {/* Rows: en desktop el historial ocupa 2/3 del ancho → dos columnas */}
-            <div className="flex flex-col gap-2 lg:grid lg:grid-cols-2 lg:items-start">
+            <div className="flex flex-col gap-2">
                 <AnimatePresence mode="popLayout" initial={false}>
                     {historial.map((h, i) => (
                         <HistorialRow

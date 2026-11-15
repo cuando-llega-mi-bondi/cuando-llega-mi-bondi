@@ -43,11 +43,11 @@ export function PlayStoreNavLink({ variant = "compact", className }: PlayStoreNa
             aria-label="Descargar en Google Play"
             title="Google Play"
             className={cn(
-                "inline-flex h-10 shrink-0 items-center gap-1.5 rounded-full border border-amarillo/40 bg-amarillo/10 px-3 font-sans text-[12px] font-bold tracking-tight text-foreground transition-colors hover:border-amarillo hover:bg-amarillo/20",
+                "inline-flex min-h-11 shrink-0 items-center gap-1.5 rounded-full border border-amarillo/40 bg-amarillo/10 px-3 font-sans text-xs font-bold tracking-tight text-foreground transition-colors hover:border-amarillo hover:bg-amarillo/20",
                 className,
             )}
         >
-            <PlayGlyph className="h-3.5 w-3.5 text-amarillo" />
+            <PlayGlyph className="h-3.5 w-3.5 text-secondary dark:text-amarillo" />
             Play
         </a>
     );

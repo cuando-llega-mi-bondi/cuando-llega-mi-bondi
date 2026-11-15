@@ -1,6 +1,6 @@
 import Link from "next/link";
+import { ArrowRight } from "lucide-react";
 import { LandingSection } from "./LandingSection";
-import { Reveal } from "./Reveal";
 import { FaqAccordion } from "./FaqAccordion";
 
 // Single source of truth: drives both the rendered accordion and the JSON-LD.
@@ -56,38 +56,31 @@ export function LandingFaq() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
       />
-      <Reveal>
-        <LandingSection
-          eyebrow="Preguntas frecuentes"
-          title="Preguntas"
-          highlight="frecuentes"
-          description="Todo lo que querés saber antes de usar Bondi MDP."
-        >
-          {/* Sidebar + lista en vez de header centrado sobre acordeón: usa
-              todo el ancho de la sección (como el resto de la página) sin
-              volver a la grilla de 2 columnas que "inflaba" a la vecina. */}
-          <div className="grid gap-8 lg:grid-cols-[280px_1fr] lg:gap-10">
-            <div>
-              <h3 className="text-xl font-bold tracking-tight text-foreground">
-                ¿Tenés dudas?
-              </h3>
-              <p className="mt-2 text-[14px] leading-relaxed text-muted-foreground">
-                Te respondemos directo, sin tickets ni bots. Si encontraste un
-                error, falta una línea o los horarios no coinciden con la
-                realidad, contanos: la app mejora con lo que reporta la gente
-                que la usa todos los días.
-              </p>
-              <Link
-                href="/acerca"
-                className="mt-4 inline-flex items-center justify-center rounded-full bg-amarillo px-5 py-2.5 text-[13px] font-bold text-primary-foreground transition hover:opacity-90 active:scale-[0.98]"
-              >
-                Escribinos
-              </Link>
-            </div>
-            <FaqAccordion items={FAQ_ITEMS} />
+      <LandingSection
+        layout="split"
+        title="Preguntas"
+        highlight="frecuentes."
+        headerExtra={
+          <div className="mt-8 max-w-sm">
+            <h3 className="text-balance text-base font-bold text-foreground">
+              ¿Encontraste algún recorrido desactualizado?
+            </h3>
+            <p className="mt-2 text-sm leading-relaxed text-muted-foreground sm:text-base">
+              Te respondemos directo, sin tickets ni bots. Si falta una parada o
+              un ramal cambió de calle, escribinos para actualizarlo.
+            </p>
+            <Link
+              href="/acerca"
+              className="mt-3 inline-flex min-h-11 items-center gap-1.5 text-sm font-semibold text-foreground transition-colors duration-150 hover:text-secondary dark:hover:text-amarillo"
+            >
+              Contacto y soporte
+              <ArrowRight aria-hidden className="h-4 w-4" />
+            </Link>
           </div>
-        </LandingSection>
-      </Reveal>
+        }
+      >
+        <FaqAccordion items={FAQ_ITEMS} />
+      </LandingSection>
     </>
   );
 }

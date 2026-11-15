@@ -87,7 +87,7 @@ export function AdCreativeCard({
             </span>
           ) : null}
         </span>
-        <span className="inline-flex shrink-0 items-center gap-1 whitespace-nowrap text-[12px] font-bold text-secondary">
+        <span className="inline-flex shrink-0 items-center gap-1 whitespace-nowrap text-xs font-bold text-muted-foreground">
           Conocer
           <IconExternalLink className="h-3.5 w-3.5" aria-hidden />
         </span>

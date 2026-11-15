@@ -6,7 +6,6 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Button } from "@shared/ui/Button";
 import { Spinner } from "@shared/ui/Spinner";
-import { BottomNav } from "@shared/layout/BottomNav";
 import { useSearchFlowStore } from "@features/search/store/useSearchFlowStore";
 import { MANUAL_LINES } from "@features/route/manualRoutes";
 import type { NearStop, NearUser } from "@features/search/components/NearStopsMap";
@@ -137,20 +136,21 @@ export function ParadasCercaClient() {
     );
 
     return (
-        <div className="flex h-dvh flex-col bg-background pb-[calc(var(--nav-height)+max(env(safe-area-inset-bottom,0px),var(--safe-bottom-live,0px)))] lg:pl-60 lg:pb-0">
-            <header className="z-50 flex shrink-0 items-center gap-3 border-b border-border bg-background/90 px-[calc(16px+var(--safe-left))] pr-[calc(16px+var(--safe-right))] pt-[calc(10px+var(--safe-top))] pb-3 backdrop-blur-md lg:px-8">
+        <div className="flex h-full min-h-[520px] flex-1 flex-col bg-background">
+            <header className="z-50 flex shrink-0 items-center gap-3 border-b border-border bg-background/90 px-4 pt-3 pb-3 backdrop-blur-md">
                 <Link
-                    href="/consultar"
-                    className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-border bg-muted text-muted-foreground no-underline transition hover:border-secondary hover:text-foreground"
+                    href="/"
+                    aria-label="Volver"
+                    className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-border bg-muted text-foreground no-underline transition hover:border-secondary"
                     title="Volver"
                 >
                     <IconBack />
                 </Link>
                 <div className="min-w-0 flex-1">
-                    <div className="truncate font-sans text-[15px] font-semibold tracking-[-0.02em] text-foreground">
+                    <div className="truncate font-sans text-sm font-semibold tracking-[-0.02em] text-foreground">
                         Paradas cerca mío
                     </div>
-                    <div className="mt-0.5 font-mono text-[10px] text-muted-foreground">
+                    <div className="mt-0.5 font-mono text-xs text-muted-foreground">
                         {phase === "ok"
                             ? `${stops.length} paradas en ${radioMetros} m`
                             : "Tu ubicación · tiempo real"}
@@ -220,8 +220,6 @@ export function ParadasCercaClient() {
                     </div>
                 )}
             </div>
-
-            <BottomNav />
         </div>
     );
 }

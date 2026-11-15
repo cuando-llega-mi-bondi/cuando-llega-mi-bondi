@@ -1,86 +1,118 @@
-// components/PressMentions.tsx
 /* eslint-disable @next/next/no-img-element */
 "use client";
 
 import Link from "next/link";
-import { ArrowRight } from "lucide-react";
-import { SpotlightCard } from "./SpotlightCard";
+import { ArrowUpRight } from "lucide-react";
 
+// La primera va como nota principal: la más reciente y la de la foto más fuerte
 const pressMentions = [
-    {
-        image: "/notas/la-capital.jpg",
-        source: "Diario La Capital",
-        logo: { src: "/press-logos/la-capital.jpg", width: 401, height: 62 },
-        title:
-            "Lanzaron “Bondi Mdp”, la alternativa a la aplicación “Cuándo Llega” para usuarios de colectivos",
-        link: "https://www.lacapitalmdp.com/lanzaron-bondi-mdp-la-alternativa-a-la-aplicacion-cuando-llega-para-usuarios-de-colectivos/",
-    },
-    {
-        image: "/notas/noticias-de-bariloche.jpg",
-        source: "Noticias de Bariloche",
-        logo: { src: "/press-logos/noticias-de-bariloche.png", width: 600, height: 90 },
-        title:
-            "Lanzaron “Bondi Mdp”, la alternativa a la aplicación “Cuándo Llega” para usuarios de colectivos « Diario La Capital de Mar del Plata",
-        link: "https://www.noticiasdebariloche.com.ar/lanzaron-bondi-mdp-la-alternativa-a-la-aplicacion-cuando-llega-para-usuarios-de-colectivos-diario-la-capital-de-mar-del-plata/",
-    },
-    {
-        image: "/notas/canal-8.webp",
-        source: "Mi 8",
-        logo: { src: "/press-logos/mi8.png", width: 95, height: 64 },
-        title:
-            "Bondi MDP, la app que se desarrolla como una alternativa a Cuándo Llega: “Mostramos los datos de una forma mucho más accesible”",
-        link: "https://mi8.com.ar/bondi-mdp-la-app-que-se-desarrolla-como-una-alternativa-a-cuando-llega-mostramos-los-datos-de-una-forma-mucho-mas-accesible/",
-    },
-];
+  {
+    image: "/notas/aticma-awards-2026.webp",
+    source: "ATICMA",
+    title:
+      "Más de 500 personas celebraron en los ATICMA Awards 2026, lo mejor de la industria tecnológica de Mar del Plata",
+    link: "https://www.aticma.org.ar/novedades/aticma-awards-2026-ganadores/",
+  },
+  {
+    image: "/notas/la-capital.jpg",
+    source: "Diario La Capital",
+    title:
+      "Lanzaron “Bondi Mdp”, la alternativa a la aplicación “Cuándo Llega” para usuarios de colectivos",
+    link: "https://www.lacapitalmdp.com/lanzaron-bondi-mdp-la-alternativa-a-la-aplicacion-cuando-llega-para-usuarios-de-colectivos/",
+  },
+  {
+    image: "/notas/canal-8.webp",
+    source: "Mi 8 · Canal 8",
+    title:
+      "Bondi MDP, la app que se desarrolla como una alternativa a Cuándo Llega: “Mostramos los datos de una forma mucho más accesible”",
+    link: "https://mi8.com.ar/bondi-mdp-la-app-que-se-desarrolla-como-una-alternativa-a-cuando-llega-mostramos-los-datos-de-una-forma-mucho-mas-accesible/",
+  },
+  {
+    image: "/notas/noticias-de-bariloche.jpg",
+    source: "Noticias de Bariloche",
+    title:
+      "Lanzaron “Bondi Mdp”, la alternativa a la aplicación “Cuándo Llega” para usuarios de colectivos en General Pueyrredón",
+    link: "https://www.noticiasdebariloche.com.ar/lanzaron-bondi-mdp-la-alternativa-a-la-aplicacion-cuando-llega-para-usuarios-de-colectivos-diario-la-capital-de-mar-del-plata/",
+  },
+] as const;
+
+type Mention = (typeof pressMentions)[number];
+
+// Sin tarjetas: la foto y el titular son el contenido. Las fotos son decorativas
+// (alt vacío) porque el medio y el titular ya nombran el enlace.
+function LeadMention({ item }: { item: Mention }) {
+  return (
+    <Link
+      href={item.link}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="group block"
+    >
+      <div className="aspect-[16/10] overflow-hidden rounded-2xl bg-muted">
+        <img
+          src={item.image}
+          alt=""
+          loading="lazy"
+          decoding="async"
+          className="h-full w-full object-cover transition-transform duration-500 ease-out group-hover:scale-[1.03]"
+        />
+      </div>
+      <p className="mt-6 font-mono text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+        {item.source}
+      </p>
+      <h3 className="mt-3 text-balance text-2xl font-black leading-tight tracking-[-0.02em] text-foreground decoration-2 underline-offset-4 group-hover:underline xl:text-[28px]">
+        {item.title}
+      </h3>
+      <span className="mt-4 inline-flex min-h-11 items-center gap-1.5 text-sm font-semibold text-foreground">
+        Leer nota
+        <ArrowUpRight aria-hidden className="h-4 w-4" />
+      </span>
+    </Link>
+  );
+}
+
+function MentionRow({ item }: { item: Mention }) {
+  return (
+    <Link
+      href={item.link}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="group flex gap-5"
+    >
+      <div className="aspect-[4/3] w-32 shrink-0 overflow-hidden rounded-xl bg-muted xl:w-36">
+        <img
+          src={item.image}
+          alt=""
+          loading="lazy"
+          decoding="async"
+          className="h-full w-full object-cover transition-transform duration-500 ease-out group-hover:scale-[1.03]"
+        />
+      </div>
+      <div className="min-w-0">
+        <p className="font-mono text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+          {item.source}
+        </p>
+        <h3 className="mt-2 line-clamp-4 text-balance text-base font-bold leading-snug text-foreground underline-offset-4 group-hover:underline">
+          {item.title}
+        </h3>
+      </div>
+    </Link>
+  );
+}
 
 export function PressMentions() {
-    return (
-        <div className="grid gap-8 md:grid-cols-3">
-            {pressMentions.map((item, index) => (
-                <SpotlightCard
-                    key={item.link}
-                    index={index}
-                    tint="rgba(36,144,138,0.16)"
-                    className="p-0"
-                >
-                    <Link
-                        href={item.link}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="relative z-20 flex h-full flex-col"
-                    >
-                        <div className="relative h-56 overflow-hidden bg-muted md:h-64">
-                            <div className="absolute inset-0 z-10 bg-black/10 transition-colors group-hover:bg-transparent" />
-                            <img
-                                src={item.image}
-                                alt={item.source}
-                                className="h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
-                            />
-                            <div className="absolute left-5 top-5 z-20">
-                                <span className="inline-flex items-center rounded-full bg-white px-3.5 py-2 shadow-lg">
-                                    <img
-                                        src={item.logo.src}
-                                        alt={item.source}
-                                        width={item.logo.width}
-                                        height={item.logo.height}
-                                        className="h-4 w-auto"
-                                    />
-                                </span>
-                            </div>
-                        </div>
+  const [lead, ...rest] = pressMentions;
 
-                        <div className="flex flex-1 flex-col justify-between p-8">
-                            <h3 className="mb-6 line-clamp-4 text-xl font-bold leading-snug text-foreground transition-colors group-hover:text-amarillo">
-                                {item.title}
-                            </h3>
-                            <div className="mt-auto inline-flex items-center text-[15px] font-bold text-secondary transition-colors group-hover:text-amarillo">
-                                Leer nota completa
-                                <ArrowRight className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-1" />
-                            </div>
-                        </div>
-                    </Link>
-                </SpotlightCard>
-            ))}
-        </div>
-    );
+  return (
+    <div className="grid gap-12 xl:grid-cols-[minmax(0,7fr)_minmax(0,5fr)] xl:gap-12">
+      <LeadMention item={lead} />
+      <ul role="list" className="grid content-start gap-10">
+        {rest.map((item) => (
+          <li key={item.link}>
+            <MentionRow item={item} />
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
 }

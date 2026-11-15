@@ -19,11 +19,11 @@ export function BlueprintGrid({ className }: { className?: string }) {
   );
 }
 
-/** Small turquoise pill label sitting above a section heading. */
+/** Small turquoise/yellow pill label sitting above a section heading. */
 export function SectionEyebrow({ children }: { children: ReactNode }) {
   return (
-    <span className="mb-5 inline-flex items-center gap-2 rounded-full border border-secondary/40 bg-secondary/10 px-4 py-1.5 text-[12px] font-bold uppercase tracking-[0.18em] text-secondary">
-      <span className="h-1.5 w-1.5 rounded-full bg-secondary" />
+    <span className="mb-4 inline-flex items-center gap-2 rounded-full border border-secondary/40 bg-secondary/10 px-4 py-1.5 text-xs font-bold uppercase tracking-[0.18em] text-secondary dark:border-amarillo/40 dark:bg-amarillo/10 dark:text-amarillo">
+      <span className="h-1.5 w-1.5 rounded-full bg-secondary dark:bg-amarillo" />
       {children}
     </span>
   );

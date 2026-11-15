@@ -4,6 +4,8 @@ export interface Sponsor {
   href: string;
   tagline?: string;
   cta: string;
+  /** El logo trae texto claro y necesita una placa oscura sobre superficies claras */
+  logoOnDark?: boolean;
 }
 
 export const SPONSORS: Sponsor[] = [
@@ -13,6 +15,7 @@ export const SPONSORS: Sponsor[] = [
     href: "https://nexovet.aeterna.red/",
     tagline: "Veterinaria en Mar del Plata",
     cta: "Conocer",
+    logoOnDark: true,
   },
 ];
 

@@ -63,7 +63,7 @@ export function StepField({
                         disabled={disabled}
                         type="button"
                         className={cn(
-                            "relative flex w-full items-center gap-4 rounded-[32px] border-2 p-4 text-left transition-all duration-300 outline-none",
+                            "relative flex w-full items-center gap-4 rounded-[32px] border-2 p-4 text-left transition-all duration-300 outline-none focus-visible:ring-4 focus-visible:ring-ring/40",
                             isActive
                                 ? "border-amarillo bg-card shadow-lg ring-4 ring-amarillo/20"
                                 : isCompleted
@@ -96,8 +96,8 @@ export function StepField({
                             <span
                                 id={labelId}
                                 className={cn(
-                                    "font-mono text-[11px] font-bold tracking-[1.5px] uppercase",
-                                    isActive ? "text-secondary" : "text-muted-foreground",
+                                    "font-mono text-xs font-bold tracking-[1.5px] uppercase",
+                                    isActive ? "text-secondary dark:text-amarillo" : "text-muted-foreground",
                                 )}
                             >
                                 {stepText}

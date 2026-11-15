@@ -21,8 +21,6 @@ import {
   MapErrorOverlay,
   MapLoadingOverlay,
 } from "@features/route/components";
-import { BottomNav } from "@shared/layout/BottomNav";
-import { PageHeader } from "@shared/layout/PageHeader";
 
 // Leaflet can't run on the server — dynamic import with ssr:false is mandatory
 const RouteMap = dynamic(() => import("@features/route/components/RouteMap"), {
@@ -433,43 +431,29 @@ export default function RecorridoClient({ initialLineCode }: { initialLineCode?:
   // ─────────────────────────────────────────────────────────────────────────────
   if (step === "selector") {
     return (
-      <div className="flex min-h-pwa-shell flex-col bg-bg lg:pl-60">
-        {/* Mobile: header con volver (la pantalla vive fuera del layout con Header). */}
-        <header className="z-50 flex shrink-0 items-center gap-3 border-b border-white/10 px-[calc(20px+var(--safe-left))] pt-[calc(16px+var(--safe-top))] pr-[calc(20px+var(--safe-right))] pb-3.5 lg:hidden">
+      <div className="flex min-h-0 flex-1 flex-col bg-background">
+        <header className="z-50 flex shrink-0 items-center gap-3 border-b border-border px-[calc(20px+var(--safe-left))] pt-[calc(16px+var(--safe-top))] pr-[calc(20px+var(--safe-right))] pb-3.5 lg:px-4 lg:pt-3">
           <Link
             href="/"
-            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-white/12 bg-white/5 text-text-dim no-underline transition hover:border-white/20 hover:text-text"
+            aria-label="Volver al inicio"
+            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-border bg-muted text-foreground no-underline transition hover:border-secondary"
             title="Volver al inicio"
           >
             <IconBack />
           </Link>
           <div className="min-w-0 flex-1">
-            <div className="font-display text-[24px] font-semibold tracking-[-0.04em] text-text">
-              Explorar <span className="text-accent">Reseñas</span>
-            </div>
-            <div className="mt-0.5 font-mono text-[10px] text-text-dim">
+            <h2 className="text-balance font-display text-xl font-bold tracking-tight text-foreground">
+              Explorar <span className="text-secondary dark:text-amarillo">Reseñas</span>
+            </h2>
+            <div className="mt-0.5 font-mono text-xs text-muted-foreground">
               {linesLoading ? "Cargando líneas…" : `${lines.length} líneas disponibles`}
             </div>
           </div>
         </header>
 
-        {/* Desktop: mismo PageHeader y métricas (px-8/pt-8) que el resto. */}
-        <div className="hidden shrink-0 px-8 pt-8 lg:block">
-          <PageHeader
-            as="h2"
-            title="Explorar"
-            highlight="Reseñas"
-            subtitle={
-              linesLoading
-                ? "Cargando líneas…"
-                : `${lines.length} líneas disponibles`
-            }
-          />
-        </div>
-
-        <div className="shrink-0 border-b border-white/10 px-4 pb-2 pt-3.5 lg:border-b-0 lg:px-8 lg:pb-0 lg:pt-6">
-          <div className="relative lg:max-w-xl">
-            <span className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-text-dim">
+        <div className="shrink-0 border-b border-border px-4 pb-2.5 pt-3">
+          <div className="relative">
+            <span className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground">
               <IconSearch />
             </span>
             <input
@@ -478,18 +462,18 @@ export default function RecorridoClient({ initialLineCode }: { initialLineCode?:
               placeholder="Buscar línea por número o destino…"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="box-border w-full rounded-full border border-border bg-card py-[11px] pl-10 pr-3.5 font-sans text-[16px] text-text outline-none transition-colors placeholder:text-muted-foreground focus:border-secondary"
+              className="box-border w-full rounded-full border border-foreground/55 bg-card py-[11px] pl-10 pr-3.5 font-sans text-base text-foreground outline-none transition-colors placeholder:text-muted-foreground focus:border-secondary"
             />
           </div>
         </div>
 
-        <div className="flex-1 overflow-y-auto px-3 pb-45 pt-2 lg:px-8 lg:pt-6 lg:pb-10">
+        <div className="flex-1 overflow-y-auto px-3 pb-6 pt-3">
           {filteredLines.length === 0 && !linesLoading ? (
-            <div className="py-10 text-center font-mono text-[13px] text-text-dim">
+            <div className="py-10 text-center font-mono text-xs text-muted-foreground">
               No se encontraron líneas para «{search}»
             </div>
           ) : (
-            <div className="grid grid-cols-3 gap-2.5 sm:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
+            <div className="grid grid-cols-3 gap-2.5">
               {linesLoading ? (
                 <LineSkeletons />
               ) : (
@@ -500,7 +484,6 @@ export default function RecorridoClient({ initialLineCode }: { initialLineCode?:
             </div>
           )}
         </div>
-        <BottomNav />
       </div>
     );
   }
@@ -527,13 +510,14 @@ export default function RecorridoClient({ initialLineCode }: { initialLineCode?:
   return (
     <div
       data-recorrido-step="map"
-      className="flex h-dvh flex-col bg-background pb-[calc(var(--nav-height)+max(env(safe-area-inset-bottom,0px),var(--safe-bottom-live,0px)))] lg:pl-60 lg:pb-0"
+      className="flex h-full min-h-[520px] flex-1 flex-col bg-background"
     >
-      <header className="z-50 flex shrink-0 items-center gap-3 border-b border-border bg-background/90 backdrop-blur-md px-[calc(16px+var(--safe-left))] pr-[calc(16px+var(--safe-right))] pt-[calc(10px+var(--safe-top))] pb-3 lg:px-8">
+      <header className="z-50 flex shrink-0 items-center gap-3 border-b border-border bg-background/90 backdrop-blur-md px-4 pt-3 pb-3">
         <button
           type="button"
           onClick={goBack}
-          className="flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center rounded-full border border-border bg-muted text-muted-foreground transition hover:border-secondary hover:text-foreground"
+          aria-label="Volver a la lista"
+          className="flex h-11 w-11 shrink-0 cursor-pointer items-center justify-center rounded-full border border-border bg-muted text-foreground transition hover:border-secondary"
           title="Volver a la lista"
         >
           <IconBack />
@@ -542,22 +526,22 @@ export default function RecorridoClient({ initialLineCode }: { initialLineCode?:
         <div className="min-w-0 flex-1">
           <div className="flex min-w-0 items-center gap-2">
             {selectedLine && (
-              <span className="shrink-0 rounded-full border border-secondary/45 bg-secondary/12 px-2.5 py-0.5 font-display text-base font-semibold tracking-[-0.03em] text-secondary">
+              <span className="shrink-0 rounded-full border border-secondary/45 bg-card px-2.5 py-0.5 font-display text-base font-semibold tracking-[-0.03em] text-secondary dark:text-amarillo">
                 {selectedLine.CodigoLineaParada}
               </span>
             )}
-            <span className="min-w-0 truncate font-sans text-[15px] font-semibold tracking-[-0.02em] text-foreground">
+            <span className="min-w-0 truncate font-sans text-sm font-semibold tracking-[-0.02em] text-foreground">
               {mapLoading ? "Cargando…" : (selectedLine?.Descripcion ?? "")}
             </span>
           </div>
           {!mapLoading && selectedRamal && (
-            <p className="mt-0.5 truncate font-sans text-[13px] text-muted-foreground">
-              <span className="font-medium text-foreground/85">Sentido: </span>
+            <p className="mt-0.5 truncate font-sans text-xs text-muted-foreground">
+              <span className="font-medium text-foreground">Sentido: </span>
               {selectedRamal.label}
             </p>
           )}
           {!mapLoading && selectedLine && (
-            <div className="mt-0.5 font-mono text-[10px] text-muted-foreground">
+            <div className="mt-0.5 font-mono text-xs text-muted-foreground">
               {mapStops.length > 0 ? `${mapStops.length} paradas` : ""}
               {mapStops.length > 0 && ramales.length > 1 ? " · " : ""}
               {ramales.length > 1 ? `${ramales.length} ramales` : ""}
@@ -565,14 +549,14 @@ export default function RecorridoClient({ initialLineCode }: { initialLineCode?:
           )}
         </div>
 
-        <div className="shrink-0 rounded-full border border-secondary/35 bg-secondary/12 px-3 py-1 font-sans text-[11px] font-medium tracking-[-0.01em] text-secondary">
+        <div className="shrink-0 rounded-full border border-secondary/35 bg-card px-3 py-1 font-sans text-xs font-semibold tracking-[-0.01em] text-secondary dark:text-amarillo">
           MAPA
         </div>
       </header>
 
       {ramales.length > 1 && !mapLoading && (
         <div className="shrink-0 overflow-x-auto border-b border-border bg-background/90 backdrop-blur-md [scrollbar-width:none]">
-          <div className="flex w-max gap-2 px-[calc(12px+var(--safe-left))] py-2.5 pr-[calc(12px+var(--safe-right))]">
+          <div className="flex w-max gap-2 px-3 py-2">
             {ramales.map((ramal) => {
               const isActive = ramal.key === selectedRamal?.key;
               return (
@@ -581,16 +565,16 @@ export default function RecorridoClient({ initialLineCode }: { initialLineCode?:
                   type="button"
                   onClick={() => setSelectedRamal(ramal)}
                   className={cn(
-                    "flex cursor-pointer items-center gap-1.5 whitespace-nowrap rounded-full border px-3.5 py-[7px] font-sans text-[13px] font-medium tracking-[-0.01em] transition",
+                    "flex min-h-11 cursor-pointer items-center gap-1.5 whitespace-nowrap rounded-full border px-3.5 py-2 font-sans text-xs font-semibold tracking-[-0.01em] transition",
                     isActive
-                      ? "border-secondary bg-secondary/14 text-secondary"
+                      ? "border-secondary bg-card text-secondary dark:border-amarillo dark:text-amarillo"
                       : "border-border bg-muted text-muted-foreground hover:border-secondary/50 hover:text-foreground",
                   )}
                 >
                   <span
                     className={cn(
                       "h-2 w-2 flex-shrink-0 rounded-full transition-colors",
-                      isActive ? "bg-secondary" : "bg-muted-foreground/35",
+                      isActive ? "bg-secondary dark:bg-amarillo" : "bg-muted-foreground/35",
                     )}
                   />
                   {ramal.label}
@@ -626,7 +610,6 @@ export default function RecorridoClient({ initialLineCode }: { initialLineCode?:
           />
         )}
       </div>
-      <BottomNav />
     </div>
   );
 }

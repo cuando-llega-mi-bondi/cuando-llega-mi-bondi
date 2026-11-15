@@ -113,15 +113,15 @@ const FavoritoRow = memo(function FavoritoRow({
                             {(fav.calleLabel || fav.interseccionLabel) && (
                                 <div className="mt-1 flex flex-col gap-0.5">
                                     {fav.calleLabel && (
-                                        <div className="flex items-center gap-1.5 text-muted-foreground/70">
-                                            <IconRoad size={11} />
-                                            <span className="truncate text-[11px] leading-tight">{fav.calleLabel}</span>
+                                        <div className="flex items-center gap-1.5 text-muted-foreground">
+                                            <IconRoad size={12} />
+                                            <span className="truncate text-xs leading-tight">{fav.calleLabel}</span>
                                         </div>
                                     )}
                                     {fav.interseccionLabel && (
-                                        <div className="flex items-center gap-1.5 text-muted-foreground/70">
-                                            <IconCrossroads size={11} />
-                                            <span className="truncate text-[11px] leading-tight">{fav.interseccionLabel}</span>
+                                        <div className="flex items-center gap-1.5 text-muted-foreground">
+                                            <IconCrossroads size={12} />
+                                            <span className="truncate text-xs leading-tight">{fav.interseccionLabel}</span>
                                         </div>
                                     )}
                                 </div>
@@ -160,7 +160,7 @@ export const FavoritesList = memo(function FavoritesList({
                     <IconStar filled={false} className="h-10 w-10 stroke-[1.5]" />
                 </div>
 
-                <h3 className="mb-2 font-display text-2xl font-black tracking-tight text-foreground uppercase">
+                <h3 className="mb-2 text-balance font-display text-2xl font-black tracking-tight text-foreground uppercase">
                     Sin favoritos
                 </h3>
 
